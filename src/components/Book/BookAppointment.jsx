@@ -16,8 +16,13 @@ import pedia from "../../assets/Book/pedia.jpg";
 import physical from "../../assets/Book/physical.jpg";
 import pulmonology from "../../assets/Book/pulmonology.jpg";
 import { ConfigProvider } from "antd";
+import BookAppointmentForm from "./BookAppointmentForm";
 
 function BookAppointment() {
+  const handleClick = () => {
+    window.location.href = `${window.location.pathname}#bookapp`;
+  };
+
   return (
     <>
       <div className="book_appointment">
@@ -37,7 +42,13 @@ function BookAppointment() {
               Elevate Your Health Journey: Seamless Booking,Exceptional Care at
               Mountain Top Specialty Clinic.
             </h1>
-            <Button>Book Appointment</Button>
+            <Button
+              onClick={handleClick}
+              type="primary"
+              className="bg-green-600 "
+            >
+              Book Appointment
+            </Button>
           </div>
         </div>
         <div className="pl-8 pr-8 pb-5 pt-5">
@@ -53,14 +64,18 @@ function BookAppointment() {
             treatments, or expert consultations, we are here for you.
           </p>
         </div>
-        <div className="pl-8 pr-8 pb-5 pt-5">
+        <div className="pl-8 pr-8 pb-5 pt-5" id="bookapp">
           <h1>BookAppointment</h1>
           <Card>
-            as
             <p>
               Ready to prioritize your health? Schedule an appointment with our
               experienced healthcare professionals.
             </p>
+            <div className="mt-12 grow">
+              <div>
+                <BookAppointmentForm />
+              </div>
+            </div>
           </Card>
         </div>
 

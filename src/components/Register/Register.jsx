@@ -23,8 +23,8 @@ function Register() {
 
   // Add a new document to the collection
   const addNewDocument = async (userData, id) => {
-    const usersCollectionPath = `users/${id}`;
-    console.log("id", id);
+    //const usersCollectionPath = `users/${id}`;
+    //console.log("id", id);
     // const usersCollection = getFirestoreCollection(`users`, `account`);
     // try {
     //   await addDocument(usersCollection, userData);
@@ -33,7 +33,7 @@ function Register() {
     //   console.log(error);
     // }
     const myDoc = doc(db, "users", `${id}`);
-    const docSnap = await getDoc(ref);
+    //const docSnap = await getDoc(ref);
     try {
       await setDoc(myDoc, userData);
       console.log("firestore success");

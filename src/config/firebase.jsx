@@ -1,11 +1,13 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
 import {
   doc as firestoreDoc,
   setDoc as firestoreSetDoc,
   getDoc as firestoreGetDoc,
+  collection as firestoreColletion,
+  addDoc as firestoreAddDoc,
 } from "firebase/firestore";
 import { signOut as firebaseSignOut } from "firebase/auth";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -37,6 +39,8 @@ export const signOut = () => {
 export const doc = firestoreDoc;
 export const setDoc = firestoreSetDoc;
 export const getDoc = firestoreGetDoc;
+export const collection = firestoreColletion;
+export const addDoc = firestoreAddDoc;
 
 // // Get a reference to a Firestore collection
 // export const getFirestoreCollection = (collectionName) => {
