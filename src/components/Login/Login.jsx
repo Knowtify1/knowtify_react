@@ -1,22 +1,38 @@
 import React from "react";
-import { useState, useEffect } from "react";
-import { auth, googleProvider } from "../../config/firebase";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { useState } from "react";
+import { auth } from "../../config/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { Button, Checkbox, Form, Input, Space, Card } from "antd";
 import { Link, Navigate, useNavigate, Route, Routes } from "react-router-dom";
-import Dashboard from "../../AdminDashboard";
+import { setDoc, doc, db, getDoc } from "../../config/firebase";
 
 const Login = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   //const signIn = async () => {};
-
-  const signInWithGoogle = async () => {
+  const onVerify = async (id) => {
+    const myDoc = doc(db, "users", `${id}`);
     try {
-      await signInWithPopup(auth, googleProvider);
+      const docSnap = await getDoc(myDoc);
+
+      if (docSnap.exists()) {
+        const type = docSnap.data()?.type;
+        if (type == "admin") {
+          navigate("/admindashboard", { replace: true });
+        } else if (type == "doctor") {
+          navigate("/doctordashboard", { replace: true });
+        } else {
+          navigate("/home", { replace: true });
+        }
+        //console.log("The type data:", type);
+        //console.log("Document data:", docSnap.data());
+      } else {
+        // docSnap.data() will be undefined in this case
+        console.log("No such document!");
+      }
     } catch (e) {
-      console.error(e);
+      console.log("Error getting cached document:", e);
     }
   };
 
@@ -32,12 +48,8 @@ const Login = () => {
           // Signed up
           const user = userCredential.user;
           console.log("user:", user);
-          console.log("login success");
-
-          //navigate("/dashboard");
-          navigate("/admindashboard", { replace: true });
-          //<Navigate to={"/dashboard"} replace />;
-          // ...
+          //console.log("login success");
+          onVerify(user.uid);
         })
         .catch((error) => {
           const errorCode = error.code;
@@ -56,7 +68,7 @@ const Login = () => {
       title="Login"
       bordered={true}
       style={{ width: 350 }}
-      className="drop-shadow-md"
+      className="drop-shadow-md mt-20"
     >
       <div>
         <Form
@@ -133,17 +145,12 @@ const Login = () => {
             </Button>
           </Form.Item>
         </Form>
-        <Button className="bg-green-600 w-full" onClick={signInWithGoogle}>
-          SignIn with Google
-        </Button>
+
         <h3 className="w-full text-center">
           Already have account? <Space />
           <Link to="/register">Sign Up</Link>
         </h3>
       </div>
-      <Routes>
-        <Route path="dashboard" element={<Dashboard />} />
-      </Routes>
     </Card>
   );
 };

@@ -14,8 +14,28 @@ const items = [
     key: "about",
   },
   {
+    label: "Book",
+    key: "BookSubMenu",
+    children: [
+      {
+        type: "group",
+        label: "",
+        children: [
+          {
+            label: "Appointment",
+            key: "appointment",
+          },
+          {
+            label: "Check Appointment",
+            key: "checkappointment",
+          },
+        ],
+      },
+    ],
+  },
+  {
     label: "Account",
-    key: "SubMenu",
+    key: "AccountSubMenu",
     children: [
       {
         type: "group",
@@ -62,6 +82,10 @@ function LandingHeader() {
       navigate("/login");
     } else if (e.key == "register") {
       navigate("/register");
+    } else if (e.key == "appointment") {
+      navigate("/appointment");
+    } else if (e.key == "checkappointment") {
+      navigate("/checkappointment");
     }
   };
   return (

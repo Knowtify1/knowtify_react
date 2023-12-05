@@ -64,3 +64,28 @@ body {
 .toggle {
   margin-left: 15px;
 }
+
+//book appointment
+.book_appointment {
+}
+
+.book_appointment h1 {
+  color: #15803d;
+  font-weight: bold;
+  font-size: 25px;
+}
+
+.book_appointment h2 {
+  color: rgb(255 255 255);
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.book_appointment .head {
+  font-size: 40px;
+}
+
+.card_custom h1,
+p {
+  align-text: center;
+}

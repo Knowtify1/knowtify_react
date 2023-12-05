@@ -1,7 +1,13 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, collection, addDoc } from "firebase/firestore";
+import {
+  doc as firestoreDoc,
+  setDoc as firestoreSetDoc,
+  getDoc as firestoreGetDoc,
+} from "firebase/firestore";
+import { signOut as firebaseSignOut } from "firebase/auth";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -22,3 +28,29 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
+
+//
+export const signOut = () => {
+  return firebaseSignOut(auth);
+};
+
+export const doc = firestoreDoc;
+export const setDoc = firestoreSetDoc;
+export const getDoc = firestoreGetDoc;
+
+// // Get a reference to a Firestore collection
+// export const getFirestoreCollection = (collectionName) => {
+//   return collection(db, collectionName);
+// };
+
+// // Add a new document to the specified collection
+// export const addDocument = async (collectionRef, data) => {
+//   try {
+//     const docRef = await addDoc(collectionRef, data);
+//     console.log("Document written with ID: ", docRef.id);
+//     return docRef.id; // Return the ID of the added document if needed
+//   } catch (error) {
+//     console.error("Error adding document: ", error);
+//     throw error; // Rethrow the error to handle it in the calling code
+//   }
+// };

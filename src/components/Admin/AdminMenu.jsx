@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { auth, signOut } from "../../config/firebase";
 import { useNavigate } from "react-router-dom";
 import {
   HomeOutlined,
@@ -65,6 +66,26 @@ const AdminMenu = () => {
     // }
     if (key == "home") {
       navigate("home");
+    } else if (key == "appointment") {
+      navigate("appointment");
+    } else if (key == "schedule") {
+      navigate("schedule");
+    } else if (key == "patientrecord") {
+      navigate("patientrecord");
+    } else if (key == "account") {
+      navigate("account");
+    } else if (key == "logout") {
+      handleSignOut();
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      console.log("User signed out successfully.");
+      navigate("/");
+    } catch (error) {
+      console.error("Error signing out:", error.message);
     }
   };
 

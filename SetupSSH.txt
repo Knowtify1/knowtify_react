@@ -1,0 +1,44 @@
+CONFIGURE SSH FOR PERMISSION IF GITHUB ACCOUNT IS NOT YOURS
+>*Via command line, move into the .ssh directory in your computer or server’s home directory:
+>cd ~/.ssh
+
+>*generate a new SSH key pair
+>ssh-keygen -t rsa -C "knowtify-react"
+
+>*knowtify-react
+>*enter
+>*enter
+
+>*open the file
+>*browse file: 
+>ls -la
+>*open: 
+>cat knowtify-react.pub
+>*copy the key
+
+>*go settings in github account
+>*go to SSH and GPG key
+>*create SSH key
+>*add title
+>*authentication key
+>*add key
+
+>*configure the protocol
+>nano config
+>*add this
+>IdentityFile ~/.ssh/knowtify-react
+> ctrl x
+> Y
+> enter
+>*done setup
+----------------------------------------------------------------------------
+CLONE REPOSITORY
+git clone git@github.com:Knowtify1/knowtify_react.git
+
+UPLOAD FILES
+git add .
+git commit -m "commits"
+git push
+
+UPDATING FILES
+git pull

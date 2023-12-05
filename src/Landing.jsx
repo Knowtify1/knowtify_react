@@ -21,12 +21,14 @@ function Landing() {
         className="min-h-screen"
       >
         <div
-          className="p-100 min-h-screen"
+          className="p-100 min-h-screen w-screen grid justify-center"
           style={{
             background: colorBgContainer,
           }}
         >
-          <Outlet className="" />
+          <div className="justify-self-auto ">
+            <Outlet className="" />
+          </div>
         </div>
       </Content>
       <Footers />
