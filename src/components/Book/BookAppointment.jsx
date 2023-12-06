@@ -25,7 +25,7 @@ function BookAppointment() {
 
   return (
     <>
-      <div className="book_appointment">
+      <div className="book_appointment container mx-auto">
         <div className="relative">
           <img
             src={clinic}
@@ -95,7 +95,7 @@ function BookAppointment() {
         </div>
         <div className="pl-8 pr-8 pb-5 pt-5">
           <h1>Our Specialties</h1>
-          <div className="h-56 grid grid-cols-3 gap-4 content-start px-32 py-10">
+          <div className="h-56 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 content-start px-4 sm:px-8 md:px-16 py-10">
             <Card
               hoverable
               className="bg-green-700	text-white p-0"

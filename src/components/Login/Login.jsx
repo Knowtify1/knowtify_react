@@ -147,7 +147,7 @@ const Login = () => {
         </Form>
 
         <h3 className="w-full text-center">
-          Already have account? <Space />
+          Don't have account? <Space />
           <Link to="/register">Sign Up</Link>
         </h3>
       </div>
