@@ -11,6 +11,8 @@ import {
   ExclamationOutlined,
 } from "@ant-design/icons";
 
+import { Menu } from "antd";
+
 const items = [
   {
     label: "Home",
@@ -44,9 +46,7 @@ const items = [
   },
 ];
 
-import { Menu } from "antd";
-
-const AdminMenu = () => {
+function DoctorMenu() {
   const navigate = useNavigate();
   const [selectedKeys, setSelectedKeys] = useState(["home"]);
 
@@ -79,7 +79,6 @@ const AdminMenu = () => {
       console.error("Error signing out:", error.message);
     }
   };
-
   return (
     <Menu
       mode="inline"
@@ -89,6 +88,6 @@ const AdminMenu = () => {
       items={items}
     ></Menu>
   );
-};
+}
 
-export default AdminMenu;
+export default DoctorMenu;

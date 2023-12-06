@@ -6,6 +6,7 @@ import { ToggleThemeButton } from "./components/ToggleThemeButton";
 import { Outlet } from "react-router-dom";
 
 import AdminMenu from "./components/Admin/AdminMenu";
+import AdminSearch from "./components/Admin/AdminSearch";
 
 const { Header, Sider } = Layout;
 
@@ -26,7 +27,9 @@ export function AdminDashboard() {
         </Sider>
         <Layout>
           <div>
-            <Header>Put search bar and other stuffs here</Header>
+            <Header className="bg-white">
+              <AdminSearch />
+            </Header>
           </div>
           <div>
             <Outlet />

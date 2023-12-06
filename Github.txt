@@ -1,0 +1,11 @@
+if you dont have the file do this once
+git clone https://github.com/Knowtify1/knowtify_react.git
+
+retireve updated files
+git pull
+
+
+push your work to repository
+git add .
+git commit -m "you text"
+git push
