@@ -1,7 +1,28 @@
+import { Card, Space } from "antd";
 import React from "react";
+import TableAppointments from "./Components/TableAppointments";
 
 function AdminAppointment() {
-  return <div>AdminAppointment</div>;
+  return (
+    <>
+      <div className="pl-8 pr-8 pb-5 pt-5">
+        <div className="">
+          <Card>
+            <TableAppointments />
+          </Card>
+        </div>
+        <div className="">
+          <Card></Card>
+        </div>
+        <div className="">
+          <Card></Card>
+        </div>
+        <div className="">
+          <Card></Card>
+        </div>
+      </div>
+    </>
+  );
 }
 
 export default AdminAppointment;

@@ -53,14 +53,14 @@ function BookAppointmentForm() {
       timepicker,
     } = values;
 
-    console.log("atime", timepicker);
+    //console.log("atime", timepicker);
 
     //Formatting date
     const putdatetostring = adate.toISOString();
     const datePart = putdatetostring.split("T")[0];
     const appointmentDate = new Date(datePart); //create object Date
 
-    const hour = timepicker.getHour;
+    //const hour = timepicker.getHour;
 
     console.log("aDate", datePart);
 
