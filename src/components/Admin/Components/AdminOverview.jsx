@@ -56,7 +56,7 @@ function AdminOverview() {
                     ? appointmentsCount
                     : "Loading..."}
                 </h1>
-                <span>Patiens</span>
+                <span>Appointments</span>
               </Space>
             </Card>
             <Card

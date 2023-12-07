@@ -101,8 +101,8 @@ function TableAppointments() {
 
           appointmentsQuery = query(
             appointmentsQuery,
-            where("dateOfAppointment", ">=", startOfDayTimestamp),
-            where("dateOfAppointment", "<=", endOfDayTimestamp)
+            where("appointmentDate", ">=", startOfDayTimestamp),
+            where("appointmentDate", "<=", endOfDayTimestamp)
           );
         }
 
@@ -183,7 +183,11 @@ function TableAppointments() {
       <div>
         <Space direction="vertical" size={20} className="flex items-cente">
           <h1 className="text-center text-3xl font-medium">Appointments</h1>
-          <DatePicker onChange={handleDateChange} />
+          <Space direction="horizontal">
+            <h1>Select Appointment Date:</h1>
+            <DatePicker onChange={handleDateChange} />
+          </Space>
+
           {loading ? ( // Display loading indicator while data is being fetched
             <Spin size="small" className="block" />
           ) : (
