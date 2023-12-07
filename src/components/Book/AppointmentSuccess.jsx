@@ -1,0 +1,133 @@
+import React, { useEffect, useState } from "react";
+import { useLocation, Link } from "react-router-dom";
+import { Card, Spin, Space, Button } from "antd";
+import {
+  setDoc,
+  doc,
+  db,
+  collection,
+  addDoc,
+  getDoc,
+  getDocs,
+  where,
+  query,
+  fsTimeStamp,
+  deleteDoc,
+} from "../../config/firebase.jsx";
+
+function AppointmentSuccess() {
+  const location = useLocation();
+  const { appointmentID } = location.state;
+  const [appointmentDetails, setAppointmentDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAppointmentDetails = async () => {
+      try {
+        const appointmentDoc = doc(
+          collection(db, "appointments"),
+          appointmentID
+        );
+        const snapshot = await getDoc(appointmentDoc);
+
+        if (snapshot.exists()) {
+          setAppointmentDetails(snapshot.data());
+        } else {
+          console.error("Appointment not found");
+        }
+      } catch (error) {
+        console.error("Error fetching appointment details", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAppointmentDetails();
+  }, [appointmentID]);
+
+  // Now, you can use the appointmentId in your component
+  console.log("Appointment ID:", appointmentID);
+  return (
+    <>
+      <div className="flex flex-col justify-center items-center h-screen">
+        <Card
+          title="Appointment Details"
+          style={{ width: 600 }}
+          className="p-8 mb-4"
+        >
+          {loading ? (
+            <Space size="middle">
+              <Spin size="large" />
+            </Space>
+          ) : (
+            <>
+              <p className="text-2xl font-bold mb-4">
+                <strong>Reference ID:</strong> {appointmentDetails?.reference}
+              </p>
+              <p className="text-lg">
+                <strong>Patient Name:</strong> {appointmentDetails?.patientName}
+              </p>
+              <p className="text-lg">
+                <strong>Contact Number:</strong> {appointmentDetails?.contactNo}
+              </p>
+              <p className="text-lg">
+                <strong>Appointment Date:</strong>{" "}
+                {appointmentDetails?.appointmentDate
+                  .toDate()
+                  .toLocaleDateString()}
+              </p>
+              <p className="text-lg">
+                <strong>Appointment Time:</strong>{" "}
+                {appointmentDetails?.appointmentTime}
+              </p>
+              {/* Add other details as needed */}
+            </>
+          )}
+          <div className="mt-6">
+            <p className="text-lg mb-2">
+              To check the status of your appointment, you can use the reference
+              ID. Visit the check appointment page and enter your reference ID
+              to get real-time updates.
+            </p>
+            <Link to="/checkappointment">
+              <Button
+                type="primary"
+                className="bg-green-500 hover:bg-green-700"
+              >
+                Check Appointment Status
+              </Button>
+            </Link>
+          </div>
+
+          <div className="mt-6">
+            <p className="text-lg mb-2">
+              Upon a successful appointment, you will receive a confirmation
+              receipt. Please present this receipt when you visit the clinic.
+            </p>
+            {/* Add logic or placeholder for showing the receipt */}
+            <Button
+              type="primary"
+              className="bg-blue-500 hover:bg-blue-700"
+              disabled
+            >
+              View Receipt
+            </Button>
+            <p className="text-base mb-2 text-rose-600">
+              Wait for approval and you will recive your reciept
+            </p>
+          </div>
+        </Card>
+
+        <div className="mt-4">
+          <Link to="/">
+            <Button type="primary" className="bg-blue-500 hover:bg-blue-700">
+              Go Back to Homepage
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </>
+  );
+}
+
+export default AppointmentSuccess;

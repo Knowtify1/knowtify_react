@@ -24,6 +24,7 @@ import AdminDashboard from "./AdminDashboard.jsx";
 import NotFound from "./components/NotFound/NotFound.jsx";
 import BookAppointment from "./components/Book/BookAppointment.jsx";
 import CheckAppointment from "./components/Book/CheckAppointment.jsx";
+import AppointmentSuccess from "./components/Book/AppointmentSuccess.jsx";
 
 import AdminHome from "./components/Admin/AdminHome.jsx";
 import AdminAppointment from "./components/Admin/AdminAppointment.jsx";
@@ -47,6 +48,7 @@ const router = createBrowserRouter(
         <Route path="register" element={<Register />} />
         <Route path="appointment" element={<BookAppointment />} />
         <Route path="checkappointment" element={<CheckAppointment />} />
+        <Route path="appointmentsuccess" element={<AppointmentSuccess />} />
         <Route path="*" element={<NotFound />} />
       </Route>
       <Route path="admindashboard" element={<AdminDashboard />}>

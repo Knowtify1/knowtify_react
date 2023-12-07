@@ -12,6 +12,7 @@ const { TextArea } = Input;
 import { Timestamp } from "firebase/firestore";
 import { setDoc, doc, db, collection, addDoc } from "../../config/firebase";
 import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
 
 const generateUniqueReference = () => {
   const prefix = "AP";
@@ -22,6 +23,7 @@ const generateUniqueReference = () => {
 
 function BookAppointmentForm() {
   const [componentDisabled, setComponentDisabled] = useState(false);
+  const navigate = useNavigate();
 
   const prefixSelector = (
     <Form.Item name="prefix" noStyle>
@@ -88,6 +90,9 @@ function BookAppointmentForm() {
       const docref = await addDoc(myDoc, userData);
       console.log("firestore success");
       console.log("document id", docref);
+
+      // Navigate to another page with state
+      navigate("/appointmentsuccess", { state: { appointmentID: docref.id } });
     } catch (error) {
       console.log(error);
     }
@@ -125,11 +130,9 @@ function BookAppointmentForm() {
     { value: "Orthopedics", label: "General Orthopaedic Surgery" },
     { value: "Physical", label: "Physical Medicine and Rehabilitation" },
     { value: "Pediatrics", label: "Pediatrics, Vaccines, and Immunizations" },
-    
   ];
 
-
-   return (
+  return (
     <>
       <Form
         labelCol={{
@@ -216,11 +219,7 @@ function BookAppointmentForm() {
           rules={[{ required: true, message: "Select Type" }]}
           name="type"
         >
-          <Select
-            options={typesofDoc}
-            style={{}}
-            placeholder="select a type"
-          />
+          <Select options={typesofDoc} style={{}} placeholder="select a type" />
         </Form.Item>
 
         <Form.Item
@@ -237,11 +236,7 @@ function BookAppointmentForm() {
           {...config}
           rules={[{ required: true, message: "Select Time" }]}
         >
-          <Select
-            options={options}
-            style={{}}
-            placeholder="select a time"
-          />
+          <Select options={options} style={{}} placeholder="select a time" />
         </Form.Item>
 
         <Form.Item
