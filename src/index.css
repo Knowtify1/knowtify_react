@@ -84,3 +84,27 @@ body {
 .book_appointment .head {
   font-size: 40px;
 }
+
+.text-center {
+  text-align: center;
+}
+
+.card-title {
+  font-size: 1.5rem; /* Use rem for responsive font sizes */
+}
+
+.card-description {
+  font-size: 1rem; /* Use rem for responsive font sizes */
+}
+
+.icon-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.icon-button:hover {
+  color: #000000; /* Change to your desired hover color */
+}
+

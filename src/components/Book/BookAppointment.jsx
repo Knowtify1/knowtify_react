@@ -30,15 +30,15 @@ function BookAppointment() {
           <img
             src={clinic}
             alt="bookheader"
-            className="absolute top-5 left-20"
+            className="absolute top-0 left-0 max-h-20"
           />
           <img
             src={bookheader}
             alt="bookheader"
             className="w-screen min-h-full"
           />
-          <div className="absolute bottom-20 left-20">
-            <h1 className="head">
+          <div className="absolute mx-auto bottom-1 left-4 max-w-full h-auto mb-4">
+            <h1 className="">
               Elevate Your Health Journey: Seamless Booking,Exceptional Care at
               Mountain Top Specialty Clinic.
             </h1>
@@ -95,7 +95,7 @@ function BookAppointment() {
         </div>
         <div className="pl-8 pr-8 pb-5 pt-5">
           <h1>Our Specialties</h1>
-          <div className="h-56 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 content-start px-4 sm:px-8 md:px-16 py-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 content-start px-4 sm:px-8 md:px-16 py-10">
             <Card
               hoverable
               className="bg-green-700	text-white p-0"
