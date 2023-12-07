@@ -117,26 +117,26 @@ function BookAppointmentForm() {
   ];
 
   const typesofDoc = [
-    { value: "internal", label: "Internal Medecine" },
-    { value: "pulmonology", label: "Pulmonology" },
-    { value: "orthopedics", label: "Orthopedics" },
-    { value: "pysical", label: "Physical" },
-    { value: "obstetricsgynecology", label: "Obstetrics and gynecology" },
-    { value: "pediatrics", label: "Pediatrics" },
-    {
-      value: "internalinfectiousd",
-      label: "Internal Medecine Infectious Diseases",
-    },
+    { value: "Internal Medicine", label: "Internal Medicine" },
+    { value: "Hematology", label: "Internal Medicine (Adult Hematology)" },
+    { value: "Infectious", label: "Internal Medicine (Infectious Diseases)" },
+    { value: "Pulmonology", label: "Internal Medicine (Pulmonology)" },
+    { value: "Ob", label: "Obstetrics and Gynecology" },
+    { value: "Orthopedics", label: "General Orthopaedic Surgery" },
+    { value: "Physical", label: "Physical Medicine and Rehabilitation" },
+    { value: "Pediatrics", label: "Pediatrics, Vaccines, and Immunizations" },
+    
   ];
 
-  return (
+
+   return (
     <>
       <Form
         labelCol={{
-          span: 4,
+          span: 8, // Adjusted span for labels
         }}
         wrapperCol={{
-          span: 14,
+          span: 16, // Adjusted span for form controls
         }}
         layout="horizontal"
         disabled={componentDisabled}
@@ -218,11 +218,11 @@ function BookAppointmentForm() {
         >
           <Select
             options={typesofDoc}
-            defaultValue="pysical"
             style={{}}
             placeholder="select a type"
           />
         </Form.Item>
+
         <Form.Item
           label="Appointment Date"
           rules={[{ required: true, message: "Select Date" }]}
@@ -239,7 +239,6 @@ function BookAppointmentForm() {
         >
           <Select
             options={options}
-            defaultValue="8:00"
             style={{}}
             placeholder="select a time"
           />
@@ -247,7 +246,7 @@ function BookAppointmentForm() {
 
         <Form.Item
           wrapperCol={{
-            offset: 0,
+            offset: 8, // Adjusted offset for the button
           }}
           style={{
             marginBottom: 5,

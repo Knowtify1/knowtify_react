@@ -12,13 +12,13 @@ function AdminAppointment() {
           </Card>
         </div>
         <div className="">
-          <Card>wala laman</Card>
+          <Card>..</Card>
         </div>
         <div className="">
-          <Card>wala laman</Card>
+          <Card>..</Card>
         </div>
         <div className="">
-          <Card>wala laman</Card>
+          <Card>..</Card>
         </div>
       </div>
     </>
