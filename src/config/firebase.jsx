@@ -12,6 +12,7 @@ import {
   query as firestoreQuery,
   Timestamp as firestoreTimeStamp,
   where as firestoreWhere,
+  deleteDoc as firestoreDelteDoc,
 } from "firebase/firestore";
 import { signOut as firebaseSignOut } from "firebase/auth";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -48,6 +49,7 @@ export const addDoc = firestoreAddDoc;
 export const getDocs = firestoreGetDocs;
 export const query = firestoreQuery;
 export const where = firestoreWhere;
+export const deleteDoc = firestoreDelteDoc;
 export const fsTimeStamp = firestoreTimeStamp;
 
 // // Get a reference to a Firestore collection

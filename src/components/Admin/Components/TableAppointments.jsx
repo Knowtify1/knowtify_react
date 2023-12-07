@@ -11,6 +11,7 @@ import {
   where,
   query,
   fsTimeStamp,
+  deleteDoc,
 } from "../../../config/firebase.jsx";
 
 const { RangePicker } = DatePicker;
@@ -72,9 +73,97 @@ const columns = [
 //   });
 // }
 
-const handleDelete = (key) => {
+const moveDataToTrash = async (originalCollection, trashCollection, key) => {
+  try {
+    // Get the document from the original collection
+    const originalDocRef = doc(originalCollection, key);
+    const originalDocSnapshot = await getDoc(originalDocRef);
+    const dataToMove = originalDocSnapshot.data();
+
+    // Add the document to the trash collection
+    const trashDocRef = await addDoc(
+      collection(db, trashCollection),
+      dataToMove
+    );
+
+    // Delete the document from the original collection
+    await deleteDoc(originalDocRef);
+
+    console.log(
+      `Moved to trash. Original key: ${key}, Trash key: ${trashDocRef.id}`
+    );
+  } catch (error) {
+    console.error("Error moving data to trash:", error);
+  }
+};
+
+// Function to fetch appointments from Firestore
+const fetchAppointments = async (selectedDate, setData, setLoading) => {
+  try {
+    let appointmentsQuery = collection(db, "appointments");
+
+    if (selectedDate) {
+      // If a date is selected, add a filter based on date
+      const startOfDayTimestamp = fsTimeStamp.fromDate(
+        new Date(selectedDate.setHours(0, 0, 0, 0))
+      );
+      const endOfDayTimestamp = fsTimeStamp.fromDate(
+        new Date(selectedDate.setHours(23, 59, 59, 999))
+      );
+
+      appointmentsQuery = query(
+        appointmentsQuery,
+        where("appointmentDate", ">=", startOfDayTimestamp),
+        where("appointmentDate", "<=", endOfDayTimestamp)
+      );
+    }
+
+    const appointmentsSnapshot = await getDocs(appointmentsQuery);
+
+    const appointmentsData = appointmentsSnapshot.docs.map((doc) => ({
+      key: doc.id,
+      ...doc.data(),
+    }));
+
+    //setData(appointmentsData);
+    if (typeof setData === "function") {
+      setData(appointmentsData);
+      setLoading(false);
+    }
+
+    console.error("firebase data", appointmentsData);
+  } catch (error) {
+    console.error("Error fetching appointments:", error);
+    setLoading(false);
+  }
+};
+
+const handleDelete = async (key, setData, setLoading, selectedDate) => {
   // Implement your logic to delete the appointment with the specified key
   console.log("Deleting key:", key);
+
+  try {
+    // Move the data to the "trash" collection
+    await moveDataToTrash(
+      collection(db, "appointments"),
+      "deletedAppointment",
+      key
+    );
+    console.log("Success moving to deletedappointment");
+    // Update the component's state to trigger a re-render
+    if (typeof setData === "function" && typeof setLoading === "function") {
+      setData((prevData) => {
+        const updatedData = prevData.filter((item) => item.key !== key);
+        console.log("Updated Data:", updatedData);
+        return updatedData;
+      });
+    }
+
+    fetchAppointments(selectedDate, setData, setLoading);
+    // After moving to trash, fetch the updated appointments data
+  } catch (error) {
+    console.error("Error deleting appointment:", error);
+  }
 };
 
 function TableAppointments() {
@@ -84,51 +173,9 @@ function TableAppointments() {
   const [selectedDate, setSelectedDate] = useState(null);
 
   useEffect(() => {
-    // Function to fetch appointments from Firestore
-    const fetchAppointments = async () => {
-      try {
-        //const appointmentsSnapshot = await db.collection("appointments").get();
-        let appointmentsQuery = collection(db, "appointments");
-
-        if (selectedDate) {
-          // If a date is selected, add a filter based on date
-          const startOfDayTimestamp = fsTimeStamp.fromDate(
-            new Date(selectedDate.setHours(0, 0, 0, 0))
-          );
-          const endOfDayTimestamp = fsTimeStamp.fromDate(
-            new Date(selectedDate.setHours(23, 59, 59, 999))
-          );
-
-          appointmentsQuery = query(
-            appointmentsQuery,
-            where("appointmentDate", ">=", startOfDayTimestamp),
-            where("appointmentDate", "<=", endOfDayTimestamp)
-          );
-        }
-
-        // const appointmentsSnapshot = await getDocs(
-        //   collection(db, "appointments")
-        // );
-
-        const appointmentsSnapshot = await getDocs(appointmentsQuery);
-
-        const appointmentsData = appointmentsSnapshot.docs.map((doc) => ({
-          key: doc.id,
-          ...doc.data(),
-        }));
-
-        setData(appointmentsData);
-        setLoading(false);
-        console.error("firebase data", appointmentsData);
-      } catch (error) {
-        console.error("Error fetching appointments:", error);
-        setLoading(false);
-      }
-    };
-
     // Fetch appointments when the component mounts
-    fetchAppointments();
-  }, [selectedDate]); // Empty dependency array to fetch data only once when the component mounts
+    fetchAppointments(selectedDate, setData, setLoading);
+  }, [selectedDate, setData, setLoading]); // Empty dependency array to fetch data only once when the component mounts
 
   const onSelectChange = (newSelectedRowKeys) => {
     console.log("selectedRowKeys changed: ", newSelectedRowKeys);
