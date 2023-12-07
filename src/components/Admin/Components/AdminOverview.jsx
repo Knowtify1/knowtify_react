@@ -1,8 +1,44 @@
 import { Card, Space } from "antd";
 import React from "react";
 import { QuestionOutlined } from "@ant-design/icons";
+import { useState, useEffect } from "react";
+import {
+  setDoc,
+  doc,
+  db,
+  collection,
+  addDoc,
+  getDoc,
+  getDocs,
+} from "../../../config/firebase.jsx";
+
+async function countDocumentsInCollection(collectionName) {
+  try {
+    const querySnapshot = await getDocs(collection(db, collectionName));
+    const numberOfDocuments = querySnapshot.size;
+    return numberOfDocuments;
+  } catch (error) {
+    console.error("Error counting documents:", error);
+    return 0;
+  }
+}
 
 function AdminOverview() {
+  const [appointmentsCount, setAppointmentsCount] = useState(null);
+  const [patientsCount, setPatientsCount] = useState(null);
+
+  useEffect(() => {
+    const fetchAppointmentsCount = async () => {
+      const appointmentstotal = await countDocumentsInCollection(
+        "appointments"
+      );
+      const patientsCount = await countDocumentsInCollection("patients");
+      setAppointmentsCount(appointmentstotal);
+      setPatientsCount(patientsCount);
+    };
+
+    fetchAppointmentsCount();
+  }, []);
   return (
     <>
       <div className="">
@@ -14,21 +50,28 @@ function AdminOverview() {
               extra={<a href="appointment">View all</a>}
               style={{ width: 300 }}
             >
-              <h1>1 Patients</h1>
+              <Space direction="horizontal">
+                <h1>
+                  {appointmentsCount !== null
+                    ? appointmentsCount
+                    : "Loading..."}
+                </h1>
+                <span>Patiens</span>
+              </Space>
             </Card>
             <Card
               title="Pending"
               extra={<a href="">View all</a>}
               style={{ width: 300 }}
             >
-              <h1>2 Patients</h1>
+              <h1>null</h1>
             </Card>
             <Card
               title="Proccessed"
               extra={<a href="">View all</a>}
               style={{ width: 300 }}
             >
-              <h1>3 Patients</h1>
+              <h1>null</h1>
             </Card>
           </Space>
           <Space direction="horizontal" size={16} className="flex-wrap">

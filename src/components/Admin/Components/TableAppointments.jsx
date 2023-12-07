@@ -1,23 +1,50 @@
-import React, { useState } from "react";
-import { Table, Popconfirm, Button } from "antd";
+import React, { useState, useEffect } from "react";
+import { Table, Popconfirm, Button, Space, Spin, DatePicker } from "antd";
+import {
+  setDoc,
+  doc,
+  db,
+  collection,
+  addDoc,
+  getDoc,
+  getDocs,
+  where,
+  query,
+  fsTimeStamp,
+} from "../../../config/firebase.jsx";
+
+const { RangePicker } = DatePicker;
 
 const columns = [
   {
     title: "Name",
-    dataIndex: "name",
+    dataIndex: "patientName",
   },
   {
     title: "Appointment Date",
-    dataIndex: "date",
+    dataIndex: "dateOfAppointment",
+    render: (text, record) => (
+      <span>{record.appointmentDate.toDate().toLocaleDateString()}</span>
+    ),
   },
   {
     title: "Appointment Time",
-    dataIndex: "time",
+    dataIndex: "appointmentTime",
+    render: (text) => <span>{text.replace(/"/g, "")}</span>,
   },
   {
     title: "Reason",
-    dataIndex: "reason",
+    dataIndex: "reasonForAppointment",
   },
+  {
+    title: "Status",
+    dataIndex: "status",
+  },
+  {
+    title: "Type of Doctor",
+    dataIndex: "typeOfDoctor",
+  },
+
   {
     title: "Action",
     dataIndex: "action",
@@ -34,16 +61,16 @@ const columns = [
     ),
   },
 ];
-const data = [];
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    name: `Juan Cruz ${i}`,
-    date: `Date. ${i}`,
-    time: `Time. ${i}`,
-    reason: `Reason${i}`,
-  });
-}
+// const data = [];
+// for (let i = 0; i < 46; i++) {
+//   data.push({
+//     key: i,
+//     name: `Juan Cruz ${i}`,
+//     date: `Date. ${i}`,
+//     time: `Time. ${i}`,
+//     reason: `Reason${i}`,
+//   });
+// }
 
 const handleDelete = (key) => {
   // Implement your logic to delete the appointment with the specified key
@@ -51,11 +78,63 @@ const handleDelete = (key) => {
 };
 
 function TableAppointments() {
+  const [data, setData] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [loading, setLoading] = useState(true); // Add loading state
+  const [selectedDate, setSelectedDate] = useState(null);
+
+  useEffect(() => {
+    // Function to fetch appointments from Firestore
+    const fetchAppointments = async () => {
+      try {
+        //const appointmentsSnapshot = await db.collection("appointments").get();
+        let appointmentsQuery = collection(db, "appointments");
+
+        if (selectedDate) {
+          // If a date is selected, add a filter based on date
+          const startOfDayTimestamp = fsTimeStamp.fromDate(
+            new Date(selectedDate.setHours(0, 0, 0, 0))
+          );
+          const endOfDayTimestamp = fsTimeStamp.fromDate(
+            new Date(selectedDate.setHours(23, 59, 59, 999))
+          );
+
+          appointmentsQuery = query(
+            appointmentsQuery,
+            where("dateOfAppointment", ">=", startOfDayTimestamp),
+            where("dateOfAppointment", "<=", endOfDayTimestamp)
+          );
+        }
+
+        // const appointmentsSnapshot = await getDocs(
+        //   collection(db, "appointments")
+        // );
+
+        const appointmentsSnapshot = await getDocs(appointmentsQuery);
+
+        const appointmentsData = appointmentsSnapshot.docs.map((doc) => ({
+          key: doc.id,
+          ...doc.data(),
+        }));
+
+        setData(appointmentsData);
+        setLoading(false);
+        console.error("firebase data", appointmentsData);
+      } catch (error) {
+        console.error("Error fetching appointments:", error);
+        setLoading(false);
+      }
+    };
+
+    // Fetch appointments when the component mounts
+    fetchAppointments();
+  }, [selectedDate]); // Empty dependency array to fetch data only once when the component mounts
+
   const onSelectChange = (newSelectedRowKeys) => {
     console.log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
   };
+
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectChange,
@@ -94,9 +173,28 @@ function TableAppointments() {
     ],
   };
 
+  const handleDateChange = (date) => {
+    // Convert to native JavaScript Date if date is not null
+    setSelectedDate(date ? date.toDate() : null);
+  };
+
   return (
     <>
-      <Table rowSelection={rowSelection} columns={columns} dataSource={data} />
+      <div>
+        <Space direction="vertical" size={20} className="flex items-cente">
+          <h1 className="text-center text-3xl font-medium">Appointments</h1>
+          <DatePicker onChange={handleDateChange} />
+          {loading ? ( // Display loading indicator while data is being fetched
+            <Spin size="small" className="block" />
+          ) : (
+            <Table
+              rowSelection={rowSelection}
+              columns={columns}
+              dataSource={data}
+            />
+          )}
+        </Space>
+      </div>
     </>
   );
 }

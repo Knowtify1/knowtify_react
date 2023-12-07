@@ -67,7 +67,7 @@ function BookAppointmentForm() {
     const uniqueReference = generateUniqueReference();
 
     const userData = {
-      dateOfAppointment: Timestamp.now(),
+      createdDate: Timestamp.now(),
       patientName: patientname,
       contactNo: contactno,
       age: age,
