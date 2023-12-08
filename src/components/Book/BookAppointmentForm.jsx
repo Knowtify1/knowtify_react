@@ -14,8 +14,6 @@ import { setDoc, doc, db, collection, addDoc } from "../../config/firebase";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 
-
-
 const generateUniqueReference = () => {
   const prefix = "AP";
   const randomDigits = Math.floor(Math.random() * 10000000); // Generates a random 7-digit number
@@ -60,13 +58,14 @@ function BookAppointmentForm() {
     //console.log("atime", timepicker);
 
     //Formatting date
-    const putdatetostring = adate.toISOString();
-    const datePart = putdatetostring.split("T")[0];
-    const appointmentDate = new Date(datePart); //create object Date
+    // const putdatetostring = adate.toISOString();
+    // const datePart = putdatetostring.split("T")[0];
+    // const appointmentDate = new Date(datePart); //create object Date
+    const appointmentDate = new Date(adate); //create object Date
 
     //const hour = timepicker.getHour;
 
-    console.log("aDate", datePart);
+    //console.log("aDate", datePart);
 
     const uniqueReference = generateUniqueReference();
 

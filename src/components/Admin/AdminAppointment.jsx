@@ -20,7 +20,7 @@ function AdminAppointment() {
         <Card
           title={
             <h3 className="text-3xl font-semibold text-center">
-              Approved Appointments
+              Approved Patients
             </h3>
           }
         >

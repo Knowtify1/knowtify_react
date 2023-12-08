@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Space, Spin, DatePicker } from "antd";
+import { Table, Space, Spin, DatePicker, Button } from "antd";
 import {
   doc,
   db,
@@ -56,12 +56,17 @@ function TableApprovedAppointments() {
       dataIndex: "typeOfDoctor",
     },
     {
+      title: "ReferenceID",
+      dataIndex: "reference",
+    },
+    {
       title: "Action",
       dataIndex: "action",
       render: (_, record) => (
         <Space direction="horizontal">
-          {/* Replace the "Delete" button with an "Assign" button */}
-          <a onClick={() => handleAssign(record.key)}>Assign</a>
+          <Button type="link" onClick={() => handleAssign(record.key)}>
+            Assign
+          </Button>
         </Space>
       ),
     },
@@ -88,14 +93,16 @@ function TableApprovedAppointments() {
           appointmentsQuery,
           where("appointmentDate", ">=", startOfDayTimestamp),
           where("appointmentDate", "<=", endOfDayTimestamp)
+          //where("approved", "===", true)
         );
       }
-
-      // Add a filter to only fetch appointments with status "Pending"
-      // appointmentsQuery = query(
-      //   appointmentsQuery,
-      //   where("status", "==", "pending")
-      // );
+      // else {
+      //   // Add a filter to only fetch appointments with status "Pending"
+      //   appointmentsQuery = query(
+      //     appointmentsQuery,
+      //     where("status", "==", "assigned")
+      //   );
+      // }
 
       const appointmentsSnapshot = await getDocs(appointmentsQuery);
 
@@ -118,18 +125,14 @@ function TableApprovedAppointments() {
   };
 
   const handleAssign = (key) => {
-    // Implement your logic for assigning the appointment with the specified key
     console.log("Assigning key:", key);
-    // Add your logic here
   };
 
   useEffect(() => {
-    // Fetch approved appointments when the component mounts
     fetchApprovedAppointments(selectedDate, setData, setLoading);
   }, [selectedDate, setData, setLoading]);
 
   const handleDateChange = (date) => {
-    // Convert to native JavaScript Date if date is not null
     const selectedDate = date ? date.toDate() : null;
     setSelectedDate(selectedDate);
     console.log(selectedDate);

@@ -13,6 +13,7 @@ import {
   Timestamp as firestoreTimeStamp,
   where as firestoreWhere,
   deleteDoc as firestoreDelteDoc,
+  updateDoc as firestoreUpdateDoc,
 } from "firebase/firestore";
 import { signOut as firebaseSignOut } from "firebase/auth";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -36,11 +37,7 @@ export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
 
-//
-export const signOut = () => {
-  return firebaseSignOut(auth);
-};
-
+export const fsTimeStamp = firestoreTimeStamp;
 export const doc = firestoreDoc;
 export const setDoc = firestoreSetDoc;
 export const getDoc = firestoreGetDoc;
@@ -50,21 +47,9 @@ export const getDocs = firestoreGetDocs;
 export const query = firestoreQuery;
 export const where = firestoreWhere;
 export const deleteDoc = firestoreDelteDoc;
-export const fsTimeStamp = firestoreTimeStamp;
+export const updateDoc = firestoreUpdateDoc;
 
-// // Get a reference to a Firestore collection
-// export const getFirestoreCollection = (collectionName) => {
-//   return collection(db, collectionName);
-// };
-
-// // Add a new document to the specified collection
-// export const addDocument = async (collectionRef, data) => {
-//   try {
-//     const docRef = await addDoc(collectionRef, data);
-//     console.log("Document written with ID: ", docRef.id);
-//     return docRef.id; // Return the ID of the added document if needed
-//   } catch (error) {
-//     console.error("Error adding document: ", error);
-//     throw error; // Rethrow the error to handle it in the calling code
-//   }
-// };
+//handle signOut
+export const signOut = () => {
+  return firebaseSignOut(auth);
+};

@@ -17,7 +17,7 @@ import {
 function TablePendingAppointments() {
   const [data, setData] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
 
   const columns = [
@@ -58,7 +58,10 @@ function TablePendingAppointments() {
       title: "Type of Doctor",
       dataIndex: "typeOfDoctor",
     },
-
+    {
+      title: "ReferenceID",
+      dataIndex: "reference",
+    },
     {
       title: "Action",
       dataIndex: "action",

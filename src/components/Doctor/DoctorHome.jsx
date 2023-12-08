@@ -1,7 +1,12 @@
 import React from "react";
+import DoctorSetSpecialty from "./Components/DoctorSetSpecialty.jsx";
 
 function DoctorHome() {
-  return <div>DoctorHome</div>;
+  return (
+    <>
+      <DoctorSetSpecialty />
+    </>
+  );
 }
 
 export default DoctorHome;
