@@ -47,7 +47,7 @@ function AdminOverview() {
           <Space direction="horizontal" size={16} className="flex-wrap">
             <Card
               title="Appointments"
-              extra={<a href="appointment">View all</a>}
+              extra={<a href="../admindashboard/adminappointment">View all</a>}
               style={{ width: 300 }}
             >
               <Space direction="horizontal">

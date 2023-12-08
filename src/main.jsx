@@ -53,19 +53,19 @@ const router = createBrowserRouter(
       </Route>
       <Route path="admindashboard" element={<AdminDashboard />}>
         <Route index path="" element={<AdminHome />} />
-        <Route path="home" element={<AdminHome />} />
-        <Route path="appointment" element={<AdminAppointment />} />
-        <Route path="schedule" element={<AdminSchedule />} />
-        <Route path="patientrecord" element={<AdminPatientRecord />} />
-        <Route path="account" element={<AdminAccount />} />
+        <Route path="adminhome" element={<AdminHome />} />
+        <Route path="adminappointment" element={<AdminAppointment />} />
+        <Route path="adminschedule" element={<AdminSchedule />} />
+        <Route path="adminpatientrecord" element={<AdminPatientRecord />} />
+        <Route path="adminaccount" element={<AdminAccount />} />
       </Route>
       <Route path="doctordashboard" element={<DoctorDashboard />}>
         <Route index path="" element={<DoctorHome />} />
-        <Route path="home" element={<DoctorHome />} />
-        <Route path="appointment" element={<DoctorAppointment />} />
-        <Route path="schedule" element={<DoctorSchedule />} />
-        <Route path="patientrecord" element={<AdminPatientRecord />} />
-        <Route path="account" element={<DoctorAccount />} />
+        <Route path="doctorhome" element={<DoctorHome />} />
+        <Route path="doctorappointment" element={<DoctorAppointment />} />
+        <Route path="doctorschedule" element={<DoctorSchedule />} />
+        <Route path="doctorpatientrecord" element={<AdminPatientRecord />} />
+        <Route path="doctoraccount" element={<DoctorAccount />} />
       </Route>
     </>
   )

@@ -56,15 +56,15 @@ function DoctorMenu() {
     setSelectedKeys([key]);
 
     if (key == "home") {
-      navigate("home");
+      navigate("doctorhome");
     } else if (key == "appointment") {
-      navigate("appointment");
+      navigate("doctorappointment");
     } else if (key == "schedule") {
-      navigate("schedule");
+      navigate("doctorschedule");
     } else if (key == "patientrecord") {
-      navigate("patientrecord");
+      navigate("doctorpatientrecord");
     } else if (key == "account") {
-      navigate("account");
+      navigate("doctoraccount");
     } else if (key == "logout") {
       handleSignOut();
     }

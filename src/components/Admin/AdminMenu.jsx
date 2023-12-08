@@ -56,15 +56,15 @@ const AdminMenu = () => {
     setSelectedKeys([key]);
 
     if (key == "home") {
-      navigate("home");
+      navigate("adminhome");
     } else if (key == "appointment") {
-      navigate("appointment");
+      navigate("adminappointment");
     } else if (key == "schedule") {
-      navigate("schedule");
+      navigate("adminschedule");
     } else if (key == "patientrecord") {
-      navigate("patientrecord");
+      navigate("adminpatientrecord");
     } else if (key == "account") {
-      navigate("account");
+      navigate("adminaccount");
     } else if (key == "logout") {
       handleSignOut();
     }

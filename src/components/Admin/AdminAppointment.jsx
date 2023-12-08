@@ -1,27 +1,35 @@
-import { Card, Space } from "antd";
+import { Card } from "antd";
 import React from "react";
-import TableAppointments from "./Components/TableAppointments";
+import TablePendingAppointments from "./Components/TablePendingAppointments";
+import TableApprovedAppointments from "./Components/TableApprovedAppointments";
 
 function AdminAppointment() {
   return (
-    <>
-      <div className="pl-8 pr-8 pb-5 pt-5">
-        <div className="">
-          <Card>
-            <TableAppointments />
-          </Card>
-        </div>
-        <div className="">
-          <Card>..</Card>
-        </div>
-        <div className="">
-          <Card>..</Card>
-        </div>
-        <div className="">
-          <Card>..</Card>
-        </div>
+    <div className="container mx-auto p-4">
+      <div className="flex flex-col gap-4">
+        <Card
+          title={
+            <h3 className="text-3xl font-semibold text-center ">
+              Pending Appointments
+            </h3>
+          }
+        >
+          <TablePendingAppointments />
+        </Card>
+
+        <Card
+          title={
+            <h3 className="text-3xl font-semibold text-center">
+              Approved Appointments
+            </h3>
+          }
+        >
+          <TableApprovedAppointments />
+        </Card>
+
+        {/* Add more cards as needed */}
       </div>
-    </>
+    </div>
   );
 }
 

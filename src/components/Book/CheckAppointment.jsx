@@ -41,33 +41,91 @@ function CheckAppointment() {
 
     try {
       const appointmentsCollection = collection(db, "appointments");
-      const q = query(
+      const patientsCollection = collection(db, "patients");
+
+      // Query appointments collection
+      const appointmentsQuery = query(
         appointmentsCollection,
         where("reference", "==", referenceID)
       );
-      const querySnapshot = await getDocs(q);
+      const appointmentsSnapshot = await getDocs(appointmentsQuery);
 
-      if (querySnapshot.size > 0) {
-        // Appointment found
-        const appointmentData = querySnapshot.docs[0].data();
-        console.log("Fetched Appointment Data:", appointmentData);
-        setAppointmentData(appointmentData);
-        const status = appointmentData.status;
+      // Query patients collection
+      const patientsQuery = query(
+        patientsCollection,
+        where("reference", "==", referenceID)
+      );
+      const patientsSnapshot = await getDocs(patientsQuery);
 
-        if (status === "pending") {
-          setAppointmentStatus("Appointment is pending approval");
-          setReceipt(null);
-        } else if (status === "approved") {
-          setAppointmentStatus("Appointment is approved");
-          setReceipt(appointmentData.receipt);
-          showModal();
-        } else {
-          setAppointmentStatus("Unknown status");
-          setReceipt(null);
+      console.log("Appointments Snapshot Size:", appointmentsSnapshot.size);
+      console.log("Patients Snapshot Size:", patientsSnapshot.size);
+
+      let appointmentData = null;
+      let patientData = null;
+
+      // Check if the appointment exists
+      if (appointmentsSnapshot.size > 0) {
+        appointmentData = appointmentsSnapshot.docs[0].data();
+      }
+
+      // Check if the patient exists
+      if (patientsSnapshot.size > 0) {
+        patientData = patientsSnapshot.docs[0].data();
+      }
+
+      console.log("Appointment Data:", appointmentData);
+      console.log("Patient Data:", patientData);
+
+      if (appointmentData || patientData) {
+        // Data found in either "appointments" or "patients" collection
+        setAppointmentData(appointmentData || patientData);
+
+        if (appointmentData) {
+          // Appointment found in "appointments" collection
+          const appointmentStatus = appointmentData.status;
+
+          console.log("appointmentStatus:", appointmentStatus);
+
+          if (appointmentStatus === "pending") {
+            setAppointmentStatus("Appointment is pending approval");
+            setReceipt(null);
+          } else if (appointmentStatus === "approved") {
+            setAppointmentStatus("Appointment is approved");
+            setReceipt(appointmentData.receipt);
+            showModal();
+          } else {
+            setAppointmentStatus("Unknown status");
+            setReceipt(null);
+          }
+
+          // Access additional patient data if needed
+          console.log("Fetched Appointment Data:", appointmentData);
+        } else if (patientData) {
+          // No appointment found, but patient found in "patients" collection
+          const patientStatus = patientData.status;
+
+          console.log("patientStatus:", patientStatus);
+
+          if (patientStatus === "pending") {
+            setAppointmentStatus("Appointment is pending approval");
+            setReceipt(null);
+          } else if (patientStatus === "approved") {
+            setAppointmentStatus("Appointment is approved");
+            // Set receipt or other relevant information from patient data
+            setReceipt(patientData.receipt);
+            showModal();
+          } else {
+            setAppointmentStatus("Unknown status");
+            setReceipt(null);
+          }
+
+          // Access additional patient data if needed
+          console.log("Fetched Patient Data:", patientData);
         }
       } else {
+        // No appointment or patient found with the provided reference ID
         setAppointmentStatus(
-          "No appointment found with the provided reference ID"
+          "No appointment or patient found with the provided reference ID"
         );
         setReceipt(null);
       }

@@ -1,62 +1,78 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { auth } from "../../config/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { Button, Checkbox, Form, Input, Space, Card } from "antd";
-import { Link, Navigate, useNavigate, Route, Routes } from "react-router-dom";
-import { setDoc, doc, db, getDoc } from "../../config/firebase";
+import { Button, Checkbox, Form, Input, Space, Card, Spin } from "antd";
+import { Link, useNavigate } from "react-router-dom";
+import { doc, db, getDoc } from "../../config/firebase";
+import { LoadingOutlined } from "@ant-design/icons";
 
 const Login = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [showSpinner, setShowSpinner] = useState(false);
+  const [user, setUser] = useState(null);
 
-  //const signIn = async () => {};
-  const onVerify = async (id) => {
-    const myDoc = doc(db, "users", `${id}`);
-    try {
-      const docSnap = await getDoc(myDoc);
-
-      if (docSnap.exists()) {
-        const type = docSnap.data()?.type;
-        if (type == "admin") {
-          navigate("/admindashboard", { replace: true });
-        } else if (type == "doctor") {
-          navigate("/doctordashboard", { replace: true });
-        } else {
-          navigate("/home", { replace: true });
-        }
-        //console.log("The type data:", type);
-        //console.log("Document data:", docSnap.data());
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setUser(user);
+        navigateAfterLogin(user);
       } else {
-        // docSnap.data() will be undefined in this case
-        console.log("No such document!");
+        setUser(null);
       }
-    } catch (e) {
-      console.log("Error getting cached document:", e);
-    }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const navigateAfterLogin = (user) => {
+    const myDoc = doc(db, "users", user.uid);
+
+    getDoc(myDoc)
+      .then((docSnap) => {
+        if (docSnap.exists()) {
+          const type = docSnap.data()?.type;
+
+          if (type === "admin") {
+            navigate("/admindashboard", { replace: true });
+          } else if (type === "doctor") {
+            navigate("/doctordashboard", { replace: true });
+          } else {
+            navigate("/home", { replace: true });
+          }
+        } else {
+          console.log("No such document!");
+        }
+      })
+      .catch((error) => {
+        console.log("Error getting document:", error);
+      });
   };
 
   const onFinish = async (values) => {
-    const { email, password } = values;
-    console.log("aaUsername:", email);
-    console.log("aaPass:", password);
+    setShowSpinner(true);
 
     //signIn();
     try {
-      await signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          // Signed up
-          const user = userCredential.user;
-          console.log("user:", user);
-          //console.log("login success");
-          onVerify(user.uid);
-        })
-        .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          // ..
-        });
-    } catch (error) {}
+      const { email, password } = values;
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      setUser(user);
+      navigateAfterLogin(user);
+    } catch (error) {
+      const errorMessage = error.message;
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+      setShowSpinner(false);
+    }
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -64,94 +80,101 @@ const Login = () => {
   };
 
   return (
-    <Card
-      title="Login"
-      bordered={true}
-      style={{ width: 350 }}
-      className="drop-shadow-md mt-20"
-    >
-      <div>
-        <Form
-          name="login"
-          labelCol={{
-            span: 8,
-          }}
-          wrapperCol={{
-            span: 16,
-          }}
-          style={{
-            maxWidth: 300,
-          }}
-          initialValues={{
-            remember: true,
-          }}
-          onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
-          autoComplete="off"
-        >
-          <Form.Item
-            label="Email"
-            name="email"
-            rules={[
-              {
-                required: true,
-                message: "Please input your email!",
-              },
-            ]}
-          >
-            <Input type="email" />
-          </Form.Item>
-
-          <Form.Item
-            label="Password"
-            name="password"
-            rules={[
-              {
-                required: true,
-                message: "Please input your password!",
-              },
-            ]}
-          >
-            <Input.Password />
-          </Form.Item>
-
-          <Form.Item
-            name="remember"
-            valuePropName="checked"
-            wrapperCol={{
-              offset: 1,
-              span: "full",
+    <div className=" flex items-center justify-center">
+      {showSpinner && (
+        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-white bg-opacity-70 z-50">
+          <Spin indicator={<LoadingOutlined />} size="large" />
+        </div>
+      )}
+      <Card
+        title="Login"
+        bordered={true}
+        style={{ width: 350 }}
+        className="drop-shadow-md mt-20"
+      >
+        <div>
+          <Form
+            name="login"
+            labelCol={{
+              span: 8,
             }}
-          >
-            <Checkbox>Remember me</Checkbox>
-          </Form.Item>
-
-          <Form.Item
             wrapperCol={{
-              offset: 0,
-              span: "full",
+              span: 16,
             }}
             style={{
-              marginBottom: 5,
+              maxWidth: 300,
             }}
+            initialValues={{
+              remember: true,
+            }}
+            onFinish={onFinish}
+            onFinishFailed={onFinishFailed}
+            autoComplete="off"
           >
-            <Button
-              type="primary"
-              htmlType="submit"
-              className="bg-green-600 w-full"
-              loading={loading}
+            <Form.Item
+              label="Email"
+              name="email"
+              rules={[
+                {
+                  required: true,
+                  message: "Please input your email!",
+                },
+              ]}
             >
-              Submit
-            </Button>
-          </Form.Item>
-        </Form>
+              <Input type="email" disabled={loading} />
+            </Form.Item>
 
-        <h3 className="w-full text-center">
-          Don't have account? <Space />
-          <Link to="/register">Sign Up</Link>
-        </h3>
-      </div>
-    </Card>
+            <Form.Item
+              label="Password"
+              name="password"
+              rules={[
+                {
+                  required: true,
+                  message: "Please input your password!",
+                },
+              ]}
+            >
+              <Input.Password disabled={loading} />
+            </Form.Item>
+
+            <Form.Item
+              name="remember"
+              valuePropName="checked"
+              wrapperCol={{
+                offset: 1,
+                span: "full",
+              }}
+            >
+              <Checkbox>Remember me</Checkbox>
+            </Form.Item>
+
+            <Form.Item
+              wrapperCol={{
+                offset: 0,
+                span: "full",
+              }}
+              style={{
+                marginBottom: 5,
+              }}
+            >
+              <Button
+                type="primary"
+                htmlType="submit"
+                className="bg-green-600 w-full"
+                loading={loading}
+              >
+                Login
+              </Button>
+            </Form.Item>
+          </Form>
+
+          <h3 className="w-full text-center">
+            Don't have account? <Space />
+            <Link to="/register">Sign Up</Link>
+          </h3>
+        </div>
+      </Card>
+    </div>
   );
 };
 
