@@ -14,6 +14,8 @@ import { setDoc, doc, db, collection, addDoc } from "../../config/firebase";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 
+
+
 const generateUniqueReference = () => {
   const prefix = "AP";
   const randomDigits = Math.floor(Math.random() * 10000000); // Generates a random 7-digit number
@@ -199,7 +201,7 @@ function BookAppointmentForm() {
             },
           ]}
         >
-          <TextArea rows={4} />
+          <TextArea rows={2} />
         </Form.Item>
         <Form.Item
           label="Reason for Appointment"

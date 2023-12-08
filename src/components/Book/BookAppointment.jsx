@@ -37,18 +37,20 @@ function BookAppointment() {
             alt="bookheader"
             className="w-screen min-h-full"
           />
-          <div className="absolute mx-auto bottom-1 left-4 max-w-full h-auto mb-4">
-            <h1 className="">
-              Elevate Your Health Journey: Seamless Booking,Exceptional Care at
-              Mountain Top Specialty Clinic.
-            </h1>
-            <Button
-              onClick={handleClick}
-              type="primary"
-              className="bg-green-600 "
-            >
-              Book Appointment
-            </Button>
+          <div className="absolute mx-auto bottom-1 p-5 left-1 w-full">
+            <div className="bg-black bg-opacity-20 p-3 rounded-md">
+              <h1 className="text-sm text-color: #15803d;">
+                Elevate Your Health Journey: Seamless Booking,Exceptional Care at
+                Mountain Top Specialty Clinic.
+              </h1>
+              <Button
+                onClick={handleClick}
+                type="primary"
+                className="bg-green-600 rounded mt-3"
+              >
+                Book Appointment
+              </Button>
+            </div>
           </div>
         </div>
         <div className="pl-8 pr-8 pb-5 pt-5">

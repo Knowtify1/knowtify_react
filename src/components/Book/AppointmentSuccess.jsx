@@ -52,7 +52,7 @@ function AppointmentSuccess() {
       <div className="flex flex-col justify-center items-center h-screen">
         <Card
           title="Appointment Details"
-          style={{ width: 600 }}
+          style={{ width: "80%"}}
           className="p-8 mb-4"
         >
           {loading ? (
@@ -61,25 +61,35 @@ function AppointmentSuccess() {
             </Space>
           ) : (
             <>
-              <p className="text-2xl font-bold mb-4">
-                <strong>Reference ID:</strong> {appointmentDetails?.reference}
-              </p>
-              <p className="text-lg">
-                <strong>Patient Name:</strong> {appointmentDetails?.patientName}
-              </p>
-              <p className="text-lg">
-                <strong>Contact Number:</strong> {appointmentDetails?.contactNo}
-              </p>
-              <p className="text-lg">
-                <strong>Appointment Date:</strong>{" "}
-                {appointmentDetails?.appointmentDate
-                  .toDate()
-                  .toLocaleDateString()}
-              </p>
-              <p className="text-lg">
-                <strong>Appointment Time:</strong>{" "}
-                {appointmentDetails?.appointmentTime}
-              </p>
+              <div className="rounded-md bg-gray-500 p-2 flex items-center justify-center">
+                <p className="text-2xl font-bold ">
+                  <strong>Reference ID:</strong> {appointmentDetails?.reference}
+                </p>
+              </div>
+              <div className="mt-4 rounded-md bg-gray-200 p-4 mb-3">
+              <div className="rounded-md bg-dark-gray p-2">
+                <p className="text-lg">
+                  <strong>Patient Name:</strong> {appointmentDetails?.patientName}
+                </p>
+              </div>
+              <div className="rounded-md bg-dark-gray p-2 mt-1">
+                <p className="text-lg">
+                  <strong>Contact Number:</strong> {appointmentDetails?.contactNo}
+                </p>
+              </div>
+              <div className="rounded-md bg-dark-gray p-2 mt-1">
+                <p className="text-lg">
+                  <strong>Appointment Date:</strong>{" "}
+                  {appointmentDetails?.appointmentDate.toDate().toLocaleDateString()}
+                </p>
+              </div>
+              <div className="rounded-md bg-dark-gray p-2 mt-1">
+                <p className="text-lg">
+                  <strong>Appointment Time:</strong> {appointmentDetails?.appointmentTime}
+                </p>
+              </div>
+              </div>
+
               {/* Add other details as needed */}
             </>
           )}
