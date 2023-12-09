@@ -1,10 +1,13 @@
 import React from "react";
 import { Calendar } from "antd";
+import SpecialtyMenu from "./Components/SpecialtyMenu";
 
 function AdminSchedule() {
-  return <div>AdminSchedule
-    <Calendar></Calendar>
-  </div>;
+  return (
+    <>
+      <SpecialtyMenu />
+    </>
+  );
 }
 
 export default AdminSchedule;

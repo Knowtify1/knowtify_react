@@ -1,7 +1,6 @@
 import { Card, Space } from "antd";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { QuestionOutlined } from "@ant-design/icons";
-import { useState, useEffect } from "react";
 import {
   setDoc,
   doc,
@@ -12,10 +11,17 @@ import {
   getDocs,
 } from "../../../config/firebase.jsx";
 
-async function countDocumentsInCollection(collectionName) {
+async function countDocumentsInCollection(
+  collectionName,
+  filterField,
+  filterValue
+) {
   try {
     const querySnapshot = await getDocs(collection(db, collectionName));
-    const numberOfDocuments = querySnapshot.size;
+    const filteredDocs = querySnapshot.docs.filter(
+      (doc) => doc.data()[filterField] === filterValue
+    );
+    const numberOfDocuments = filteredDocs.length;
     return numberOfDocuments;
   } catch (error) {
     console.error("Error counting documents:", error);
@@ -25,20 +31,41 @@ async function countDocumentsInCollection(collectionName) {
 
 function AdminOverview() {
   const [appointmentsCount, setAppointmentsCount] = useState(null);
-  const [patientsCount, setPatientsCount] = useState(null);
+  const [approvedPatientsCount, setApprovedPatientsCount] = useState(null);
+  const [assignedPatientsCount, setAssignedPatientsCount] = useState(null);
 
   useEffect(() => {
     const fetchAppointmentsCount = async () => {
-      const appointmentstotal = await countDocumentsInCollection(
-        "appointments"
-      );
-      const patientsCount = await countDocumentsInCollection("patients");
-      setAppointmentsCount(appointmentstotal);
-      setPatientsCount(patientsCount);
+      try {
+        const appointmentsTotal = await countDocumentsInCollection(
+          "appointments"
+        );
+
+        // Count patients with status === "approved"
+        const approvedCount = await countDocumentsInCollection(
+          "patients",
+          "status",
+          "approved"
+        );
+        setApprovedPatientsCount(approvedCount);
+
+        // Count patients with status === "assigned"
+        const assignedCount = await countDocumentsInCollection(
+          "patients",
+          "status",
+          "assigned"
+        );
+        setAssignedPatientsCount(assignedCount);
+
+        setAppointmentsCount(appointmentsTotal);
+      } catch (error) {
+        console.error("Error fetching appointments count:", error);
+      }
     };
 
     fetchAppointmentsCount();
   }, []);
+
   return (
     <>
       <div className="">
@@ -58,53 +85,69 @@ function AdminOverview() {
                 </h1>
                 <span>Appointments</span>
               </Space>
+              <Space direction="horizontal">
+                <h1>
+                  {approvedPatientsCount !== null
+                    ? approvedPatientsCount
+                    : "Loading..."}
+                </h1>
+                <span>Approved Patients</span>
+              </Space>
+              <Space direction="horizontal">
+                <h1>
+                  {assignedPatientsCount !== null
+                    ? assignedPatientsCount
+                    : "Loading..."}
+                </h1>
+                <span>Assigned Patients</span>
+              </Space>
             </Card>
             <Card
-              title="Pending"
+              title="Schedule"
               extra={<a href="">View all</a>}
               style={{ width: 300 }}
             >
               <h1>null</h1>
             </Card>
             <Card
-              title="Proccessed"
+              title="Patient Record"
               extra={<a href="">View all</a>}
               style={{ width: 300 }}
             >
               <h1>null</h1>
             </Card>
-          </Space>
-          <Space direction="horizontal" size={16} className="flex-wrap">
-            <Card
-              style={{
-                width: 300,
-              }}
-            >
-              <Space direction="horizontal" size={10}>
-                <QuestionOutlined />
-                <h1>Number of Patients</h1>
-              </Space>
-            </Card>
-            <Card
-              style={{
-                width: 300,
-              }}
-            >
-              <Space direction="horizontal" size={10}>
-                <QuestionOutlined />
-                <h1>Schedule ni Doc</h1>
-              </Space>
-            </Card>
-            <Card
-              style={{
-                width: 300,
-              }}
-            >
-              <Space direction="horizontal" size={10}>
-                <QuestionOutlined />
-                <h1>Profile Update</h1>
-              </Space>
-            </Card>
+            <Space direction="horizontal" size={16} className="flex-wrap">
+              <Card
+                style={{
+                  width: 300,
+                }}
+              >
+                <Space direction="horizontal" size={10}>
+                  <QuestionOutlined />
+                  <h1>Number of Patients</h1>
+                </Space>
+              </Card>
+              <Card
+                style={{
+                  width: 300,
+                }}
+              >
+                <Space direction="horizontal" size={10}>
+                  <QuestionOutlined />
+                  <h1>Schedule ni Doc</h1>
+                </Space>
+              </Card>
+              <Card
+                style={{
+                  width: 300,
+                }}
+              >
+                <Space direction="horizontal" size={10}>
+                  <QuestionOutlined />
+                  <h1>Profile Update</h1>
+                </Space>
+              </Card>
+            </Space>
           </Space>
         </Space>
       </div>

@@ -37,6 +37,7 @@ import DoctorHome from "./components/Doctor/DoctorHome.jsx";
 import DoctorAppointment from "./components/Doctor/DoctorAppointment.jsx";
 import DoctorSchedule from "./components/Doctor/DoctorSchedule.jsx";
 import DoctorAccount from "./components/Doctor/DoctorAccount.jsx";
+import AdminCalendar from "./components/Admin/AdminCalendar.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -58,6 +59,7 @@ const router = createBrowserRouter(
         <Route path="adminschedule" element={<AdminSchedule />} />
         <Route path="adminpatientrecord" element={<AdminPatientRecord />} />
         <Route path="adminaccount" element={<AdminAccount />} />
+        <Route path="admincalendar" element={<AdminCalendar />} />
       </Route>
       <Route path="doctordashboard" element={<DoctorDashboard />}>
         <Route index path="" element={<DoctorHome />} />
