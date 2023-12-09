@@ -55,7 +55,12 @@ const AdminCalendar = () => {
           "==",
           doctorsData.find((doctor) => doctor.id === value)?.specialty
         ),
-        where("status", "==", "assigned")
+        where("status", "==", "assigned"),
+        where(
+          "assignedDoctor",
+          "==",
+          doctorsData.find((doctor) => doctor.id === value)?.name
+        )
       );
 
       const patientsSnapshot = await getDocs(patientsQuery);
@@ -72,42 +77,23 @@ const AdminCalendar = () => {
     }
   };
 
-  const cellRender = (value) => {
-    const listData = getListData(value);
-    const monthYearKey = getMonthYearKey(value);
+  const cellRender = (current) => {
+    const formattedDate = current.format("YYYY-MM-DD");
+    const filteredAppointments = patientsData.filter(
+      (patient) =>
+        moment(patient.appointmentDate.toDate()).format("YYYY-MM-DD") ===
+        formattedDate
+    );
 
     return (
-      <div>
-        <h4>{value.date()}</h4>
-        <ul className="events">
-          {listData.map((item, index) => (
-            <li key={`${monthYearKey}-${index}`}>
-              <Badge status={item.type} text={item.content} />
-            </li>
-          ))}
-        </ul>
-      </div>
+      <ul className="events">
+        {filteredAppointments.map((appointment) => (
+          <li key={appointment.id}>
+            <Badge status="success" text={appointment.patientName} />
+          </li>
+        ))}
+      </ul>
     );
-  };
-
-  const getListData = (value) => {
-    //console.log("Datas: ", value);
-    const formattedDate = moment(value).format("YYYY-MM-DD");
-
-    const dateEvents = patientsData
-      .filter(
-        (patient) =>
-          moment(patient.appointmentDate.toDate()).format("YYYY-MM-DD") ===
-          formattedDate
-      )
-      .map((patient) => ({
-        type: "warning", // Customize the badge type based on your needs
-        content: `${moment(patient.appointmentDate.toDate()).format("LT")} - ${
-          patient.patientName
-        }`,
-      }));
-
-    return dateEvents;
   };
 
   return (
