@@ -89,8 +89,12 @@ function TablePendingAppointments() {
   const handleApprove = async (key) => {
     try {
       const appointmentRef = doc(db, "appointments", key);
-      // Update the status to 'Approved'
-      await setDoc(appointmentRef, { status: "approved" }, { merge: true });
+      await setDoc(
+        appointmentRef,
+        { status: "approved" },
+        { merge: true },
+        { approved: true }
+      );
       console.log(`Appointment ${key} approved.`);
     } catch (error) {
       console.error("Error approving appointment:", error);
@@ -98,18 +102,14 @@ function TablePendingAppointments() {
 
     try {
       const appointmentRef = doc(db, "appointments", key);
-
-      // Fetch the appointment data
       const appointmentSnapshot = await getDoc(appointmentRef);
-      const appointmentData = appointmentSnapshot.data();
 
-      // Move the data to the "patient" collection
-      await addDoc(collection(db, "patients"), appointmentData);
+      const appointmentData = appointmentSnapshot.data(); // Store data for transfer to patients
 
-      // Delete the document from the original "appointments" collection
-      await deleteDoc(appointmentRef);
+      await addDoc(collection(db, "patients"), appointmentData); // Store data on patients
 
-      // Fetch updated appointments data
+      await deleteDoc(appointmentRef); // Delete Data into appointments
+
       fetchAppointments(selectedDate, setData, setLoading);
 
       console.log(`Appointment ${key} approved and transferred to patients.`);
@@ -117,24 +117,20 @@ function TablePendingAppointments() {
       console.error("Error approving appointment:", error);
     }
 
-    // Fetch updated appointments data
     fetchAppointments(selectedDate, setData, setLoading);
   };
 
   const moveDataToTrash = async (originalCollection, trashCollection, key) => {
     try {
-      // Get the document from the original collection
       const originalDocRef = doc(originalCollection, key);
       const originalDocSnapshot = await getDoc(originalDocRef);
       const dataToMove = originalDocSnapshot.data();
 
-      // Add the document to the trash collection
       const trashDocRef = await addDoc(
         collection(db, trashCollection),
         dataToMove
       );
 
-      // Delete the document from the original collection
       await deleteDoc(originalDocRef);
 
       console.log(
@@ -193,18 +189,15 @@ function TablePendingAppointments() {
   };
 
   const handleDelete = async (key, setData, setLoading, selectedDate) => {
-    // Implement your logic to delete the appointment with the specified key
     console.log("Deleting key:", key);
 
     try {
-      // Move the data to the "trash" collection
       await moveDataToTrash(
         collection(db, "appointments"),
         "deletedAppointment",
         key
       );
       console.log("Success moving to deletedappointment");
-      // Update the component's state to trigger a re-render
       if (typeof setData === "function" && typeof setLoading === "function") {
         setData((prevData) => {
           const updatedData = prevData.filter((item) => item.key !== key);
@@ -214,16 +207,14 @@ function TablePendingAppointments() {
       }
 
       fetchAppointments(selectedDate, setData, setLoading);
-      // After moving to trash, fetch the updated appointments data
     } catch (error) {
       console.error("Error deleting appointment:", error);
     }
   };
 
   useEffect(() => {
-    // Fetch appointments when the component mounts
     fetchAppointments(selectedDate, setData, setLoading);
-  }, [selectedDate, setData, setLoading]); // Empty dependency array to fetch data only once when the component mounts
+  }, [selectedDate, setData, setLoading]);
 
   const onSelectChange = (newSelectedRowKeys) => {
     console.log("selectedRowKeys changed: ", newSelectedRowKeys);
@@ -269,11 +260,9 @@ function TablePendingAppointments() {
   };
 
   const handleDateChange = (date) => {
-    // Convert to native JavaScript Date if date is not null
     const selectedDate = date ? date.toDate() : null;
     setSelectedDate(selectedDate);
 
-    // Fetch appointments based on the selected date
     fetchAppointments(selectedDate, setData, setLoading);
   };
 
@@ -308,7 +297,7 @@ function TablePendingAppointments() {
             <h1>{getCurrentDateMessage()}</h1> {/* todayis */}
           </Space>
 
-          {loading ? ( // Display loading indicator while data is being fetched
+          {loading ? (
             <Spin size="small" className="block" />
           ) : (
             <Table

@@ -44,7 +44,11 @@ function TableApprovedAppointments() {
       render: (text) => (
         <span
           className={`inline-block px-2 py-1 rounded border ${
-            text === "approved" ? "bg-green-500 text-white border-red-400" : ""
+            text === "approved"
+              ? "bg-green-500 text-white border-red-400"
+              : text === "assigned"
+              ? "bg-blue-500 text-white border-blue-400"
+              : ""
           }`}
         >
           {text}
@@ -62,13 +66,14 @@ function TableApprovedAppointments() {
     {
       title: "Action",
       dataIndex: "action",
-      render: (_, record) => (
-        <Space direction="horizontal">
-          <Button type="link" onClick={() => handleAssign(record.key)}>
-            Assign
-          </Button>
-        </Space>
-      ),
+      render: (text, record) =>
+        record.status !== "assigned" && (
+          <Space direction="horizontal">
+            <Button type="link" onClick={() => handleAssign(record.key)}>
+              Assign
+            </Button>
+          </Space>
+        ),
     },
   ];
 
