@@ -13,6 +13,7 @@ import { Timestamp } from "firebase/firestore";
 import { setDoc, doc, db, collection, addDoc } from "../../config/firebase";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
+import 'dayjs/locale/en';
 
 const generateUniqueReference = () => {
   const prefix = "AP";
@@ -108,6 +109,7 @@ function BookAppointmentForm() {
   const onChange = (time, timeString) => {
     console.log(time, timeString);
   };
+
 
   const format = "HH";
   const options = [
@@ -228,7 +230,7 @@ function BookAppointmentForm() {
           rules={[{ required: true, message: "Select Date" }]}
           name="adate"
         >
-          <DatePicker />
+          <DatePicker disabledDate={(current) => current && current < dayjs().startOf('day')} />
         </Form.Item>
 
         <Form.Item

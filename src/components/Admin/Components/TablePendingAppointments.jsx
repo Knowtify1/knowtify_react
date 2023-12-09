@@ -287,7 +287,7 @@ function TablePendingAppointments() {
   return (
     <>
       <div>
-        <Space direction="vertical" size={20} className="flex items-cente">
+        <Space direction="vertical" size={20} className="flex">
           <Space direction="horizontal" size={40}>
             <Space direction="horizontal">
               <h1>Select Appointment Date:</h1>

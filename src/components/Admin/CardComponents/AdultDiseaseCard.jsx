@@ -24,7 +24,7 @@ const AdultDiseaseCard = ({
         cover={<img src={adultDiseaseImage} alt="Adult Disease" className="" />}
       >
         <h2 className="text-center">Internal Medicine</h2>
-        <p className="text-center">(Specialized care for Adult Diseases)</p>
+        <p className="text-center">(Adult Diseases)</p>
         <div className="flex justify-around p-4">
           <button
             className="icon-button"
