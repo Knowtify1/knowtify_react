@@ -14,6 +14,7 @@ import {
   where as firestoreWhere,
   deleteDoc as firestoreDelteDoc,
   updateDoc as firestoreUpdateDoc,
+  runTransaction as firestoreRunTransaction,
 } from "firebase/firestore";
 import { signOut as firebaseSignOut } from "firebase/auth";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -48,6 +49,7 @@ export const query = firestoreQuery;
 export const where = firestoreWhere;
 export const deleteDoc = firestoreDelteDoc;
 export const updateDoc = firestoreUpdateDoc;
+export const runTransaction = firestoreRunTransaction;
 
 //handle signOut
 export const signOut = () => {
