@@ -49,94 +49,98 @@ function AppointmentSuccess() {
   console.log("Appointment ID:", appointmentID);
   return (
     <>
-      <div className="flex flex-col justify-center items-center h-screen">
-        <Card
-          title="Appointment Details"
-          style={{ width: "80%"}}
-          className="p-8 mb-4"
-        >
-          {loading ? (
-            <Space size="middle">
-              <Spin size="large" />
-            </Space>
-          ) : (
-            <>
-              <div className="rounded-md bg-gray-500 p-2 flex items-center justify-center">
-                <p className="text-2xl font-bold ">
-                  <strong>Reference ID:</strong> {appointmentDetails?.reference}
-                </p>
-              </div>
-              <div className="mt-4 rounded-md bg-gray-200 p-4 mb-3">
-              <div className="rounded-md bg-dark-gray p-2">
-                <p className="text-lg">
-                  <strong>Patient Name:</strong> {appointmentDetails?.patientName}
-                </p>
-              </div>
-              <div className="rounded-md bg-dark-gray p-2 mt-1">
-                <p className="text-lg">
-                  <strong>Contact Number:</strong> {appointmentDetails?.contactNo}
-                </p>
-              </div>
-              <div className="rounded-md bg-dark-gray p-2 mt-1">
-                <p className="text-lg">
-                  <strong>Appointment Date:</strong>{" "}
-                  {appointmentDetails?.appointmentDate.toDate().toLocaleDateString()}
-                </p>
-              </div>
-              <div className="rounded-md bg-dark-gray p-2 mt-1">
-                <p className="text-lg">
-                  <strong>Appointment Time:</strong> {appointmentDetails?.appointmentTime}
-                </p>
-              </div>
-              </div>
+      <div className="book_appointment container mx-auto">
+        <div className="relative p-4 justify-center items-center ">
+          <Card
+            title="Appointment Details"
+            style={{ width: "80%"}}
+            className="p-8 mb-4"
+          >
+            {loading ? (
+              <Space size="middle">
+                <Spin size="large" />
+              </Space>
+            ) : (
+              <>
+                <div className="rounded-md bg-gray-500 p-2 flex items-center justify-center">
+                  <p className="text-2xl font-bold ">
+                    <strong>Reference ID:</strong> {appointmentDetails?.reference}
+                  </p>
+                </div>
+                <div className="mt-4 rounded-md bg-gray-200 p-4 mb-3">
+                <div className="rounded-md bg-dark-gray p-2">
+                  <p className="text-lg">
+                    <strong>Patient Name:</strong> {appointmentDetails?.patientName}
+                  </p>
+                </div>
+                <div className="rounded-md bg-dark-gray p-2 mt-1">
+                  <p className="text-lg">
+                    <strong>Contact Number:</strong> {appointmentDetails?.contactNo}
+                  </p>
+                </div>
+                <div className="rounded-md bg-dark-gray p-2 mt-1">
+                  <p className="text-lg">
+                    <strong>Appointment Date:</strong>{" "}
+                    {appointmentDetails?.appointmentDate.toDate().toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="rounded-md bg-dark-gray p-2 mt-1">
+                  <p className="text-lg">
+                    <strong>Appointment Time:</strong> {appointmentDetails?.appointmentTime}
+                  </p>
+                </div>
+                </div>
 
-              {/* Add other details as needed */}
-            </>
-          )}
-          <div className="mt-6">
-            <p className="text-lg mb-2">
-              To check the status of your appointment, you can use the reference
-              ID. Visit the check appointment page and enter your reference ID
-              to get real-time updates.
-            </p>
-            <Link to="/checkappointment">
+                {/* Add other details as needed */}
+              </>
+            )}
+            <div className="mt-6">
+              <p className="text-lg mb-2">
+                To check the status of your appointment, you can use the reference
+                ID. Visit the check appointment page and enter your reference ID
+                to get real-time updates.
+              </p>
+              <Link to="/checkappointment">
+                <Button
+                  type="primary"
+                  className="bg-green-500 hover:bg-green-700"
+                >
+                  Check Appointment Status
+                </Button>
+              </Link>
+            </div>
+
+            <div className="mt-6">
+              <p className="text-lg mb-2">
+                Upon a successful appointment, you will receive a confirmation
+                receipt. Please present this receipt when you visit the clinic.
+              </p>
+              {/* Add logic or placeholder for showing the receipt */}
               <Button
                 type="primary"
-                className="bg-green-500 hover:bg-green-700"
+                className="bg-blue-500 hover:bg-blue-700"
+                disabled
               >
-                Check Appointment Status
+                View Receipt
+              </Button>
+              <p className="text-base mb-2 text-rose-600">
+                Wait for approval and you will receive your reciept
+              </p>
+            </div>
+          </Card>
+
+          <div className="mt-4 flex justify-center">
+            <Link to="/">
+              <Button type="primary" className="bg-blue-500 hover:bg-blue-700">
+                Go Back to Homepage
               </Button>
             </Link>
           </div>
-
-          <div className="mt-6">
-            <p className="text-lg mb-2">
-              Upon a successful appointment, you will receive a confirmation
-              receipt. Please present this receipt when you visit the clinic.
-            </p>
-            {/* Add logic or placeholder for showing the receipt */}
-            <Button
-              type="primary"
-              className="bg-blue-500 hover:bg-blue-700"
-              disabled
-            >
-              View Receipt
-            </Button>
-            <p className="text-base mb-2 text-rose-600">
-              Wait for approval and you will recive your reciept
-            </p>
-          </div>
-        </Card>
-
-        <div className="mt-4">
-          <Link to="/">
-            <Button type="primary" className="bg-blue-500 hover:bg-blue-700">
-              Go Back to Homepage
-            </Button>
-          </Link>
         </div>
       </div>
+      
     </>
+
   );
 }
 
