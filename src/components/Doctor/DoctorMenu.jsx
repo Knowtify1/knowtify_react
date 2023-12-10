@@ -1,6 +1,7 @@
+// DoctorMenu.jsx
 import React, { useState } from "react";
-import { auth, signOut } from "../../config/firebase";
 import { useNavigate } from "react-router-dom";
+import { auth, signOut } from "../../config/firebase";
 import {
   HomeOutlined,
   FileDoneOutlined,
@@ -8,10 +9,9 @@ import {
   FileSearchOutlined,
   AccountBookOutlined,
   LogoutOutlined,
-  ExclamationOutlined,
 } from "@ant-design/icons";
-
-import { Menu } from "antd";
+import { Menu, Space } from "antd";
+import { useTheme } from "../../ThemeContext";
 
 const items = [
   {
@@ -48,24 +48,24 @@ const items = [
 
 function DoctorMenu() {
   const navigate = useNavigate();
+  const { darkTheme } = useTheme();
   const [selectedKeys, setSelectedKeys] = useState(["home"]);
 
   const handleMenuClick = ({ key }) => {
-    // Add your logic based on the selected key
     console.log(`Clicked on menu item with key: ${key}`);
     setSelectedKeys([key]);
 
-    if (key == "home") {
+    if (key === "home") {
       navigate("doctorhome");
-    } else if (key == "appointment") {
+    } else if (key === "appointment") {
       navigate("doctorappointment");
-    } else if (key == "schedule") {
+    } else if (key === "schedule") {
       navigate("doctorschedule");
-    } else if (key == "patientrecord") {
+    } else if (key === "patientrecord") {
       navigate("doctorpatientrecord");
-    } else if (key == "account") {
+    } else if (key === "account") {
       navigate("doctoraccount");
-    } else if (key == "logout") {
+    } else if (key === "logout") {
       handleSignOut();
     }
   };
@@ -79,14 +79,28 @@ function DoctorMenu() {
       console.error("Error signing out:", error.message);
     }
   };
+
+  const menuStyle = {
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px", // Added gap for spacing
+    fontSize: "1.1rem",
+  };
+
   return (
     <Menu
       mode="inline"
       selectedKeys={selectedKeys}
       onClick={handleMenuClick}
-      className="menubar"
-      items={items}
-    ></Menu>
+      theme={darkTheme ? "dark" : "light"}
+      style={menuStyle}
+    >
+      {items.map((item) => (
+        <Menu.Item key={item.key} icon={item.icon} style={{}}>
+          {item.label}
+        </Menu.Item>
+      ))}
+    </Menu>
   );
 }
 

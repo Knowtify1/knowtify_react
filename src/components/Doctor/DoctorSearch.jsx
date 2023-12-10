@@ -15,12 +15,12 @@ const onSearch = (value, _e, info) => console.log(info?.source, value);
 
 function DoctorSearch() {
   return (
-    <div>
+    <div className="flex items-center space-x-2">
       <Search
         placeholder="input search text"
         onSearch={onSearch}
         style={{
-          width: 200,
+          width: 300,
         }}
       />
     </div>

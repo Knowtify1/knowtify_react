@@ -10,7 +10,7 @@ import {
   createRoutesFromElements,
   Navigate,
 } from "react-router-dom";
-
+import { ThemeProvider } from "./ThemeContext";
 // import App from "./App.jsx";
 // import Landing from "./pages/Landing.jsx";
 //import 'bootstrap/dist/css/bootstrap.in';
@@ -77,8 +77,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     {/* <BrowserRouter> */}
     {/* <App /> */}
-    <RouterProvider router={router} />
-    {/* </BrowserRouter> */}
+    <ThemeProvider>
+      <RouterProvider router={router} />
+      {/* </BrowserRouter> */}
+    </ThemeProvider>
   </React.StrictMode>
 );
 
