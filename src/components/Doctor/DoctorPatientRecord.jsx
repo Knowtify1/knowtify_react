@@ -1,7 +1,10 @@
 import React from "react";
+import PatientRecordForm from "./Components/PatientRecordForm.jsx";
 
 function DoctorPatientRecord() {
-  return <div>DoctorPatientRecord</div>;
+  return <div>DoctorSchedule
+    <PatientRecordForm></PatientRecordForm>
+  </div>;
 }
 
 export default DoctorPatientRecord;

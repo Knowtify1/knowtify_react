@@ -1,12 +1,8 @@
-import React from "react";
-
-import { Button } from "antd/es/radio";
-import Card from "antd/es/card/Card";
+import React, { useState } from "react";
+import { Button, Card, Modal, notification } from "antd";
 const { Meta } = Card;
-
 import bookheader from "../../assets/Book/header.jpg";
 import clinic from "../../assets/Book/clinic.png";
-
 import general from "../../assets/Book/generl.jpg";
 import infectious from "../../assets/Book/infectious.jpg";
 import internal from "../../assets/Book/internal.jpg";
@@ -19,8 +15,21 @@ import { ConfigProvider } from "antd";
 import BookAppointmentForm from "./BookAppointmentForm";
 
 function BookAppointment() {
-  const handleClick = () => {
-    window.location.href = `${window.location.pathname}#bookapp`;
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+
+  const openNotification = () => {
+    notification.success({
+      message: 'Appointment Booked',
+      description: 'Your appointment has been successfully booked!',
+    });
   };
 
   return (
@@ -38,13 +47,13 @@ function BookAppointment() {
             className="w-screen min-h-full"
           />
           <div className="absolute mx-auto bottom-1 p-5 left-1 w-full">
-            <div className="bg-black bg-opacity-20 p-3 rounded-md">
+            <div className="bg-black bg-opacity-0 p-3 rounded-md">
               <h1 className="text-sm text-color: #15803d;">
-                Elevate Your Health Journey: Seamless Booking,Exceptional Care at
+                Elevate Your Health Journey: Seamless Booking, Exceptional Care at
                 Mountain Top Specialty Clinic.
               </h1>
               <Button
-                onClick={handleClick}
+                onClick={showModal}
                 type="primary"
                 className="bg-green-600 rounded mt-3"
               >
@@ -67,18 +76,26 @@ function BookAppointment() {
           </p>
         </div>
         <div className="pl-8 pr-8 pb-5 pt-5" id="bookapp">
-          <h1>BookAppointment</h1>
-          <Card>
-            <p>
-              Ready to prioritize your health? Schedule an appointment with our
-              experienced healthcare professionals.
-            </p>
-            <div className="mt-12 grow">
-              <div>
-                <BookAppointmentForm />
+          <h1>Book Appointment</h1>
+          <Modal
+            title="Book Appointment"
+            visible={isModalVisible}
+            onCancel={handleCancel}
+            footer={null}
+            width={800}
+          >
+            <Card>
+              <p>
+                Ready to prioritize your health? Schedule an appointment with our
+                experienced healthcare professionals.
+              </p>
+              <div className="mt-12 grow">
+                <div>
+                  <BookAppointmentForm onSuccess={openNotification} onClose={handleCancel} />
+                </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          </Modal>
         </div>
 
         <div className="pl-8 pr-8 pb-5 pt-5">
@@ -111,10 +128,12 @@ function BookAppointment() {
             <Card
               hoverable
               className="bg-green-700	text-white p-0"
-              cover={<img src={infectious} alt="bookheader" className="" />}
+              cover={<img src={internalmed} alt="bookheader" className="" />}
             >
               <h2 className="text-center">Internal Medicine</h2>
-              <p className="text-center">(Infectious Diseases)</p>
+              <p className="text-center">
+                Specialized care for Adult Diseases.
+              </p>
             </Card>
             <Card
               hoverable
@@ -124,6 +143,15 @@ function BookAppointment() {
               <h2 className="text-center">Internal Medicine</h2>
               <p className="text-center">(Adult Hematology)</p>
             </Card>
+            <Card
+              hoverable
+              className="bg-green-700	text-white p-0"
+              cover={<img src={infectious} alt="bookheader" className="" />}
+            >
+              <h2 className="text-center">Internal Medicine</h2>
+              <p className="text-center">(Infectious Diseases)</p>
+            </Card>
+            
             <Card
               hoverable
               className="bg-green-700	text-white p-0"
@@ -158,24 +186,8 @@ function BookAppointment() {
                 Diagnosis and treatment of skin condition
               </p>
             </Card>
-            <Card
-              hoverable
-              className="bg-green-700	text-white p-0"
-              cover={<img src={pulmonology} alt="bookheader" className="" />}
-            >
-              <h2 className="text-center">Internal Medicine</h2>
-              <p className="text-center">(Pulmonology)</p>
-            </Card>
-            <Card
-              hoverable
-              className="bg-green-700	text-white p-0"
-              cover={<img src={internalmed} alt="bookheader" className="" />}
-            >
-              <h2 className="text-center">Internal Medicine</h2>
-              <p className="text-center">
-                Specialized care for Adult Diseases.
-              </p>
-            </Card>
+            
+            
           </div>
         </div>
       </div>

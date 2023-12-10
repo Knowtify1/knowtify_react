@@ -1,34 +1,33 @@
-import React from 'react';
+import React, { useState } from "react";
 import { Button, Form, Input, Space, Tooltip, Typography, Row, Col } from 'antd';
+
 
 const onFinish = (values) => {
   console.log('Received values of form: ', values);
   // Add logic to handle form submission and data storage/syncing
 };
 
-const App = () => (
-  <div>
-    <div style= {{ display: 'flex', justifyContent: 'center'}}><h1>Electronic Medical Record</h1></div>
-    <div style= {{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-    <div style= {{ maxWidth: 900 }}>
+const PatientRecordForm = () => (
+  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+    <div style={{ maxWidth: 900 }}>
       <Form
         name="emr-form"
         onFinish={onFinish}
         labelCol={{
-          span: 24,
+          span: 8,
         }}
         wrapperCol={{
-          span: 24,
+          span: 16,
         }}
-        layout="vertical"
+        layout="horizontal"
       >
-        <Row gutter={8}>
+        <Row gutter={24}>
           <Col span={8}>
             <Form.Item label="Patient ID (Reference)" name="patientId">
               <Space>
                 <Input
                   style={{
-                    width: 160,
+                    width: 260,
                   }}
                   placeholder="Enter Patient ID"
                 />
@@ -163,7 +162,6 @@ const App = () => (
       </Form>
     </div>
   </div>
-  </div>
 );
 
-export default App;
+export default PatientRecordForm;
