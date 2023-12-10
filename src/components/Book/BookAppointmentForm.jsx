@@ -1,13 +1,5 @@
 import React, { useState } from "react";
-import {
-  Button,
-  DatePicker,
-  Form,
-  Input,
-  Select,
-  TimePicker,
-  Space,
-} from "antd";
+import { Button, DatePicker, Form, Input, Select, TimePicker, Space, Row, Col } from "antd";
 const { TextArea } = Input;
 import { Timestamp } from "firebase/firestore";
 import { setDoc, doc, db, collection, addDoc } from "../../config/firebase";
@@ -56,17 +48,7 @@ function BookAppointmentForm() {
       timepicker,
     } = values;
 
-    //console.log("atime", timepicker);
-
-    //Formatting date
-    // const putdatetostring = adate.toISOString();
-    // const datePart = putdatetostring.split("T")[0];
-    // const appointmentDate = new Date(datePart); //create object Date
-    const appointmentDate = new Date(adate); //create object Date
-
-    //const hour = timepicker.getHour;
-
-    //console.log("aDate", datePart);
+    const appointmentDate = new Date(adate);
 
     const uniqueReference = generateUniqueReference();
 
@@ -98,8 +80,6 @@ function BookAppointmentForm() {
     } catch (error) {
       console.log(error);
     }
-
-    //console.log("Values:", timepicker);
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -109,7 +89,6 @@ function BookAppointmentForm() {
   const onChange = (time, timeString) => {
     console.log(time, timeString);
   };
-
 
   const format = "HH";
   const options = [
@@ -136,62 +115,66 @@ function BookAppointmentForm() {
   ];
 
   return (
-    <>
-      <Form
-        labelCol={{
-          span: 8, // Adjusted span for labels
-        }}
-        wrapperCol={{
-          span: 16, // Adjusted span for form controls
-        }}
-        layout="horizontal"
-        disabled={componentDisabled}
-        style={{
-          maxWidth: 1100,
-        }}
-        initialValues={{
-          remember: true,
-        }}
-        onFinish={onFinish}
-        onFinishFailed={onFinishFailed}
-        autoComplete="off"
-      >
-        <Form.Item
-          label="Patient Name"
-          name="patientname"
-          rules={[
-            {
-              required: true,
-              message: "Please input your Name!",
-            },
-          ]}
+    <Row gutter={24}>
+      <Col span={8}>
+        <Form
+          labelCol={{
+            span: 8, // Adjusted span for labels
+          }}
+          wrapperCol={{
+            span: 16, // Adjusted span for form controls
+          }}
+          layout="horizontal"
+          disabled={componentDisabled}
+          style={{
+            maxWidth: 1100,
+          }}
+          initialValues={{
+            remember: true,
+          }}
+          onFinish={onFinish}
+          onFinishFailed={onFinishFailed}
+          autoComplete="off"
         >
-          <Input type="text" />
-        </Form.Item>
-        <Form.Item
-          label="Contact Number"
-          name="contactno"
-          rules={[
-            {
-              required: true,
-              message: "Please input your number",
-            },
-          ]}
-        >
-          <Input addonBefore={prefixSelector} style={{ width: "100%" }} />
-        </Form.Item>
-        <Form.Item
-          label="Age"
-          name="age"
-          rules={[
-            {
-              required: true,
-              message: "Please input your age!",
-            },
-          ]}
-        >
-          <Input type="number" />
-        </Form.Item>
+          <Form.Item
+            label="Patient Name"
+            name="patientname"
+            rules={[
+              {
+                required: true,
+                message: "Please input your Name!",
+              },
+            ]}
+          >
+            <Input type="text" />
+          </Form.Item>
+          <Form.Item
+            label="Contact Number"
+            name="contactno"
+            rules={[
+              {
+                required: true,
+                message: "Please input your number",
+              },
+            ]}
+          >
+            <Input addonBefore={prefixSelector} style={{ width: "100%" }} />
+          </Form.Item>
+          <Form.Item
+            label="Age"
+            name="age"
+            rules={[
+              {
+                required: true,
+                message: "Please input your age!",
+              },
+            ]}
+          >
+            <Input type="number" />
+          </Form.Item>
+        </Form>
+      </Col>
+      <Col span={8}>
         <Form.Item
           label="Patient's Address"
           name="patientaddress"
@@ -216,7 +199,6 @@ function BookAppointmentForm() {
         >
           <TextArea rows={4} />
         </Form.Item>
-
         <Form.Item
           label="Type of Doctor to Consult"
           rules={[{ required: true, message: "Select Type" }]}
@@ -224,7 +206,8 @@ function BookAppointmentForm() {
         >
           <Select options={typesofDoc} style={{}} placeholder="select a type" />
         </Form.Item>
-
+      </Col>
+      <Col span={8}>
         <Form.Item
           label="Appointment Date"
           rules={[{ required: true, message: "Select Date" }]}
@@ -232,7 +215,6 @@ function BookAppointmentForm() {
         >
           <DatePicker disabledDate={(current) => current && current < dayjs().startOf('day')} />
         </Form.Item>
-
         <Form.Item
           name="timepicker"
           label="Appointment Time"
@@ -241,7 +223,6 @@ function BookAppointmentForm() {
         >
           <Select options={options} style={{}} placeholder="select a time" />
         </Form.Item>
-
         <Form.Item
           wrapperCol={{
             offset: 8, // Adjusted offset for the button
@@ -260,8 +241,8 @@ function BookAppointmentForm() {
             </Button>
           </div>
         </Form.Item>
-      </Form>
-    </>
+      </Col>
+    </Row>
   );
 }
 
