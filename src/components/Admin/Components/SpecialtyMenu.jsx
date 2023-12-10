@@ -103,7 +103,7 @@ const SpecialtyMenuCard = ({ type }) => {
 
 const SpecialtyMenu = () => {
   const typesofDoc = [
-    //dont change value!!!!!!!!
+    //dont change value!!!!!!!!......................................................
     {
       value: "Internal Medicine",
       label: "Internal Medicine",
