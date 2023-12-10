@@ -14,9 +14,10 @@ import {
   query,
   fsTimeStamp,
   deleteDoc,
+  updateDoc,
 } from "../../config/firebase.jsx";
 
-function CheckAppointment() {
+function DoctorAppointment() {
   const [loading, setLoading] = useState(false);
   const [appointmentStatus, setAppointmentStatus] = useState(null);
   const [receipt, setReceipt] = useState(null);
@@ -206,7 +207,7 @@ function CheckAppointment() {
 
         <Modal
           title="Appointment Details"
-          open={isModalVisible}
+          visible={isModalVisible}
           onOk={handleOk}
           onCancel={handleCancel}
           footer={[
@@ -283,4 +284,4 @@ function CheckAppointment() {
   );
 }
 
-export default CheckAppointment;
+export default DoctorAppointment;

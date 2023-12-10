@@ -7,22 +7,22 @@ const onFinish = (values) => {
   // Add logic to handle form submission and data storage/syncing
 };
 
-const PatientRecordForm = () => (
+const DoctorAppointment = () => (
   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
     <div style={{ maxWidth: 900 }}>
       <Form
         name="emr-form"
         onFinish={onFinish}
         labelCol={{
-          span: 8,
+          span: 24,
         }}
         wrapperCol={{
-          span: 16,
+          span: 24,
         }}
         layout="horizontal"
       >
         <Row gutter={24}>
-          <Col span={8}>
+          <Col span={16}>
             <Form.Item label="Patient ID (Reference)" name="patientId">
               <Space>
                 <Input
@@ -164,4 +164,5 @@ const PatientRecordForm = () => (
   </div>
 );
 
-export default PatientRecordForm;
+
+export default DoctorAppointment;

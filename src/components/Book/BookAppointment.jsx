@@ -151,6 +151,15 @@ function BookAppointment() {
               <h2 className="text-center">Internal Medicine</h2>
               <p className="text-center">(Infectious Diseases)</p>
             </Card>
+
+            <Card
+              hoverable
+              className="bg-green-700	text-white p-0"
+              cover={<img src={pulmonology} alt="bookheader" className="" />}
+            >
+              <h2 className="text-center">Internal Medicine</h2>
+              <p className="text-center">(Pulmonology)</p>
+            </Card>
             
             <Card
               hoverable

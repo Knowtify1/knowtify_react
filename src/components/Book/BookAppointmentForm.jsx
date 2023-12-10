@@ -6,6 +6,7 @@ import { setDoc, doc, db, collection, addDoc, getDocs, query, where } from '../.
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import 'dayjs/locale/en';
+
 const generateUniqueReference = () => {
   const prefix = 'AP';
   const randomDigits = Math.floor(Math.random() * 10000000); // Generates a random 7-digit number
@@ -41,8 +42,12 @@ function BookAppointmentForm() {
   const doctorTimeOptions = {
     'Orthopedics': [
       { value: '8:00', label: '8:00 AM' },
+      { value:  '9:00',  label: '9:00 AM' },
       { value: '10:00', label: '10:00 AM' },
-      { value: '13:00', label: '1:00 PM' },
+      { value: '11:00', label: '11:00 AM' },
+      { value: '1:00', label: '1:00 PM' },
+      { value: '2:00', label: '2:00 PM' },
+      { value: '3:00',  label: '3:00 PM' },
     ],
     'Internal Medicine': [
       { value: '3:00',  label: '3:00 PM' },
@@ -67,11 +72,30 @@ function BookAppointmentForm() {
       { value: '11:00', label: '11:00 AM' },
       { value: '1:00',  label: '1:00 PM' },
     ],
+    'Ob': [
+      { value: '8:00', label: '8:00 AM' },
+      { value:  '9:00',  label: '9:00 AM' },
+      { value: '10:00', label: '10:00 AM' },
+      { value: '11:00', label: '11:00 AM' },
+      { value: '1:00', label: '1:00 PM' },
+      { value: '2:00', label: '2:00 PM' },
+      { value: '3:00',  label: '3:00 PM' },
+    ],
     'Pediatrics': [
       { value:  '9:00',  label: '9:00 AM' },
       { value: '10:00', label: '10:00 AM' },
       { value: '11:00', label: '11:00 AM' },
       { value: '1:00',  label: '1:00 PM' },
+    ],
+    'Physical': [
+      { value: '8:00', label: '8:00 AM' },
+      { value:  '9:00',  label: '9:00 AM' },
+      { value: '10:00', label: '10:00 AM' },
+      { value: '11:00', label: '11:00 AM' },
+      { value: '1:00', label: '1:00 PM' },
+      { value: '2:00', label: '2:00 PM' },
+      { value: '3:00',  label: '3:00 PM' },
+
     ],
   };
 
@@ -106,37 +130,16 @@ function BookAppointmentForm() {
 
 
   useEffect(() => {
-    const selectedType = form.getFieldValue('type');
-    const timeOptions = doctorTimeOptions[selectedType] || [];
-    form.setFieldsValue({ timepicker: null });
+  const selectedType = form.getFieldValue('type');
+  const timeOptions = doctorTimeOptions[selectedType] || [];
+  }, [doctorTimeOptions]);
 
-    form.setFields([
-      {
-        name: 'timepicker',
-        value: null,
-        errors: [],
-      },
-    ]);
-
-    form.setFieldsValue({
-      timepicker: timeOptions.length > 0 ? timeOptions[0].value : null,
-    });
-  }, [form, doctorTimeOptions]);
-
-  const handleTypeChange = (value) => {
-    const selectedType = value;
-    const timeOptions = doctorTimeOptions[selectedType] || [];
-    form.setFieldsValue({ timepicker: null });
-    form.setFields([
-      {
-        name: 'timepicker',
-        value: null,
-        errors: [],
-      },
-    ]);
-    form.setFieldsValue({
-      timepicker: timeOptions.length > 0 ? timeOptions[0].value : null,
-    });
+const handleTypeChange = (value) => {
+  const selectedType = value;
+  const timeOptions = doctorTimeOptions[selectedType] || [];
+  form.setFieldsValue({
+    timepicker: timeOptions.length > 0 ? timeOptions[0].value : null,
+  });
   };
 
 useEffect(() => {
@@ -178,24 +181,7 @@ useEffect(() => {
   const appointmentDate = new Date(adate);
   const selectedTime = JSON.stringify(timepicker);
 
-  // Check if the selected date and time are available
-  const isAvailable = !existingAppointments.some(
-    (appointment) =>
-      appointment.date === dayjs(appointmentDate).format('YYYY-MM-DD') &&
-      appointment.time === selectedTime
-  );
-
-  if (!isAvailable) {
-    // The selected date and time are already booked
-    notification.error({
-      message: 'Appointment Not Available',
-      description: 'This date and time are already booked. Please choose another slot.',
-    });
-    return;
-  }
-
-
-    const uniqueReference = generateUniqueReference();
+  const uniqueReference = generateUniqueReference();
 
     const userData = {
       createdDate: Timestamp.now(),
@@ -401,20 +387,20 @@ const disabledTime = (current, type) => {
           </Col>
 
           <Col span={8}>
-            <Form.Item
-              name="timepicker"
-              label="Appointment Time"
-              {...config}
-              rules={[{ required: true, message: 'Select Time' }]}
-            >
-              <Select
-                options={doctorTimeOptions[form.getFieldValue('type')] || []}
-                style={{}}
-                placeholder="Select a time"
-                disabledDate={(current) => disabledTime(current, form.getFieldValue('type'))}
-              />
-            </Form.Item>
-          </Col>
+          <Form.Item
+            name="timepicker"
+            label="Appointment Time"
+            {...config}
+            rules={[{ required: true, message: 'Select Time' }]}
+          >
+            <Select
+              options={doctorTimeOptions[form.getFieldValue('type')] || []}
+              style={{}}
+              placeholder="Select a time"
+              disabledDate={(current) => disabledTime(current, form.getFieldValue('type'))}
+            />
+          </Form.Item>
+        </Col>
         </Row>
 
         <Row>

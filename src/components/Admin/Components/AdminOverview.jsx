@@ -69,13 +69,13 @@ function AdminOverview() {
   return (
     <>
       <div className="">
-        <Space direction="vertical" size={20}>
-          <h1 className="text-center text-3xl font-medium">Overview</h1>
-          <Space direction="horizontal" size={16} className="flex-wrap">
+        <Space direction="vertical" size={2}>
+          <h1 className="text-center text-3xl font-small">Overview</h1>
+          <Space direction="horizontal" size={10} className="flex-wrap">
             <Card
               title="Appointments"
               extra={<a href="../admindashboard/adminappointment">View all</a>}
-              style={{ width: 300 }}
+              style={{ width: 350 }}
             >
               <Space direction="horizontal">
                 <h1>
@@ -105,46 +105,26 @@ function AdminOverview() {
             <Card
               title="Schedule"
               extra={<a href="">View all</a>}
-              style={{ width: 300 }}
+              style={{ width: 350 }}
             >
               <h1>null</h1>
             </Card>
             <Card
               title="Patient Record"
               extra={<a href="">View all</a>}
-              style={{ width: 300 }}
+              style={{ width: 350 }}
             >
               <h1>null</h1>
             </Card>
             <Space direction="horizontal" size={16} className="flex-wrap">
               <Card
                 style={{
-                  width: 300,
+                  width: 350,
                 }}
               >
                 <Space direction="horizontal" size={10}>
                   <QuestionOutlined />
                   <h1>Number of Patients</h1>
-                </Space>
-              </Card>
-              <Card
-                style={{
-                  width: 300,
-                }}
-              >
-                <Space direction="horizontal" size={10}>
-                  <QuestionOutlined />
-                  <h1>Schedule ni Doc</h1>
-                </Space>
-              </Card>
-              <Card
-                style={{
-                  width: 300,
-                }}
-              >
-                <Space direction="horizontal" size={10}>
-                  <QuestionOutlined />
-                  <h1>Profile Update</h1>
                 </Space>
               </Card>
             </Space>
