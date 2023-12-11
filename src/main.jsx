@@ -11,10 +11,8 @@ import {
   Navigate,
 } from "react-router-dom";
 import { ThemeProvider } from "./ThemeContext";
-// import App from "./App.jsx";
-// import Landing from "./pages/Landing.jsx";
-//import 'bootstrap/dist/css/bootstrap.in';
 
+//LANDING
 import Landing from "./Landing.jsx";
 import Home from "./components/Home/Home.jsx";
 import About from "./components/About/About.jsx";
@@ -25,19 +23,21 @@ import NotFound from "./components/NotFound/NotFound.jsx";
 import BookAppointment from "./components/Book/BookAppointment.jsx";
 import CheckAppointment from "./components/Book/CheckAppointment.jsx";
 import AppointmentSuccess from "./components/Book/AppointmentSuccess.jsx";
-
+//ADMIN
 import AdminHome from "./components/Admin/AdminHome.jsx";
 import AdminAppointment from "./components/Admin/AdminAppointment.jsx";
 import AdminSchedule from "./components/Admin/AdminSchedule.jsx";
 import AdminPatientRecord from "./components/Admin/AdminPatientrecord.jsx";
 import AdminAccount from "./components/Admin/AdminAccount.jsx";
-
+import AdminCalendar from "./components/Admin/AdminCalendar.jsx";
+//DOCTOR
 import DoctorDashboard from "./DoctorDashboard.jsx";
 import DoctorHome from "./components/Doctor/DoctorHome.jsx";
 import DoctorAppointment from "./components/Doctor/DoctorAppointment.jsx";
 import DoctorSchedule from "./components/Doctor/DoctorSchedule.jsx";
 import DoctorAccount from "./components/Doctor/DoctorAccount.jsx";
-import AdminCalendar from "./components/Admin/AdminCalendar.jsx";
+import DoctorPatientRecord from "./components/Doctor/DoctorPatientRecord.jsx";
+import DoctorEMR from "./components/Doctor/DoctorEMR.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -66,8 +66,9 @@ const router = createBrowserRouter(
         <Route path="doctorhome" element={<DoctorHome />} />
         <Route path="doctorappointment" element={<DoctorAppointment />} />
         <Route path="doctorschedule" element={<DoctorSchedule />} />
-        <Route path="doctorpatientrecord" element={<AdminPatientRecord />} />
+        <Route path="doctorpatientrecord" element={<DoctorPatientRecord />} />
         <Route path="doctoraccount" element={<DoctorAccount />} />
+        <Route path="doctoremr" element={<DoctorEMR />} />
       </Route>
     </>
   )
@@ -75,11 +76,8 @@ const router = createBrowserRouter(
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    {/* <BrowserRouter> */}
-    {/* <App /> */}
     <ThemeProvider>
       <RouterProvider router={router} />
-      {/* </BrowserRouter> */}
     </ThemeProvider>
   </React.StrictMode>
 );

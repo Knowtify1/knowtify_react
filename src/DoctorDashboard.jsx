@@ -12,6 +12,7 @@ import {
   CloseOutlined,
   LeftOutlined,
 } from "@ant-design/icons";
+import knowtifylogov2 from "./assets/icon.ico";
 
 const { Header, Sider } = Layout;
 
@@ -50,14 +51,14 @@ function DoctorDashboard() {
   };
 
   const logoIconStyle = {
-    width: "40px",
-    height: "40px",
+    width: "55px",
+    height: "55px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     fontSize: "1.5rem",
     borderRadius: "50%",
-    background: "rgba(28, 17, 41, 0.88)",
+    // background: "rgba(28, 17, 41, 0.88)",
   };
 
   const toggleSidebar = () => {
@@ -78,7 +79,7 @@ function DoctorDashboard() {
         >
           <div style={logo}>
             <div style={logoIconStyle}>
-              <FireFilled />
+              <img src={knowtifylogov2} alt="knowtifylogo" className="" />
             </div>
           </div>
           <DoctorMenu />
