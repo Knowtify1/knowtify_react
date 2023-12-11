@@ -20,37 +20,32 @@ function DoctorPatientsRecords() {
   const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
-    // Listen for changes in authentication state
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setAuthID(user); // Set the authenticated user's information
-        fetchPatientsRecords(user.uid); // Fetch patient records for the authenticated user
+        setAuthID(user);
+        fetchPatientsRecords(user.uid);
       } else {
-        setAuthID(null); // No authenticated user
-        setPatientsRecords([]); // Clear patient records
+        setAuthID(null);
+        setPatientsRecords([]);
       }
     });
 
-    // Clean up the subscription when the component unmounts
     return () => unsubscribe();
-  }, []); // Run this effect only once on component mount
+  }, []);
 
   const fetchPatientsRecords = async (doctorID) => {
     try {
-      // Query the Firestore collection for patient records based on the assigned doctor's ID
       const q = query(
         collection(db, "patientRecords"),
         where("assignedDoctorID", "==", doctorID)
       );
       const querySnapshot = await getDocs(q);
 
-      // Use map to transform QuerySnapshot into an array of patient records
       const records = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
 
-      // Set the patient records in the state
       setPatientsRecords(records);
     } catch (error) {
       console.error("Error fetching patient records:", error.message);
