@@ -10,7 +10,7 @@ import {
   where,
   getDocs,
 } from "../../../config/firebase.jsx";
-import { Spin, Space, Calendar, Badge } from "antd";
+import { Spin, Space, Calendar, Badge, Modal as AntModal } from "antd";
 import moment from "moment";
 
 function DoctorCalendar() {
@@ -18,6 +18,8 @@ function DoctorCalendar() {
   const [doctorsMoreDetails, setDoctorsMoreDetails] = useState([]);
   const [patientsData, setPatientsData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState(null);
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -128,7 +130,12 @@ function DoctorCalendar() {
   };
 
   const handleDateSelect = (date, appointments) => {
-    console.log("Selected date:", date, "Appointments:", appointments);
+    setSelectedPatient(appointments[0]); // Assuming you want details of the first appointment
+    setModalVisible(true);
+  };
+
+  const handleModalCancel = () => {
+    setModalVisible(false);
   };
 
   return (
@@ -150,13 +157,40 @@ function DoctorCalendar() {
           <Spin size="large" />
         </div>
       ) : (
-        <Calendar
-          cellRender={cellRender}
-          validRange={[startOfMonth, endOfMonth]}
-          disabledDate={disabledDate}
-          mode={calendarMode}
-          onPanelChange={handlePanelChange}
-        />
+        <>
+          <Calendar
+            cellRender={cellRender}
+            validRange={[startOfMonth, endOfMonth]}
+            disabledDate={disabledDate}
+            mode={calendarMode}
+            onPanelChange={handlePanelChange}
+          />
+
+          <AntModal
+            title={`Appointments on ${selectedPatient?.appointmentDate
+              ?.toDate()
+              .toLocaleDateString()}`}
+            visible={modalVisible}
+            onCancel={handleModalCancel}
+            footer={null}
+          >
+            {selectedPatient && (
+              <Space direction="vertical" size={10}>
+                <p>Patient Name: {selectedPatient.patientName}</p>
+                <p>
+                  Appointment Date:{" "}
+                  {moment(selectedPatient.appointmentDate.toDate()).format(
+                    "MMMM Do YYYY"
+                  )}
+                </p>
+                <p>Appointment Time: {selectedPatient.appointmentTime}</p>
+                <p>Reason: {selectedPatient.reasonForAppointment}</p>
+                <p>Doctor: {selectedPatient.assignedDoctor}</p>
+                <p>Reference ID: {selectedPatient.reference}</p>
+              </Space>
+            )}
+          </AntModal>
+        </>
       )}
     </div>
   );
