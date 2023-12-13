@@ -170,10 +170,9 @@ function TablePendingAppointments() {
 
       const appointmentsSnapshot = await getDocs(appointmentsQuery);
 
-      const appointmentsData = appointmentsSnapshot.docs.map((doc) => ({
-        key: doc.id,
-        ...doc.data(),
-      }));
+      const appointmentsData = appointmentsSnapshot.docs
+        .map((doc) => ({ key: doc.id, ...doc.data() }))
+        .sort((a, b) => a.appointmentDate - b.appointmentDate);
 
       //setData(appointmentsData);
       if (typeof setData === "function") {

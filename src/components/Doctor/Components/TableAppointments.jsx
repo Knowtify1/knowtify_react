@@ -41,7 +41,13 @@ function TableAppointments() {
                 id: doc.id,
                 ...doc.data(),
               }));
-              setAssignedPatients(patientsData);
+
+              // Sort patientsData based on appointmentDate in ascending order
+              const sortedPatientsData = patientsData.sort(
+                (a, b) => a.appointmentDate - b.appointmentDate
+              );
+
+              setAssignedPatients(sortedPatientsData);
             } else {
               console.log("Doctor document does not exist");
             }
@@ -68,8 +74,9 @@ function TableAppointments() {
     return <Spin size="large" />;
   }
 
-  const colums = [
+  const columns = [
     { title: "Patient Name", dataIndex: "patientName", key: "patientName" },
+    { title: "Patient Adress", dataIndex: "patientAddress", key: "patientAddress" },
     {
       title: "Appointment Time",
       dataIndex: "appointmentDate",
@@ -109,7 +116,7 @@ function TableAppointments() {
         </div>
       )}
 
-      <Table dataSource={assignedPatients} columns={colums} />
+      <Table dataSource={assignedPatients} columns={columns} />
     </div>
   );
 }

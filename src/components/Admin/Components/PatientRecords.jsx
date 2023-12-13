@@ -1,98 +1,118 @@
-import React, { useState } from "react";
-import { Form, Input, Button, Card, Space, Spin } from "antd";
+import React, { useEffect, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import {
+  auth,
+  db,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "../../../config/firebase.jsx";
+import { Table, Input } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
 
+const { Search } = Input;
 
 function PatientRecords() {
-  const [loading, setLoading] = useState(false);
-  const [patientDetails, setPatientDetails] = useState(null);
+  const [authID, setAuthID] = useState(null);
+  const [patientsRecords, setPatientsRecords] = useState([]);
+  const [filteredPatients, setFilteredPatients] = useState([]);
+  const [searchText, setSearchText] = useState("");
 
-  const onFinish = async (values) => {
-    const referenceID = values.referenceID;
-    setLoading(true);
-
-    try {
-      const patientRef = doc(db, "patients", referenceID);
-      const docSnapshot = await getDoc(patientRef);
-
-      if (docSnapshot.exists()) {
-        const patientData = docSnapshot.data();
-        setPatientDetails(patientData);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setAuthID(user);
+        fetchPatientsRecords(user.uid);
       } else {
-        console.log("No patient found with the provided reference ID.");
-        setPatientDetails(null);
+        setAuthID(null);
+        setPatientsRecords([]);
       }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const fetchPatientsRecords = async (doctorID) => {
+    try {
+      const q = query(
+        collection(db, "patientRecords"),
+      );
+      const querySnapshot = await getDocs(q);
+
+      const records = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setPatientsRecords(records);
     } catch (error) {
-      console.error("Error fetching document:", error);
-    } finally {
-      setLoading(false);
+      console.error("Error fetching patient records:", error.message);
     }
   };
 
+  const columns = [
+    {
+      title: "Reference ID",
+      dataIndex: "reference",
+      key: "reference",
+    },
+    {
+      title: "Patient Name",
+      dataIndex: "patientName",
+      key: "patientName",
+    },
+    {
+      title: "Assigned Doctor",
+      dataIndex: "assignedDoctor",
+      key: "assignedDoctor",
+    },
+    {
+      title: "Medical History",
+      dataIndex: "medicalHistory",
+      key: "medicalHistory",
+    },
+    {
+      title: "Previous Diagnoses",
+      dataIndex: "previousDiagnoses",
+      key: "previousDiagnoses",
+    },
+    {
+      title: "Medications Prescribed Previously",
+      dataIndex: "medicationsPrescribed",
+      key: "medicationsPrescribed",
+    },
+    {
+      title: "Allergies",
+      dataIndex: "allergies",
+      key: "allergies",
+    },
+    {
+      title: "Previous Surgeries or Treatments",
+      dataIndex: "surgeriesTreatment",
+      key: "surgeriesTreatment",
+    },
+    {
+      title: "Family Medical History",
+      dataIndex: "familyMedicalHistory",
+      key: "familyMedicalHistory",
+    },
+    // Add more columns based on your patient record structure
+  ];
+
+  // Render the component with patient records
   return (
-    <>
-      <div className="flex flex-col justify-center items-center h-screen">
-        <Card
-          title="Get Patient Details"
-          style={{ width: 400 }}
-          className="p-8"
-        >
-          <Form
-            name="getPatientDetails"
-            initialValues={{
-              remember: true,
-            }}
-            onFinish={onFinish}
-          >
-            <Form.Item
-              label="Patient Reference ID"
-              name="referenceID"
-              rules={[
-                {
-                  required: true,
-                  message: "Please enter the patient reference ID!",
-                },
-              ]}
-            >
-              <Input />
-                      </Form.Item>
-                      
-                      <Form
-            name="checkAppointmentStatus"
-            initialValues={{
-              remember: true,
-            }}
-            onFinish={onFinish}
-          ></Form>
+    <div>
+      <h2>Patients Records</h2>
 
-            <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                className="bg-blue-500 hover:bg-blue-700"
-              >
-                Get Patient Details
-              </Button>
-            </Form.Item>
-          </Form>
-
-          {loading && (
-            <Space size="middle" className="mt-4">
-              <Spin size="large" />
-            </Space>
-          )}
-
-          {patientDetails && !loading && (
-            <div className="mt-4">
-              <h2>Patient Details</h2>
-              <p>Name: {patientDetails.patientName}</p>
-              <p>Contact Number: {patientDetails.contactNo}</p>
-              <p>Appointment Date: {patientDetails.appointmentDate?.toDate().toLocaleDateString()}</p>
-              {/* Add other patient details as needed */}
-            </div>
-          )}
-        </Card>
-      </div>
-    </>
+      <Table
+        dataSource={
+          filteredPatients.length > 0 ? filteredPatients : patientsRecords
+        }
+        columns={columns}
+        rowKey="id"
+      />
+    </div>
   );
 }
 

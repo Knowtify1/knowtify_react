@@ -54,6 +54,11 @@ function DoctorPatientsRecords() {
 
   const columns = [
     {
+      title: "Reference ID",
+      dataIndex: "reference",
+      key: "reference",
+    },
+    {
       title: "Patient Name",
       dataIndex: "patientName",
       key: "patientName",
@@ -64,9 +69,34 @@ function DoctorPatientsRecords() {
       key: "assignedDoctor",
     },
     {
+      title: "Medical History",
+      dataIndex: "medicalHistory",
+      key: "medicalHistory",
+    },
+    {
       title: "Previous Diagnoses",
       dataIndex: "previousDiagnoses",
       key: "previousDiagnoses",
+    },
+    {
+      title: "Medications Prescribed Previously",
+      dataIndex: "medicationsPrescribed",
+      key: "medicationsPrescribed",
+    },
+    {
+      title: "Allergies",
+      dataIndex: "allergies",
+      key: "allergies",
+    },
+    {
+      title: "Previous Surgeries or Treatments",
+      dataIndex: "surgeriesTreatment",
+      key: "surgeriesTreatment",
+    },
+    {
+      title: "Family Medical History",
+      dataIndex: "familyMedicalHistory",
+      key: "familyMedicalHistory",
     },
     // Add more columns based on your patient record structure
   ];
@@ -86,5 +116,7 @@ function DoctorPatientsRecords() {
     </div>
   );
 }
+
+
 
 export default DoctorPatientsRecords;

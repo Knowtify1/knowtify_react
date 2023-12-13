@@ -23,6 +23,8 @@ const AdminFullCalendar = () => {
   const [loading, setLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [currentSelectedDate, setCurrentSelectedDate] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -105,7 +107,7 @@ const AdminFullCalendar = () => {
               <Badge
                 status="success"
                 text={appointment.patientName}
-                onClick={() => handleDateSelect(current, filteredAppointments)}
+                onClick={() => handleDateSelect(current, appointment)}
               />
             </li>
           ))}
@@ -116,8 +118,9 @@ const AdminFullCalendar = () => {
     return null;
   };
 
-  const handleDateSelect = (selectedDate, data) => {
-    setSelectedDate({ date: selectedDate, data });
+  const handleDateSelect = (selectedDate, patient) => {
+    setCurrentSelectedDate({ date: selectedDate, data: [patient] });
+    setSelectedPatient(patient);
     setModalVisible(true);
   };
 
@@ -126,9 +129,7 @@ const AdminFullCalendar = () => {
   };
 
   const handlePanelChange = (value, mode) => {
-    if (mode === "year") {
-      setCalendarMode("month");
-    }
+    setCalendarMode(mode);
   };
 
   const currentDate = moment();
@@ -185,31 +186,28 @@ const AdminFullCalendar = () => {
         />
       </Card>
       <Modal
-        title={`Appointments on ${selectedDate?.date?.format("DD-MM-YYYY")}`}
+        title={`Appointments on ${currentSelectedDate?.date?.format(
+          "DD-MM-YYYY"
+        )}`}
         open={modalVisible}
         onCancel={handleModalCancel}
         footer={null}
       >
-        <ul>
-          {selectedDate?.data.map((appointment) => {
-            console.log("Appointment Details:", appointment);
-            const appointmentDate = moment(
-              appointment.appointmentDate.toDate()
-            ).format("MMMM Do YYYY");
-            return (
-              <li key={appointment.id}>
-                <Space direction="vertical" size={10}>
-                  <p>Patient Name: {appointment.patientName}</p>
-                  <p>Appointment Date: {appointmentDate}</p>
-                  <p>Appointment Time: {appointment.appointmentTime}</p>
-                  <p>Reason: {appointment.reasonForAppointment}</p>
-                  <p>Doctor: {appointment.assignedDoctor}</p>
-                  <p>Reference ID: {appointment.reference}</p>
-                </Space>
-              </li>
-            );
-          })}
-        </ul>
+        {selectedPatient && (
+          <Space direction="vertical" size={10}>
+            <p>Patient Name: {selectedPatient.patientName}</p>
+            <p>
+              Appointment Date:{" "}
+              {moment(selectedPatient.appointmentDate.toDate()).format(
+                "MMMM Do YYYY"
+              )}
+            </p>
+            <p>Appointment Time: {selectedPatient.appointmentTime}</p>
+            <p>Reason: {selectedPatient.reasonForAppointment}</p>
+            <p>Doctor: {selectedPatient.assignedDoctor}</p>
+            <p>Reference ID: {selectedPatient.reference}</p>
+          </Space>
+        )}
       </Modal>
     </>
   );
