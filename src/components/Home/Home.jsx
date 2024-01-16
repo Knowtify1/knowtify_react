@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import knowtifylogo from "../../assets/knowtifylogo.png";
 import knowtifylogov2 from "../../assets/knowtifymod.svg";
 import doc from "../../assets/doc.png";
-import patient from "../../assets/patient.png";
+import pat from "../../assets/pat.png";
 
 
 
@@ -63,9 +63,10 @@ function Home() {
           title="I am a Patient"
           style={cardStyle}
           onClick={() => handleUserTypeSelection('patient')}
-          cover={<img src={patient} alt="bookheader" className="" />}
+          cover={<img src={pat} alt="bookheader" className="" />}
         >
         </Card>
+
 
         <Card
           title="I am a Doctor"
