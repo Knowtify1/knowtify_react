@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Space, Spin, DatePicker, Button, Modal, Select } from "antd";
+import { Table, Space, Spin, DatePicker, Button, Modal, Select, Popconfirm, message } from "antd";
 import {
   doc,
   db,
@@ -9,9 +9,9 @@ import {
   query,
   fsTimeStamp,
   runTransaction,
+  deleteDoc as deleteDocument,
 } from "../../../config/firebase.jsx";
 
-//const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 const typesofDoc = [
@@ -34,6 +34,7 @@ function TableApprovedAppointments() {
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [doctorsList, setDoctorsList] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
+
   const columns = [
     {
       title: "Name",
@@ -43,13 +44,13 @@ function TableApprovedAppointments() {
       title: "Appointment Date",
       dataIndex: "dateOfAppointment",
       render: (text, record) => (
-        <span>{formatDate(record.appointmentDate)}</span>
+        <span>{record.appointmentDate?.toDate().toLocaleDateString()}</span>
       ),
     },
     {
       title: "Appointment Time",
       dataIndex: "appointmentTime",
-      render: (text) => <span>{text.replace(/"/g, "")}</span>,
+      render: (text) => <span>{text ? text.replace(/"/g, "") : ""}</span>,
     },
     {
       title: "Reason",
@@ -87,14 +88,27 @@ function TableApprovedAppointments() {
     {
       title: "Action",
       dataIndex: "action",
-      render: (text, record) =>
-        record.status !== "assigned" && (
-          <Space direction="horizontal">
-            <Button type="link" onClick={() => handleAssign(record)}>
-              Assign
-            </Button>
-          </Space>
-        ),
+      render: (text, record) => (
+        <Space direction="horizontal">
+          {record.status !== "assigned" && (
+            <>
+              <Button type="link" onClick={() => handleAssign(record)}>
+                Assign
+              </Button>
+              <Popconfirm
+                title="Are you sure to delete this appointment?"
+                onConfirm={() => handleDelete(record.key)}
+                okText="Yes"
+                cancelText="No"
+              >
+                <Button type="link" danger>
+                  Delete
+                </Button>
+              </Popconfirm>
+            </>
+          )}
+        </Space>
+      ),
     },
   ];
 
@@ -107,7 +121,6 @@ function TableApprovedAppointments() {
       let appointmentsQuery = collection(db, "patients");
 
       if (selectedDate) {
-        // If a date is selected, add a filter based on date
         const startOfDayTimestamp = fsTimeStamp.fromDate(
           new Date(selectedDate.setHours(0, 0, 0, 0))
         );
@@ -119,16 +132,8 @@ function TableApprovedAppointments() {
           appointmentsQuery,
           where("appointmentDate", ">=", startOfDayTimestamp),
           where("appointmentDate", "<=", endOfDayTimestamp)
-          //where("approved", "===", true)
         );
       }
-      // else {
-      //   // Add a filter to only fetch appointments with status "Pending"
-      //   appointmentsQuery = query(
-      //     appointmentsQuery,
-      //     where("status", "==", "assigned")
-      //   );
-      // }
 
       const appointmentsSnapshot = await getDocs(appointmentsQuery);
 
@@ -137,13 +142,10 @@ function TableApprovedAppointments() {
         ...doc.data(),
       }));
 
-      //setData(appointmentsData);
       if (typeof setData === "function") {
         setData(appointmentsData);
         setLoading(false);
       }
-
-      console.error("firebase data", appointmentsData);
     } catch (error) {
       console.error("Error fetching appointments:", error);
       setLoading(false);
@@ -167,20 +169,28 @@ function TableApprovedAppointments() {
   };
 
   const handleAssign = (record) => {
-    console.log("Assigning key:", record.key);
-    console.log("Record:", record);
     setSelectedPatient(record);
     setIsModalVisible(true);
 
     const typeOfDoctor = record.typeOfDoctor || null;
-    console.log("typeofdoc ", typeOfDoctor);
     fetchDoctorsList(typeOfDoctor);
   };
 
+  const handleDelete = async (key) => {
+    try {
+      await deleteDocument(collection(db, "patients"), key);
+      message.success("Appointment deleted successfully!");
+      fetchApprovedAppointments(selectedDate, setData, setLoading);
+    } catch (error) {
+      console.error("Error deleting appointment:", error);
+      message.error("Error deleting appointment. Please try again.");
+    }
+  };
+
+  
+
   const handleModalOk = async () => {
     if (selectedDoctor) {
-      console.log("Selected Doctor:", selectedDoctor);
-
       try {
         const { id, name, specialty } = selectedDoctor;
         const patientRef = doc(db, "patients", selectedPatient.key);
@@ -200,7 +210,6 @@ function TableApprovedAppointments() {
           transaction.update(patientRef, updatedData);
         });
 
-        console.log("Patient document updated successfully!");
         setIsModalVisible(false);
         fetchApprovedAppointments(selectedDate, setData, setLoading);
       } catch (error) {
@@ -217,7 +226,6 @@ function TableApprovedAppointments() {
   const handleDateChange = (date) => {
     const selectedDate = date ? date.toDate() : null;
     setSelectedDate(selectedDate);
-    console.log(selectedDate);
     fetchApprovedAppointments(selectedDate, setData, setLoading);
   };
 
@@ -236,11 +244,6 @@ function TableApprovedAppointments() {
     const formattedDate = today.toLocaleDateString(undefined, options);
 
     return `Today is ${formattedDate}`;
-  };
-
-  const formatDate = (date) => {
-    const options = { month: "long", day: "numeric", year: "numeric" };
-    return date.toDate().toLocaleDateString(undefined, options);
   };
 
   return (

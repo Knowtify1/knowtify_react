@@ -1,11 +1,83 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import Modal from "react-modal";
+import { Card, Button } from 'antd';
+import { UserOutlined, MedicineBoxOutlined } from '@ant-design/icons';
 import { Link } from "react-router-dom";
 import knowtifylogo from "../../assets/knowtifylogo.png";
 import knowtifylogov2 from "../../assets/knowtifymod.svg";
+import doc from "../../assets/doc.png";
+import patient from "../../assets/patient.png";
+
+
 
 function Home() {
+  const [modalIsOpen, setModalIsOpen] = useState(true);
+  const [userType, setUserType] = useState(""); // "patient" or "doctor"
+
+  const closeModal = () => {
+    setModalIsOpen(false);
+  };
+
+  const handleUserTypeSelection = (type) => {
+    setUserType(type);
+    closeModal();
+  };
+
+  useEffect(() => {
+    // Handle userType state as needed
+    console.log("User type selected:", userType);
+  }, [userType]);
+
+  const cardStyle = {
+    width: 400,
+    cursor: 'pointer',
+    padding: '20px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  };
+
   return (
     <div className="min-h-screen">
+      <Modal
+      isOpen={modalIsOpen}
+      onRequestClose={closeModal}
+      contentLabel="User Type Modal"
+      style={{
+        overlay: {
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        },
+        content: {
+          backgroundColor: 'transparent',
+          border: 'none',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+      }}
+    >
+      <div style={{ textAlign: 'center', color: 'white' }}>
+        <p style={{ fontSize: '1.5rem' }}>Choose your role:</p>
+      <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+        <Card
+          title="I am a Patient"
+          style={cardStyle}
+          onClick={() => handleUserTypeSelection('patient')}
+          cover={<img src={patient} alt="bookheader" className="" />}
+        >
+        </Card>
+
+        <Card
+          title="I am a Doctor"
+          style={cardStyle}
+          onClick={() => handleUserTypeSelection('doctor')}
+          cover={<img src={doc} alt="bookheader" className="" />}
+        >
+        </Card>
+          </div>
+          </div>
+    </Modal>
+
       <header className="bg-white py-4 shadow">
         <div className="container mx-auto flex items-center justify-between">
           <img src={knowtifylogov2} alt="knowtifylogo" className="h-12" />

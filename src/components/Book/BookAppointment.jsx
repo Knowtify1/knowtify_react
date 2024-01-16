@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Button, Card, Modal, notification } from "antd";
-const { Meta } = Card;
+import { ConfigProvider } from "antd";
+import ReCAPTCHA from "react-google-recaptcha";
+import BookAppointmentForm from "./BookAppointmentForm";
 import bookheader from "../../assets/Book/header.jpg";
 import clinic from "../../assets/Book/clinic.png";
 import general from "../../assets/Book/generl.jpg";
@@ -11,11 +13,10 @@ import ob from "../../assets/Book/ob.jpg";
 import pedia from "../../assets/Book/pedia.jpg";
 import physical from "../../assets/Book/physical.jpg";
 import pulmonology from "../../assets/Book/pulmonology.jpg";
-import { ConfigProvider } from "antd";
-import BookAppointmentForm from "./BookAppointmentForm";
 
 function BookAppointment() {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [captchaValue, setCaptchaValue] = useState(null);
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -32,8 +33,24 @@ function BookAppointment() {
     });
   };
 
+  const handleCaptchaChange = (value) => {
+    setCaptchaValue(value);
+  };
+
+  const handleBookAppointment = () => {
+    // Check if the captcha has been successfully validated
+    if (captchaValue) {
+      setIsModalVisible(true);
+    } else {
+      notification.error({
+        message: 'Captcha Validation Failed',
+        description: 'Please complete the captcha before booking an appointment.',
+      });
+    }
+  };
+
   return (
-    <>
+    <ConfigProvider>
       <div className="book_appointment container mx-auto">
         <div className="relative">
           <img
@@ -52,10 +69,15 @@ function BookAppointment() {
                 Elevate Your Health Journey: Seamless Booking, Exceptional Care at
                 Mountain Top Specialty Clinic.
               </h1>
+              <ReCAPTCHA
+                sitekey="6LdxRU8pAAAAAPtTPMi4pwlsanI-7R96R7SvkP8k"
+                onChange={handleCaptchaChange}
+              />
               <Button
                 onClick={showModal}
                 type="primary"
                 className="bg-green-600 rounded mt-3"
+                disabled={!captchaValue} // Disable button if captcha is not completed
               >
                 Book Appointment
               </Button>
@@ -63,20 +85,7 @@ function BookAppointment() {
           </div>
         </div>
         <div className="pl-8 pr-8 pb-5 pt-5">
-          <h1 className="text-center">About Us</h1>
-          <p className="text-center">
-            Your go-to clinic in Baguio City, with specialists in IM, Pedia,
-            Pulmo, IDS, Hema, Ortho, OB, & Rehab. Welcome to Mountain Top
-            Specialty Clinic, where your health is our priority. Our dedicated
-            team of healthcare professionals is committed to providing
-            high-quality, compassionate care to our community. At our clinic, we
-            offer a range of specialized medical services to address your unique
-            healthcare needs. Whether you require routine check-ups, specialized
-            treatments, or expert consultations, we are here for you.
-          </p>
-        </div>
-        <div className="pl-8 pr-8 pb-5 pt-5" id="bookapp">
-          <h1>Book Appointment</h1>
+          {/* ... (remaining code) ... */}
           <Modal
             title="Book Appointment"
             visible={isModalVisible}
@@ -97,7 +106,6 @@ function BookAppointment() {
             </Card>
           </Modal>
         </div>
-
         <div className="pl-8 pr-8 pb-5 pt-5">
           <h1>Contact Us</h1>
           <p>
@@ -200,7 +208,7 @@ function BookAppointment() {
           </div>
         </div>
       </div>
-    </>
+    </ConfigProvider>
   );
 }
 
