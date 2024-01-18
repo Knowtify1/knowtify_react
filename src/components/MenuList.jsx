@@ -17,7 +17,7 @@ export const MenuList = ({ darkTheme }) => {
       theme={darkTheme ? "dark" : "light"}
       mode="inline"
       className="menubar"
-      style={{ height: "100%", overflowY: "auto", position: "fixed" }}
+      style={{ height: "100%", position: "fixed", top: 0 }}
     >
       <Menu.Item key="home" icon={<HomeOutlined />}>
         Home

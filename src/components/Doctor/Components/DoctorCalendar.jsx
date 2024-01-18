@@ -103,9 +103,14 @@ function DoctorCalendar() {
             <li key={appointment.id}>
               <Badge
                 status="success"
-                text={appointment.patientName}
-                onClick={() => handleDateSelect(current, filteredAppointments)}
-                className="clickable-badge" // Add this class for styling
+                text={
+                  <span
+                    className="clickable-badge" // Add this class for styling
+                    onClick={() => handleDateSelect(current, appointment)}
+                  >
+                    {appointment.patientName}
+                  </span>
+                }
               />
             </li>
           ))}
@@ -130,8 +135,8 @@ function DoctorCalendar() {
     console.log(value, mode);
   };
 
-  const handleDateSelect = (date, appointments) => {
-    setSelectedPatient(appointments[0]); // Assuming you want details of the first appointment
+  const handleDateSelect = (date, selectedPatient) => {
+    setSelectedPatient(selectedPatient);
     setModalVisible(true);
   };
 

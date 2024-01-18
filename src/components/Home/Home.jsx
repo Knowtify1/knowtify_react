@@ -24,7 +24,7 @@ function Home() {
     closeModal();
 
     if (type === "patient") {
-      navigate("/appointment");
+      navigate("/patienthome");
     } else if (type === "doctor") {
       navigate("/login");
     }

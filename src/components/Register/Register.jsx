@@ -2,10 +2,12 @@ import React from "react";
 import { useState } from "react";
 import { auth, googleProvider } from "../../config/firebase";
 import { signInWithPopup, createUserWithEmailAndPassword } from "firebase/auth";
-import { Button, Form, Input, Card, Select, Spin } from "antd";
+import { Button, Form, Input, Card, Select, Spin , Upload, message} from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import { setDoc, doc, db, fsTimeStamp } from "../../config/firebase";
 import { Timestamp } from "firebase/firestore";
+import { InboxOutlined } from "@ant-design/icons";
+
 
 function Register() {
   const navigate = useNavigate();
@@ -13,7 +15,7 @@ function Register() {
 
   const signInWithGoogle = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      await auth.signInWithPopup(googleProvider);
     } catch (e) {
       console.error(e);
     }
@@ -47,6 +49,23 @@ function Register() {
     }
   };
 
+  const createPatientCollection = async (userId, name) => {
+    const patientsCollection = doc(db, "patients", `${userId}`);
+    try {
+      const docData = {
+        name: name,
+        uid: userId,
+        // Add other patient-specific data as needed
+      };
+
+      await setDoc(patientsCollection, docData);
+
+      console.log("Patient collection created successfully");
+    } catch (error) {
+      console.error("Error creating patient collection:", error);
+    }
+  };
+
   const onFinish = async (values) => {
     const { name, email, password, role } = values;
     try {
@@ -69,6 +88,8 @@ function Register() {
 
           if (role === "doctor") {
             createDoctorCollection(user.uid, name);
+          } else if (role === "patient") {
+            createPatientCollection(user.uid, name);
           }
 
           navigate("/login");
@@ -166,7 +187,7 @@ function Register() {
             <Select placeholder="Select a role">
               <Select.Option value="doctor">Doctor</Select.Option>
               <Select.Option value="admin">Secretary</Select.Option>
-              <Select.Option value="admin">Patient</Select.Option>
+              <Select.Option value="patient">Patient</Select.Option>
             </Select>
           </Form.Item>
 
@@ -185,7 +206,6 @@ function Register() {
               className="bg-green-600 w-full"
               loading={loading}
             >
-
               Register
             </Button>
           </Form.Item>

@@ -41,6 +41,8 @@ const Login = () => {
             navigate("/admindashboard", { replace: true });
           } else if (type === "doctor") {
             navigate("/doctordashboard", { replace: true });
+          } else if (type === "patient") {
+            navigate("/patientdashboard", { replace: true });
           } else {
             navigate("/home", { replace: true });
           }

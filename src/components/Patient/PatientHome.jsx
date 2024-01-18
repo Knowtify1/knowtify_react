@@ -1,7 +1,8 @@
 import React from "react";
 import { Card } from "antd";
 
-function PatientDashboard() {
+
+function PatientHome() {
   return (
     <div>
       <Card title="Welcome to Your Dashboard">
@@ -15,4 +16,4 @@ function PatientDashboard() {
   );
 }
 
-export default PatientDashboard;
+export default PatientHome;

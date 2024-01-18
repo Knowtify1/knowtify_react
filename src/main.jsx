@@ -23,6 +23,8 @@ import NotFound from "./components/NotFound/NotFound.jsx";
 import BookAppointment from "./components/Book/BookAppointment.jsx";
 import CheckAppointment from "./components/Book/CheckAppointment.jsx";
 import AppointmentSuccess from "./components/Book/AppointmentSuccess.jsx";
+import PatientHome from "./components/Patient/PatientHome.jsx";
+
 //ADMIN
 import AdminHome from "./components/Admin/AdminHome.jsx";
 import AdminAppointment from "./components/Admin/AdminAppointment.jsx";
@@ -38,6 +40,8 @@ import DoctorSchedule from "./components/Doctor/DoctorSchedule.jsx";
 import DoctorAccount from "./components/Doctor/DoctorAccount.jsx";
 import DoctorPatientRecord from "./components/Doctor/DoctorPatientRecord.jsx";
 import DoctorEMR from "./components/Doctor/DoctorEMR.jsx";
+//PATIENT
+import PatientDashboard from "./PatientDashboard.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -50,6 +54,7 @@ const router = createBrowserRouter(
         <Route path="appointment" element={<BookAppointment />} />
         <Route path="checkappointment" element={<CheckAppointment />} />
         <Route path="appointmentsuccess" element={<AppointmentSuccess />} />
+        <Route path="patienthome" element={<PatientHome />} />
         <Route path="*" element={<NotFound />} />
       </Route>
       <Route path="admindashboard" element={<AdminDashboard />}>
@@ -70,6 +75,11 @@ const router = createBrowserRouter(
         <Route path="doctoraccount" element={<DoctorAccount />} />
         <Route path="doctoremr" element={<DoctorEMR />} />
       </Route>
+      <Route path="patientdashboard" element={<PatientDashboard />}>
+        <Route index path="" element={<PatientHome />} />
+      </Route>
+
+
     </>
   )
 );
