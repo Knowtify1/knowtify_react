@@ -63,7 +63,7 @@ function TableApprovedAppointments() {
         <span
           className={`inline-block px-2 py-1 rounded border ${
             text === "approved"
-              ? "bg-green-500 text-white border-red-400"
+              ? "bg-green-500 text-white border-blue-400"
               : text === "assigned"
               ? "bg-blue-500 text-white border-blue-400"
               : ""
@@ -95,16 +95,6 @@ function TableApprovedAppointments() {
               <Button type="link" onClick={() => handleAssign(record)}>
                 Assign
               </Button>
-              <Popconfirm
-                title="Are you sure to delete this appointment?"
-                onConfirm={() => handleDelete(record.key)}
-                okText="Yes"
-                cancelText="No"
-              >
-                <Button type="link" danger>
-                  Delete
-                </Button>
-              </Popconfirm>
             </>
           )}
         </Space>

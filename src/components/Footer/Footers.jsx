@@ -58,7 +58,7 @@ function CustomFooter() {
         </div>
         <div className="text-left">
           <p>
-            &copy; 2023 Knowtify. Created by UC Students
+            &copy; 2024 Knowtify. Created by UC Students
             <br />
             Follow Us:{" "}
             <a

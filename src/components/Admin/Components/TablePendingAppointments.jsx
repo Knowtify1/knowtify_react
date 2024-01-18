@@ -71,14 +71,14 @@ function TablePendingAppointments() {
             Approve
           </Button>
           <Popconfirm
-            title="Are you sure to delete"
+            title="Are you sure to Reschedule?"
             onConfirm={() =>
               handleDelete(record.key, setData, setLoading, selectedDate)
             }
             okButtonProps={{ className: "bg-rose-800" }}
           >
             <Button type="link" danger>
-              Delete
+              Reschedule
             </Button>
           </Popconfirm>
         </>

@@ -94,6 +94,10 @@ function DoctorAppointment() {
             setAppointmentStatus("Appointment is approved");
             setReceipt(appointmentData.receipt);
             showModal();
+          } else if (appointmentStatus === "assigned") {
+            setAppointmentStatus("Appointment is assigned");
+            setReceipt(appointmentData.receipt);
+            showModal();
           } else {
             setAppointmentStatus("Unknown status");
             setReceipt(null);
@@ -112,6 +116,11 @@ function DoctorAppointment() {
             setReceipt(null);
           } else if (patientStatus === "approved") {
             setAppointmentStatus("Appointment is approved");
+            // Set receipt or other relevant information from patient data
+            setReceipt(patientData.receipt);
+            showModal();
+          } else if (patientStatus === "assigned") {
+            setAppointmentStatus("Appointment is assigned");
             // Set receipt or other relevant information from patient data
             setReceipt(patientData.receipt);
             showModal();

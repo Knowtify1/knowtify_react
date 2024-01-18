@@ -216,11 +216,10 @@ useEffect(() => {
   console.log('Failed:', errorInfo);
 };
 
-const disabledDate = (current) => {
+const disabledDate = async (current) => {
   const formattedDate = dayjs(current).format('YYYY-MM-DD');
-  const isBookedDate = existingAppointments.some(
-    (appointment) => appointment.date === formattedDate
-  );
+  const selectedType = form.getFieldValue('type');
+  const existingAppointments = await fetchExistingAppointments(selectedType, formattedDate);
 
   return (
     // Disable past days
@@ -228,22 +227,46 @@ const disabledDate = (current) => {
     // Disable days based on doctor's availability
     !availableDays.includes(dayjs(current).format('dddd')) ||
     // Disable dates that have already been booked
-    isBookedDate
+    existingAppointments.length > 0
   );
 };
 
-const disabledTime = (current, type) => {
+const fetchExistingAppointments = async (selectedType, selectedDate) => {
+  try {
+    const appointmentsCollection = collection(db, "appointments");
+    const q = query(
+      appointmentsCollection,
+      where("typeOfDoctor", "==", selectedType),
+      where("appointmentDate", ">=", dayjs(selectedDate).startOf('day').toDate()),
+      where("appointmentDate", "<=", dayjs(selectedDate).endOf('day').toDate())
+    );
+    const querySnapshot = await getDocs(q);
+
+    const appointments = querySnapshot.docs.map((doc) => ({
+      date: dayjs(doc.data().appointmentDate.toDate()).format("YYYY-MM-DD"),
+      time: JSON.parse(doc.data().appointmentTime).value,
+    }));
+
+    return appointments;
+  } catch (error) {
+    console.error("Error fetching existing appointments", error);
+    return [];
+  }
+  };
+  
+  const disabledTime = async (current) => {
   const selectedDate = form.getFieldValue('adate');
   const formattedDate = dayjs(selectedDate).format('YYYY-MM-DD');
-  const isBookedTime = existingAppointments.some(
-    (appointment) =>
-      appointment.date === formattedDate &&
-      appointment.time === JSON.stringify(current)
-  );
+  const selectedTime = JSON.stringify(current);
+  const existingAppointments = await fetchExistingAppointments(form.getFieldValue('type'), formattedDate);
 
   return (
-    // Disable times that have already been booked for the selected date
-    isBookedTime
+    // Disable times that have already been booked for the selected date and time
+    existingAppointments.some(
+      (appointment) =>
+        appointment.date === formattedDate &&
+        appointment.time === selectedTime
+    )
   );
 };
 
@@ -344,14 +367,51 @@ const disabledTime = (current, type) => {
               rules={[
                 {
                   required: true,
-                  message: 'Please input your reason!',
+                  message: 'Please select or input your reason!',
                 },
               ]}
             >
-              <TextArea rows={4} />
+              <Select
+                showSearch
+                placeholder="Select or Specify"
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                allowClear
+              >
+                <Option value="follow-up">Follow-up</Option>
+                <Option value="consultation">Consultation</Option>
+                <Option value="other">Other</Option>
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              noStyle
+              shouldUpdate={(prevValues, currentValues) =>
+                prevValues.reasonforappointment !== currentValues.reasonforappointment
+              }
+            >
+              {({ getFieldValue }) => {
+                const selectedReason = getFieldValue('reasonforappointment');
+
+                return selectedReason === 'other' ? (
+                  <Form.Item
+                    name="customReason"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please specify your reason!',
+                      },
+                    ]}
+                  >
+                    <Input placeholder="Specify your reason" />
+                  </Form.Item>
+                ) : null;
+              }}
             </Form.Item>
           </Col>
-
+          
           <Col span={8}>
             <Form.Item
               label="Type of Doctor to Consult"
