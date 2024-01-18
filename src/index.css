@@ -108,3 +108,16 @@ body {
   color: #000000; /* Change to your desired hover color */
 }
 
+/* Add this to your CSS or component styles */
+.clickable-badge {
+  cursor: pointer;
+  border: 1px solid #ddd; /* Add your preferred border style */
+  border-radius: 5px; /* Adjust the border-radius as needed */
+  padding: 5px; /* Adjust the padding as needed */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add a soft box shadow */
+}
+
+.clickable-badge:hover {
+  background-color: #f0f0f0; /* Change background color on hover */
+}
+

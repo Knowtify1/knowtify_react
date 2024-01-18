@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { Card, Button } from 'antd';
 import { UserOutlined, MedicineBoxOutlined } from '@ant-design/icons';
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import knowtifylogo from "../../assets/knowtifylogo.png";
 import knowtifylogov2 from "../../assets/knowtifymod.svg";
 import doc from "../../assets/doc.png";
@@ -13,6 +13,7 @@ import pat from "../../assets/pat.png";
 function Home() {
   const [modalIsOpen, setModalIsOpen] = useState(true);
   const [userType, setUserType] = useState(""); // "patient" or "doctor"
+  const navigate = useNavigate();
 
   const closeModal = () => {
     setModalIsOpen(false);
@@ -21,6 +22,12 @@ function Home() {
   const handleUserTypeSelection = (type) => {
     setUserType(type);
     closeModal();
+
+    if (type === "patient") {
+      navigate("/appointment");
+    } else if (type === "doctor") {
+      navigate("/login");
+    }
   };
 
   useEffect(() => {
@@ -53,6 +60,7 @@ function Home() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          
         },
       }}
     >

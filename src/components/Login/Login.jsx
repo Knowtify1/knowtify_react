@@ -1,11 +1,10 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { auth } from "../../config/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { Button, Checkbox, Form, Input, Space, Card, Spin } from "antd";
+import { Button, Card, Form, Input, Space, Modal, Spin, Checkbox } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import { doc, db, getDoc } from "../../config/firebase";
-import { LoadingOutlined } from "@ant-design/icons";
+import { LoadingOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -13,6 +12,9 @@ const Login = () => {
   const [error, setError] = useState(null);
   const [showSpinner, setShowSpinner] = useState(false);
   const [user, setUser] = useState(null);
+  const [forgotPasswordModalVisible, setForgotPasswordModalVisible] = useState(
+    false
+  );
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -54,7 +56,6 @@ const Login = () => {
   const onFinish = async (values) => {
     setShowSpinner(true);
 
-    //signIn();
     try {
       const { email, password } = values;
       const userCredential = await signInWithEmailAndPassword(
@@ -77,6 +78,26 @@ const Login = () => {
 
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
+  };
+
+  const handleForgotPassword = async (values) => {
+    const { email } = values;
+
+    try {
+      setShowSpinner(true);
+      await sendPasswordResetEmail(auth, email);
+      Modal.success({
+        title: "Password Reset Email Sent",
+        content: "Please check your email for instructions to reset your password.",
+        onOk: () => setForgotPasswordModalVisible(false),
+      });
+    } catch (error) {
+      const errorMessage = error.message;
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+      setShowSpinner(false);
+    }
   };
 
   return (
@@ -169,9 +190,43 @@ const Login = () => {
           </Form>
 
           <h3 className="w-full text-center">
-            Don't have account? <Space />
+            Don't have an account? <Space />
             <Link to="/register">Sign Up</Link>
           </h3>
+
+          <div className="text-center mt-2">
+            <Button type="link" onClick={() => setForgotPasswordModalVisible(true)}>
+              Forgot Password?
+            </Button>
+          </div>
+
+          <Modal
+            title="Forgot Password"
+            visible={forgotPasswordModalVisible}
+            onCancel={() => setForgotPasswordModalVisible(false)}
+            footer={null}
+          >
+            <Form onFinish={handleForgotPassword}>
+              <Form.Item
+                label="Email"
+                name="email"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please input your email!",
+                  },
+                ]}
+              >
+                <Input type="email" />
+              </Form.Item>
+
+              <Form.Item>
+                <Button type="primary" htmlType="submit" loading={loading}>
+                  Reset Password
+                </Button>
+              </Form.Item>
+            </Form>
+          </Modal>
         </div>
       </Card>
     </div>

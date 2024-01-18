@@ -165,7 +165,8 @@ function Register() {
           >
             <Select placeholder="Select a role">
               <Select.Option value="doctor">Doctor</Select.Option>
-              <Select.Option value="admin">Admin</Select.Option>
+              <Select.Option value="admin">Secretary</Select.Option>
+              <Select.Option value="admin">Patient</Select.Option>
             </Select>
           </Form.Item>
 
@@ -184,6 +185,7 @@ function Register() {
               className="bg-green-600 w-full"
               loading={loading}
             >
+
               Register
             </Button>
           </Form.Item>

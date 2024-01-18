@@ -105,6 +105,7 @@ function DoctorCalendar() {
                 status="success"
                 text={appointment.patientName}
                 onClick={() => handleDateSelect(current, filteredAppointments)}
+                className="clickable-badge" // Add this class for styling
               />
             </li>
           ))}

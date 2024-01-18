@@ -65,7 +65,7 @@ function BookAppointment() {
           />
           <div className="absolute mx-auto bottom-1 p-5 left-1 w-full">
             <div className="bg-black bg-opacity-0 p-3 rounded-md">
-              <h1 className="text-sm text-color: #15803d;">
+              <h1 className="text-sm text-color: #15803d mb-4">
                 Elevate Your Health Journey: Seamless Booking, Exceptional Care at
                 Mountain Top Specialty Clinic.
               </h1>
