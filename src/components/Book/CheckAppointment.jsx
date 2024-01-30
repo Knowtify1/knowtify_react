@@ -282,7 +282,7 @@ function DoctorAppointment() {
         </Modal>
 
         <div className="mt-4">
-          <Link to="/">
+          <Link to="/appointment">
             <Button type="primary" className="bg-blue-500 hover:bg-blue-700">
               Go Back to Homepage
             </Button>
