@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import { onAuthStateChanged } from "firebase/auth";
 import {
   auth,
@@ -20,7 +19,6 @@ import {
   Table,
   Input,
   notification,
-  Modal,
 } from "antd";
 import moment from "moment";
 import { SearchOutlined } from "@ant-design/icons";
@@ -136,6 +134,11 @@ function DoctorPatients() {
   }, [doctorsMoreDetails]);
 
   const columns = [
+    {
+      title: "Reference ID",
+      dataIndex: "reference",
+      key: "reference",
+    },
     { title: "Patient Name", dataIndex: "patientName", key: "patientName" },
     {
       title: "Appointment Date",
@@ -182,18 +185,35 @@ function DoctorPatients() {
     loadTodayPatients();
   };
 
+  const compareAppointments = (a, b) => {
+    const dateComparison = a.appointmentDate - b.appointmentDate;
+
+    if (dateComparison === 0) {
+      // If the dates are equal, compare by appointmentTime
+      const timeA = moment(a.appointmentTime, "HH:mm");
+      const timeB = moment(b.appointmentTime, "HH:mm");
+      return timeA.isBefore(timeB) ? -1 : timeA.isAfter(timeB) ? 1 : 0;
+    }
+
+    return dateComparison;
+  };
+
+  const sortPatientsByDateTime = (patientsArray) => {
+    return patientsArray.sort(compareAppointments);
+  };
+
   return (
     <div>
       {loading ? (
         <Spin size="large" />
       ) : (
         <div>
-          <Card className="w-full mb-4">
+          <Card className="overflow-auto max-h-screen p-2">
             <p>Doctor: {userDetails.name}</p>
             <p>Specialty: {doctorsMoreDetails.specialty}</p>
           </Card>
 
-          <Card className="w-full">
+          <Card className="overflow-auto max-h-screen p-4">
             <h2>Patients</h2>
             <Space direction="horizontal" size={10} className="mb-2">
               <Search
@@ -206,7 +226,7 @@ function DoctorPatients() {
                       .toLowerCase()
                       .includes(value.toLowerCase())
                   );
-                  setFilteredPatients(filteredData);
+                  setFilteredPatients(sortPatientsByDateTime(filteredData));
                 }}
                 className="w-60"
               />
@@ -215,7 +235,7 @@ function DoctorPatients() {
             </Space>
 
             <Table
-              dataSource={filteredPatients}
+              dataSource={sortPatientsByDateTime(filteredPatients)}
               columns={columns}
               rowKey="patientID"
             />
