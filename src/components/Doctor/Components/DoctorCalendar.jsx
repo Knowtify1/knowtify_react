@@ -91,11 +91,24 @@ function DoctorCalendar() {
       current.isAfter(startOfMonth, "day") &&
       current.isBefore(endOfMonth, "day")
     ) {
-      const filteredAppointments = patientsData.filter(
-        (patient) =>
-          moment(patient.appointmentDate.toDate()).format("YYYY-MM-DD") ===
-          formattedDate
-      );
+      const filteredAppointments = patientsData
+        .filter(
+          (patient) =>
+            moment(patient.appointmentDate.toDate()).format("YYYY-MM-DD") ===
+            formattedDate
+        )
+        .sort((a, b) => {
+          const timeA = moment(a.appointmentTime, "HH:mm");
+          const timeB = moment(b.appointmentTime, "HH:mm");
+
+          if (a.appointmentDate > b.appointmentDate) {
+            return -1;
+          } else if (a.appointmentDate > b.appointmentDate) {
+            return 1;
+          } else {
+            return timeA.isBefore(timeB) ? -1 : timeA.isAfter(timeB) ? 1 : 0;
+          }
+        });
 
       return (
         <ul className="events">
@@ -108,7 +121,7 @@ function DoctorCalendar() {
                     className="clickable-badge" // Add this class for styling
                     onClick={() => handleDateSelect(current, appointment)}
                   >
-                    {appointment.patientName}
+                    {moment(appointment.appointmentTime, "HH:mm").format("HH:mm")} - {appointment.patientName}
                   </span>
                 }
               />
