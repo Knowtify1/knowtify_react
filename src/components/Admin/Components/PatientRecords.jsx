@@ -102,7 +102,7 @@ function PatientRecords() {
 
   // Render the component with patient records
   return (
-    <div>
+    <div style={{ position: "relative", top: 0, left: 0, right: 0, bottom: 0, overflow: "auto" }}>
       <h2>Patients Records</h2>
 
       <Table
