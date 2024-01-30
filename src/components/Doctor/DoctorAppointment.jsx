@@ -8,17 +8,15 @@ function DoctorAppointment() {
       <div className="flex flex-col gap-4">
         <Card
           title={
-            <h3 className="text-3xl font-semibold text-center ">
-              Appointments
-            </h3>
+            <h3 className="text-3xl font-semibold text-left">Appointments</h3>
           }
+          className="overflow-auto"
+          style={{ maxWidth: "100%", width: "100%" }}
         >
           <TableAppointments />
         </Card>
 
-        <Card
-          title={<h3 className="text-3xl font-semibold text-center"></h3>}
-        ></Card>
+        <Card title={<h3 className="text-3xl font-semibold text-center"></h3>}></Card>
 
         {/* Add more cards as needed */}
       </div>
