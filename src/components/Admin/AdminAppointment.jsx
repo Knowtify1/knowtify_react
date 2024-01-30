@@ -5,22 +5,26 @@ import TableApprovedAppointments from "./Components/TableApprovedAppointments";
 
 function AdminAppointment() {
   return (
-    <div className="container mx-auto p-4">
-        <div className="flex flex-col gap-4">
+    <div className="container mx-auto p-10">
+      <div className="flex flex-col gap-4">
         <Card
           title={
-            <h3 className="text-3xl font-semibold text-center ">
+            <h3 className="text-3xl font-semibold text-center sticky top-0 bg-white">
               Pending Appointments
             </h3>
           }
+          className="overflow-auto max-h-screen p-4" // Set a maximum height and padding
         >
           <TablePendingAppointments />
         </Card>
 
         <Card
           title={
-            <h3 className="text-3xl font-semibold text-center">Patients</h3>
+            <h3 className="text-3xl font-semibold text-center sticky top-0 bg-white">
+              Patients
+            </h3>
           }
+          className="overflow-auto max-h-screen p-4" // Set a maximum height and padding
         >
           <TableApprovedAppointments />
         </Card>
