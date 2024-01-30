@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { auth, signOut } from "../../config/firebase";
 import { useNavigate } from "react-router-dom";
 import {
   HomeOutlined,
@@ -37,11 +36,7 @@ const items = [
     key: "account",
     icon: <AccountBookOutlined />,
   },
-  {
-    label: "Logout",
-    key: "logout",
-    icon: <LogoutOutlined />,
-  },
+  
 ];
 
 import { Menu } from "antd";
@@ -65,29 +60,20 @@ const AdminMenu = () => {
       navigate("adminpatientrecord");
     } else if (key == "account") {
       navigate("adminaccount");
-    } else if (key == "logout") {
-      handleSignOut();
-    }
-  };
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      console.log("User signed out successfully.");
-      navigate("/");
-    } catch (error) {
-      console.error("Error signing out:", error.message);
     }
   };
 
   return (
-    <Menu
-      mode="inline"
-      selectedKeys={selectedKeys}
-      onClick={handleMenuClick}
-      className="menubar"
-      items={items}
-    ></Menu>
+    <div style={{ position: "fixed", height: "100%", width: "200px", top: "5%" }}>
+      {/* You can adjust the width and other styles as needed */}
+      <Menu
+        mode="inline"
+        selectedKeys={selectedKeys}
+        onClick={handleMenuClick}
+        className="menubar"
+        items={items}
+      ></Menu>
+    </div>
   );
 };
 
