@@ -5,6 +5,7 @@ import ReCAPTCHA from "react-google-recaptcha";
 import BookAppointmentForm from "./BookAppointmentForm";
 import bookheader from "../../assets/Book/header.jpg";
 import clinic from "../../assets/Book/clinic.png";
+import bookheader2 from "../../assets/Book/bookheader2.jpg";
 import general from "../../assets/Book/generl.jpg";
 import infectious from "../../assets/Book/infectious.jpg";
 import internal from "../../assets/Book/internal.jpg";
@@ -13,6 +14,8 @@ import ob from "../../assets/Book/ob.jpg";
 import pedia from "../../assets/Book/pedia.jpg";
 import physical from "../../assets/Book/physical.jpg";
 import pulmonology from "../../assets/Book/pulmonology.jpg";
+import { Link } from "react-router-dom";
+
 
 function BookAppointment() {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -51,21 +54,39 @@ function BookAppointment() {
 
   return (
     <ConfigProvider>
+      <header className="bg-white py-4 shadow fixed w-full z-50">
+      <div className="container mx-auto flex items-center justify-between">
+        <img
+          src={clinic}
+          alt="bookheader"
+          className="relative top-0 left-10 max-h-10"
+        />
+        <div className="relative top-0 right-10 max-h-10">
+          {/* Add your login/sign-up button */}
+          <Link to="/checkappointment">
+            <Button className="mr-4">Check Appointment</Button>
+          </Link>
+          <Link to="/login">
+            <Button className="mr-4">Login</Button>
+          </Link>
+          <Link to="/register">
+            <Button className="mr-6 bg-green-600">Sign Up</Button>
+          </Link>
+        </div>
+      </div>
+    </header>
+
       <div className="book_appointment container mx-auto">
-        <div className="relative">
-          <img
-            src={clinic}
-            alt="bookheader"
-            className="absolute top-0 left-0 max-h-20"
-          />
-          <img
-            src={bookheader}
-            alt="bookheader"
-            className="w-screen min-h-full"
-          />
-          <div className="absolute mx-auto bottom-1 p-5 left-1 w-full">
-            <div className="bg-black bg-opacity-0 p-3 rounded-md">
-              <h1 className="text-sm text-color: #15803d mb-4">
+      <div className="relative">
+        <img
+          src={bookheader2}
+          alt="bookheader"
+          className="w-100 max-h-97 blur"
+          style={{ filter: 'blur(4px)' }} // Adjust the blur value as needed
+        />
+          <div className="absolute mx-auto bottom-1 p-10 left-0 w-100">
+            <div className="bg-black bg-opacity-0 p-2 rounded-md">
+              <h1 className="text-sm text-color: #0B6C3D mb-3">
                 Elevate Your Health Journey: Seamless Booking, Exceptional Care at
                 Mountain Top Specialty Clinic.
               </h1>
@@ -78,6 +99,7 @@ function BookAppointment() {
                 type="primary"
                 className="bg-green-600 rounded mt-3"
                 disabled={!captchaValue} // Disable button if captcha is not completed
+
               >
                 Book Appointment
               </Button>
@@ -85,7 +107,6 @@ function BookAppointment() {
           </div>
         </div>
         <div className="pl-8 pr-8 pb-5 pt-5">
-          {/* ... (remaining code) ... */}
           <Modal
             title="Book Appointment"
             visible={isModalVisible}
@@ -106,20 +127,7 @@ function BookAppointment() {
             </Card>
           </Modal>
         </div>
-        <div className="pl-8 pr-8 pb-5 pt-5">
-          <h1>Contact Us</h1>
-          <p>
-            <span> 0977 062 5890</span>
-            <span> Mountain Top Specialty Clinic</span>
-          </p>
-        </div>
-        <div className="pl-8 pr-8 pb-5 pt-5">
-          <h1>Visit Us at</h1>
-          <p>
-            101 General Luna Road, Global Multispecialty Diagnostic Center, 2nd
-            Floor, Unit 4, Baguio City, Philippines
-          </p>
-        </div>
+        
         <div className="pl-8 pr-8 pb-5 pt-5">
           <h1>Our Specialties</h1>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 content-start px-4 sm:px-8 md:px-16 py-10">
@@ -203,9 +211,21 @@ function BookAppointment() {
                 Diagnosis and treatment of skin condition
               </p>
             </Card>
-            
-            
           </div>
+          <div className="pl-8 pr-8 pb-5 pt-5">
+          <h1>Contact Us</h1>
+          <p>
+            <span> 0977 062 5890</span>
+            <span> Mountain Top Specialty Clinic</span>
+          </p>
+        </div>
+        <div className="pl-8 pr-8 pb-5 pt-5">
+          <h1>Visit Us at</h1>
+          <p>
+            101 General Luna Road, Global Multispecialty Diagnostic Center, 2nd
+            Floor, Unit 4, Baguio City, Philippines
+          </p>
+        </div>
         </div>
       </div>
     </ConfigProvider>
