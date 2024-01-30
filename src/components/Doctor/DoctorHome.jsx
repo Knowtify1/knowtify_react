@@ -7,7 +7,7 @@ function DoctorHome() {
   return (
     <>
       <DoctorSetSpecialty />
-      <div>
+    <div style={{ position: "relative", top: 0, left: 0, right: 0, bottom: 0, overflow: "auto" }}>
         <div className="pl-8 pr-8 pb-5 pt-5">
           <Card>
             <DoctorOverView />
