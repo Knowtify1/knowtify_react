@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Space, Spin, DatePicker, Button, Modal, Select, Popconfirm, message } from "antd";
+import { Table, Space, Spin, DatePicker, Button, Modal, Select, message } from "antd";
 import {
   doc,
   db,
@@ -11,6 +11,7 @@ import {
   runTransaction,
   deleteDoc as deleteDocument,
 } from "../../../config/firebase.jsx";
+import moment from "moment";
 
 const { Option } = Select;
 
@@ -102,11 +103,7 @@ function TableApprovedAppointments() {
     },
   ];
 
-  const fetchApprovedAppointments = async (
-    selectedDate,
-    setData,
-    setLoading
-  ) => {
+  const fetchApprovedAppointments = async (selectedDate, setData, setLoading) => {
     try {
       let appointmentsQuery = collection(db, "patients");
 
@@ -131,6 +128,20 @@ function TableApprovedAppointments() {
         key: doc.id,
         ...doc.data(),
       }));
+
+      // Sort appointmentsData based on appointmentDate and appointmentTime
+      appointmentsData.sort((a, b) => {
+        const dateComparison = a.appointmentDate - b.appointmentDate;
+
+        if (dateComparison === 0) {
+          // If the dates are equal, compare by appointmentTime
+          const timeA = moment(a.appointmentTime, "HH:mm");
+          const timeB = moment(b.appointmentTime, "HH:mm");
+          return timeA.isBefore(timeB) ? -1 : timeA.isAfter(timeB) ? 1 : 0;
+        }
+
+        return dateComparison;
+      });
 
       if (typeof setData === "function") {
         setData(appointmentsData);
@@ -176,8 +187,6 @@ function TableApprovedAppointments() {
       message.error("Error deleting appointment. Please try again.");
     }
   };
-
-  
 
   const handleModalOk = async () => {
     if (selectedDoctor) {
@@ -239,7 +248,7 @@ function TableApprovedAppointments() {
   return (
     <>
       <div>
-        <Space direction="vertical" size={20} className="flex items-center">
+        <Space direction="vertical" size={20} className="flex items-left">
           <Space direction="horizontal" size={30}>
             <Space direction="horizontal">
               <h1>Select Appointment Date:</h1>
