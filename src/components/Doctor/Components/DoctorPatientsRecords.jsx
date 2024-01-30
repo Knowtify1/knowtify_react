@@ -103,7 +103,7 @@ function DoctorPatientsRecords() {
 
   // Render the component with patient records
   return (
-    <div>
+    <div className="overflow-auto max-h-screen p-4" >
       <h2>Doctor's Patients Records</h2>
 
       <Table
