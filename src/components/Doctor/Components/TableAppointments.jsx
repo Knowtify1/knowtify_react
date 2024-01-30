@@ -42,10 +42,16 @@ function TableAppointments() {
                 ...doc.data(),
               }));
 
-              // Sort patientsData based on appointmentDate in ascending order
-              const sortedPatientsData = patientsData.sort(
-                (a, b) => a.appointmentDate - b.appointmentDate
-              );
+              // Sort patientsData based on appointmentDate and appointmentTime in ascending order
+              const sortedPatientsData = patientsData.sort((a, b) => {
+                const dateA = moment(a.appointmentDate.toDate()).format("YYYYMMDD");
+                const timeA = moment(a.appointmentTime, "HH:mm").format("HHmm");
+
+                const dateB = moment(b.appointmentDate.toDate()).format("YYYYMMDD");
+                const timeB = moment(b.appointmentTime, "HH:mm").format("HHmm");
+
+                return dateA + timeA - (dateB + timeB);
+              });
 
               setAssignedPatients(sortedPatientsData);
             } else {
@@ -75,17 +81,22 @@ function TableAppointments() {
   }
 
   const columns = [
-    { title: "Patient Name", dataIndex: "patientName", key: "patientName" },
-    { title: "Patient Adress", dataIndex: "patientAddress", key: "patientAddress" },
     {
-      title: "Appointment Time",
+      title: "Reference ID",
+      dataIndex: "reference",
+      key: "reference",
+    },
+    { title: "Patient Name", dataIndex: "patientName", key: "patientName" },
+    { title: "Patient Address", dataIndex: "patientAddress", key: "patientAddress" },
+    {
+      title: "Appointment Date",
       dataIndex: "appointmentDate",
       key: "appointmentDate",
       render: (text, record) =>
         moment(record.appointmentDate.toDate()).format("MMMM D, YYYY"),
     },
     {
-      title: "Time",
+      title: "Appointment Time",
       dataIndex: "appointmentTime",
       key: "appointmentTime",
       render: (text, record) =>
@@ -109,7 +120,7 @@ function TableAppointments() {
   ];
 
   return (
-    <div>
+    <div className="overflow-auto max-h-screen p-2">
       {doctorData && (
         <div>
           <p>Doctor Name: {doctorData.name}</p>
