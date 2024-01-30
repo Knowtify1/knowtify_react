@@ -39,11 +39,6 @@ const items = [
     key: "account",
     icon: <AccountBookOutlined />,
   },
-  {
-    label: "Logout",
-    key: "logout",
-    icon: <LogoutOutlined />,
-  },
 ];
 
 function DoctorMenu() {
@@ -65,26 +60,17 @@ function DoctorMenu() {
       navigate("doctorpatientrecord");
     } else if (key === "account") {
       navigate("doctoraccount");
-    } else if (key === "logout") {
-      handleSignOut();
     }
   };
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      console.log("User signed out successfully.");
-      navigate("/");
-    } catch (error) {
-      console.error("Error signing out:", error.message);
-    }
-  };
+  
 
   const menuStyle = {
     display: "flex",
     flexDirection: "column",
     gap: "10px", // Added gap for spacing
     fontSize: "1.1rem",
+    
   };
 
   return (
