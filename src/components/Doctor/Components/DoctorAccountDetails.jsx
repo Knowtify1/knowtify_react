@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../../../config/firebase.jsx";
+import { Button, Modal } from "antd";
 
 function DoctorAccountDetails() {
   const [userDetails, setUserDetails] = useState(null);
   const [doctorsMoreDetails, setdoctorsMoreDetails] = useState(null);
+  const [editModalVisible, setEditModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -49,20 +51,32 @@ function DoctorAccountDetails() {
     fetchUserDetails();
   }, []);
 
+  const handleEditClick = () => {
+    setEditModalVisible(true);
+  };
+
+  const handleEditModalCancel = () => {
+    setEditModalVisible(false);
+  };
+
   return (
     <div>
       {userDetails ? (
         <div>
-          <h2>User Details</h2>
-          <p>Name: {userDetails.name}</p>
+          <h1 style={{ fontSize: "24px", fontWeight: "bold", textAlign: "center" }}>
+            {userDetails.name}
+          </h1>
+          <br></br>
           <p>Email: {userDetails.email}</p>
           <p>Date of Registration: {userDetails.dateofregistration}</p>
           <p>User Type: {userDetails.type}</p>
           <p>Specialty: {doctorsMoreDetails.specialty}</p>
+          
         </div>
       ) : (
         <p>Loading...</p>
       )}
+
     </div>
   );
 }
