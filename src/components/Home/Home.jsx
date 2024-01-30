@@ -234,7 +234,7 @@ const Developer = ({ description, title }) => (
                 image={<img src={resume} alt="Image1" className="w-20 h-50 object-cover mb-2 rounded-md" />}
               />
               <Developer
-                title="Jamie Faye A. Jaime"
+                title=""
                 description="Developer"
               />
             </div>
