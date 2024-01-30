@@ -1,4 +1,4 @@
-// DoctorMenu.jsx
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, signOut } from "../../config/firebase";
@@ -12,6 +12,7 @@ import {
 } from "@ant-design/icons";
 import { Menu, Space } from "antd";
 import { useTheme } from "../../ThemeContext";
+
 
 const items = [
   {
@@ -39,11 +40,6 @@ const items = [
     key: "account",
     icon: <AccountBookOutlined />,
   },
-  {
-    label: "Logout",
-    key: "logout",
-    icon: <LogoutOutlined />,
-  },
 ];
 
 function PatientMenu() {
@@ -56,17 +52,15 @@ function PatientMenu() {
     setSelectedKeys([key]);
 
     if (key === "home") {
-      navigate("doctorhome");
-    } else if (key === "appointment") {
-      navigate("doctorappointment");
-    } else if (key === "schedule") {
-      navigate("doctorschedule");
-    } else if (key === "patientrecord") {
-      navigate("doctorpatientrecord");
-    } else if (key === "account") {
-      navigate("doctoraccount");
-    } else if (key === "logout") {
-      handleSignOut();
+      navigate("patienthome");
+    } else if (key == "appointment") {
+      navigate("patientappointment");
+    } else if (key == "schedule") {
+      navigate("patientschedule");
+    } else if (key == "patientrecord") {
+      navigate("patientrecords");
+    } else if (key == "account") {
+      navigate("patientaccount");
     }
   };
 
@@ -88,20 +82,17 @@ function PatientMenu() {
   };
 
   return (
-    <Menu
-      mode="inline"
-      selectedKeys={selectedKeys}
-      onClick={handleMenuClick}
-      theme={darkTheme ? "dark" : "light"}
-      style={menuStyle}
-    >
-      {items.map((item) => (
-        <Menu.Item key={item.key} icon={item.icon} style={{}}>
-          {item.label}
-        </Menu.Item>
-      ))}
-    </Menu>
+    <div style={{ position: "fixed", height: "100%", top: "5%" }}>
+      {/* You can adjust the width and other styles as needed */}
+      <Menu
+        mode="inline"
+        selectedKeys={selectedKeys}
+        onClick={handleMenuClick}
+        className="menubar"
+        items={items}
+      ></Menu>
+    </div>
   );
-}
+};
 
 export default PatientMenu;
