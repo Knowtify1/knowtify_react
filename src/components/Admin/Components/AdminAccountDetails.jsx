@@ -46,8 +46,10 @@ function AdminAccountDetails() {
     <div>
       {userDetails ? (
         <div>
-          <h2>User Details</h2>
-          <p>Name: {userDetails.name}</p>
+          <h1 style={{ fontSize: "24px", fontWeight: "bold", textAlign: "center" }}>
+            {userDetails.name}
+          </h1>
+          <br></br>
           <p>Email: {userDetails.email}</p>
           <p>Date of Registration: {userDetails.dateofregistration}</p>
           <p>User Type: {userDetails.type}</p>
