@@ -17,7 +17,7 @@ const { Footer } = Layout;
 
 function CustomFooter() {
   return (
-    <Footer className="bg-green-500 text-white text-center py-4">
+    <Footer className="bg-green-600 text-white text-center py-4">
       <div className="flex justify-between">
         <div className="flex items-center">
           <div className="mx-4">
