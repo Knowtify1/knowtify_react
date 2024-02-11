@@ -13,6 +13,8 @@ import sms from "../../assets/sms.png";
 import doc2 from "../../assets/doc2.png";
 import resume from "../../assets/resume.png";
 import andre from "../../assets/andre.jpeg";
+import marj from "../../assets/marj.jpeg";
+
 
 import { sendSMS } from "../../config/sendSMS";
 
@@ -291,13 +293,13 @@ function Home() {
                 <DeveloperItem
                   image={
                     <img
-                      src={resume}
+                      src={marj}
                       alt="Image1"
                       className="w-20 h-50 object-cover mb-2 rounded-md"
                     />
                   }
                 />
-                <Developer title="" description="Developer" />
+                <Developer title="Marjorie B. Soposop" description="Developer" />
               </div>
             </div>
           </section>
