@@ -50,7 +50,7 @@ function Register() {
   };
 
   const createPatientCollection = async (userId, name) => {
-    const patientsCollection = doc(db, "patients", `${userId}`);
+    const patientsCollection = doc(db, "patient", `${userId}`);
     try {
       const docData = {
         name: name,
