@@ -172,7 +172,7 @@ function TablePendingAppointments() {
 
       const appointmentsData = appointmentsSnapshot.docs
         .map((doc) => ({ key: doc.id, ...doc.data() }))
-        .sort((a, b) => a.appointmentDate - b.appointmentDate);
+        .sort((a, b) => b.appointmentDate - a.appointmentDate);
 
       //setData(appointmentsData);
       if (typeof setData === "function") {
