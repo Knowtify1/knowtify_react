@@ -131,7 +131,7 @@ function TableApprovedAppointments() {
 
       // Sort appointmentsData based on appointmentDate and appointmentTime
       appointmentsData.sort((a, b) => {
-        const dateComparison = a.appointmentDate - b.appointmentDate;
+        const dateComparison = b.appointmentDate - a.appointmentDate;
 
         if (dateComparison === 0) {
           // If the dates are equal, compare by appointmentTime
