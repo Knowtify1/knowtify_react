@@ -5,7 +5,7 @@ import ReCAPTCHA from "react-google-recaptcha";
 import BookAppointmentForm from "./BookAppointmentForm";
 import bookheader from "../../assets/Book/header.jpg";
 import clinic from "../../assets/Book/clinic.png";
-import bookheader2 from "../../assets/Book/bookheader2.jpg";
+import bk from "../../assets/Book/bk.jpg";
 import general from "../../assets/Book/generl.jpg";
 import infectious from "../../assets/Book/infectious.jpg";
 import internal from "../../assets/Book/internal.jpg";
@@ -15,17 +15,26 @@ import pedia from "../../assets/Book/pedia.jpg";
 import physical from "../../assets/Book/physical.jpg";
 import pulmonology from "../../assets/Book/pulmonology.jpg";
 import { Link } from "react-router-dom";
-
+import { Radio } from "antd";
 
 function BookAppointment() {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [showCaptcha, setShowCaptcha] = useState(false);
+  const [selectedReason, setSelectedReason] = useState(null);
   const [captchaValue, setCaptchaValue] = useState(null);
 
   const showModal = () => {
-    setIsModalVisible(true);
+    if (selectedReason === 'consultation') {
+      setIsModalVisible(true);
+    } else {
+      // Redirect to another form or handle the case where the reason is not 'Consultation'
+      // For now, we'll simply log a message to the console
+      console.log(`Redirect to another form for reason: ${selectedReason}`);
+    }
   };
 
   const handleCancel = () => {
+    setShowCaptcha(false);
     setIsModalVisible(false);
   };
 
@@ -38,16 +47,20 @@ function BookAppointment() {
 
   const handleCaptchaChange = (value) => {
     setCaptchaValue(value);
+    // Show the reason selection once captcha is verified
+    if (value && !showCaptcha) {
+      setShowCaptcha(true);
+    }
   };
 
   const handleBookAppointment = () => {
-    // Check if the captcha has been successfully validated
-    if (captchaValue) {
+    // Check if the captcha has been successfully validated and a reason is selected
+    if (captchaValue && selectedReason) {
       setIsModalVisible(true);
     } else {
       notification.error({
-        message: 'Captcha Validation Failed',
-        description: 'Please complete the captcha before booking an appointment.',
+        message: 'Validation Failed',
+        description: 'Please complete the captcha and select a reason before booking an appointment.',
       });
     }
   };
@@ -76,34 +89,59 @@ function BookAppointment() {
       </div>
     </header>
 
-      <div className="book_appointment container mx-auto">
+      <div>
       <div className="relative">
         <img
-          src={bookheader2}
+          src={bk}
           alt="bookheader"
           className="w-100 max-h-97 blur"
           style={{ filter: 'blur(4px)' }} // Adjust the blur value as needed
         />
-          <div className="absolute mx-auto bottom-1 p-10 left-0 w-100">
-            <div className="bg-black bg-opacity-0 p-2 rounded-md">
-              <h1 className="text-sm text-color: #0B6C3D mb-3">
-                Elevate Your Health Journey: Seamless Booking, Exceptional Care at
-                Mountain Top Specialty Clinic.
-              </h1>
+          <div className="absolute bottom-40 p-20 ">
+          <div>
+            <h1 className="text-4xl font-bold text-green-900 ">
+              Elevate Your Health Journey: <br></br>
+              Seamless Booking, Exceptional Care at Mountain Top Specialty Clinic.
+            </h1>
+            {showCaptcha && !selectedReason && (
+              <div>
+                <h2 className="text-lg font-semibold text-green-700 mt-6 mb-2">
+                  Select the reason for your appointment:
+                </h2>
+                <Radio.Group
+                  onChange={(e) => setSelectedReason(e.target.value)}
+                  value={selectedReason}
+                >
+                  <Radio value="follow-up">Follow-up</Radio>
+                  <Radio value="consultation">Consultation</Radio>
+                </Radio.Group>
+              </div>
+            )}
+            {showCaptcha && (
               <ReCAPTCHA
                 sitekey="6LdxRU8pAAAAAPtTPMi4pwlsanI-7R96R7SvkP8k"
                 onChange={handleCaptchaChange}
               />
-              <Button
-                onClick={showModal}
-                type="primary"
-                className="bg-green-600 rounded mt-3"
-                disabled={!captchaValue} // Disable button if captcha is not completed
-
-              >
-                Book Appointment
-              </Button>
-            </div>
+            )}
+            <Button
+              onClick={showModal}
+              type="primary"
+              className="bg-green-600 rounded mt-3"
+              disabled={!showCaptcha || !captchaValue || !selectedReason}
+            >
+              Book Appointment
+            </Button>
+            {!showCaptcha && !selectedReason && (
+              <p className="text-sm text-green-600 mt-5 cursor-pointer underline" onClick={() => setShowCaptcha(true)}>
+                Click here to verify and book an appointment.
+              </p>
+            )}
+            {!captchaValue && showCaptcha && (
+              <p className="text-red-500 mt-2">
+                Please complete the captcha before proceeding with the booking.
+              </p>
+            )}
+          </div>
           </div>
         </div>
         <div className="pl-8 pr-8 pb-5 pt-5">
@@ -129,7 +167,7 @@ function BookAppointment() {
         </div>
         
         <div className="pl-8 pr-8 pb-5 pt-5">
-          <h1>Our Specialties</h1>
+          <h1 className="text-2xl font-bold text-green-600 ">Our Specialties</h1>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 content-start px-4 sm:px-8 md:px-16 py-10">
             <Card
               hoverable
@@ -213,14 +251,14 @@ function BookAppointment() {
             </Card>
           </div>
           <div className="pl-8 pr-8 pb-5 pt-5">
-          <h1>Contact Us</h1>
+          <h1 className="text-2xl font-bold text-green-600 ">Contact Us</h1>
           <p>
             <span> 0977 062 5890</span>
             <span> Mountain Top Specialty Clinic</span>
           </p>
         </div>
         <div className="pl-8 pr-8 pb-5 pt-5">
-          <h1>Visit Us at</h1>
+          <h1 className="text-2xl font-bold text-green-600 ">Visit Us at</h1>
           <p>
             101 General Luna Road, Global Multispecialty Diagnostic Center, 2nd
             Floor, Unit 4, Baguio City, Philippines
