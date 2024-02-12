@@ -270,6 +270,17 @@ const fetchExistingAppointments = async (selectedType, selectedDate) => {
   );
 };
 
+  // Custom validation rule for age field
+  const validateAge = (rule, value) => {
+    const age = parseInt(value);
+    if (isNaN(age) || age < 18) {
+      return Promise.reject('You must be at least 18 years old to book an appointment.');
+    } else {
+      return Promise.resolve();
+    }
+  };
+
+
   return (
     <>
       <Form
@@ -336,6 +347,9 @@ const fetchExistingAppointments = async (selectedType, selectedDate) => {
                 {
                   required: true,
                   message: 'Please input your age!',
+                },
+                {
+                  validator: validateAge,
                 },
               ]}
             >
