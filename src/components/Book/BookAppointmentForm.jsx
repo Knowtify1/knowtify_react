@@ -321,23 +321,19 @@ const fetchExistingAppointments = async (selectedType, selectedDate) => {
           </Col>
 
           <Col span={8}>
-            <Form.Item
-              label="Contact Number"
-              name="contactno"
-              rules={[
-                {
-                  required: true,
-                  message: 'Please input your number',
-                },
-                {
-                  pattern: /^(\+?63|0)?9\d{9}$/,
-                  message: 'Please enter a valid Philippine phone number',
-                },
-              ]}
-            >
-              <Input addonBefore={prefixSelector} style={{ width: '100%' }} />
-            </Form.Item>
-          </Col>
+          <Form.Item
+            label="Contact Number"
+            name="contactno"
+            rules={[
+              {
+                required: true,
+                message: 'Please input your number',
+              },
+            ]}
+          >
+            <Input style={{ width: '100%' }} />
+          </Form.Item>
+        </Col>
 
           <Col span={3}>
             <Form.Item
