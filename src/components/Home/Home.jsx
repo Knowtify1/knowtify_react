@@ -14,8 +14,6 @@ import doc2 from "../../assets/doc2.png";
 import resume from "../../assets/resume.png";
 import andre from "../../assets/andre.jpeg";
 import marj from "../../assets/marj.jpeg";
-
-
 import { sendSMS } from "../../config/sendSMS";
 
 function Home() {
