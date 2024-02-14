@@ -59,11 +59,8 @@ function TablePendingAppointments() {
       dataIndex: "action",
       render: (_, record) => (
         <>
-          <Button type="link" onClick={() => handleApprove(record.key)}>
+          <Button type="link" onClick={() => handleApproveAndSendSMS(record)}>
             Approve
-          </Button>
-          <Button type="link" onClick={() => handleSendSMS(record)}>
-            Send SMS
           </Button>
          <Button type="link" danger onClick={showModal}>
             Reschedule
@@ -133,20 +130,24 @@ function TablePendingAppointments() {
     fetchAppointments(selectedDate, setData, setLoading);
   };
 
-  const handleSendSMS = async (record) => {
-    try {
-      // Assuming phoneNumber is a field in the appointment record
-      const { contactNo } = record;
-      const { patientName, dateOfAppointment, appointmentTime } = record;
-      const message = `Good day, ${patientName}! Your booking with Mountain Studio Specialty Clinic on ${dateOfAppointment} at ${appointmentTime} has been approved. Please be at the clinic 5 minutes before your appointment schedule. Thank you!`;
-      // Send SMS
-      await sendSMS(contactNo, message);
-      
-      console.log(`SMS sent to ${contactNo}`);
-    } catch (error) {
-      console.error("Error sending SMS:", error);
-    }
-  };
+  const handleApproveAndSendSMS = async (record) => {
+  try {
+    await handleApprove(record.key); // Approve the appointment
+
+    // Assuming phoneNumber is a field in the appointment record
+    const { contactNo } = record;
+    const { patientName, dateOfAppointment, appointmentTime } = record;
+    const message = `Good day, ${patientName}! Your booking with Mountain Studio Specialty Clinic on ${dateOfAppointment} at ${appointmentTime} has been approved. Please be at the clinic 5 minutes before your appointment schedule. Thank you!`;
+    
+    // Send SMS
+    await sendSMS(contactNo, message);
+    
+    console.log(`SMS sent to ${contactNo}`);
+  } catch (error) {
+    console.error("Error approving appointment and sending SMS:", error);
+  }
+};
+
 
  const showModal = (record) => {
     setVisible(true);
