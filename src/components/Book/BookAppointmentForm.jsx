@@ -7,11 +7,13 @@ import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import 'dayjs/locale/en';
 
+let referenceCounter = 0; // Initialize counter variable
+
 const generateUniqueReference = () => {
   const prefix = 'AP';
-  const randomDigits = Math.floor(Math.random() * 10000000); // Generates a random 7-digit number
-
-  return `${prefix}${randomDigits}`;
+  referenceCounter++; // Increment counter
+  const referenceNumber = String(referenceCounter).padStart(7, '0'); // Ensure 7-digit format
+  return `${prefix}${referenceNumber}`;
 };
 
 function BookAppointmentForm() {
@@ -19,25 +21,6 @@ function BookAppointmentForm() {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [availableDays, setAvailableDays] = useState([]);
-  const [existingAppointments, setExistingAppointments] = useState([]);
-
-
-  const prefixSelector = (
-    <Form.Item name="prefix" noStyle>
-      <Select style={{ width: 70 }} defaultValue={'+63'}>
-      </Select>
-    </Form.Item>
-  );
-
-  const config = {
-    rules: [
-      {
-        type: 'object',
-        required: true,
-        message: 'Please select time!',
-      },
-    ],
-  };
 
   const doctorTimeOptions = {
     'Orthopedics': [
@@ -95,7 +78,6 @@ function BookAppointmentForm() {
       { value: '1:00', label: '1:00 PM' },
       { value: '2:00', label: '2:00 PM' },
       { value: '3:00',  label: '3:00 PM' },
-
     ],
   };
 
@@ -111,77 +93,48 @@ function BookAppointmentForm() {
   ];
 
   const doctorAvailability = {
-  'Orthopedics': ['Monday', 'Tuesday', 'Thursday'],
-  'Internal Medicine': ['Monday', 'Wednesday', 'Thursday'],
-  'Hematology': ['Monday', 'Wednesday', 'Friday'],
-  'Infectious': ['Wednesday', 'Friday', 'Saturday'],
-  'Pulmonology': ['Tuesday', 'Thursday'],
-  'Ob': ['Monday', 'Tuesday' ],
-  'Physical': ['Tuesday', 'Thursday'],
-  'Pediatrics': ['Monday', 'Wednesday', 'Friday',, 'Saturday'],
-  
-  // Add more types and their corresponding available days as needed
+    'Orthopedics': ['Monday', 'Tuesday', 'Thursday'],
+    'Internal Medicine': ['Monday', 'Wednesday', 'Thursday'],
+    'Hematology': ['Monday', 'Wednesday', 'Friday'],
+    'Infectious': ['Wednesday', 'Friday', 'Saturday'],
+    'Pulmonology': ['Tuesday', 'Thursday'],
+    'Ob': ['Monday', 'Tuesday' ],
+    'Physical': ['Tuesday', 'Thursday'],
+    'Pediatrics': ['Monday', 'Wednesday', 'Friday', 'Saturday'],
+    // Add more types and their corresponding available days as needed
   };
-  useEffect(() => {
+
+   useEffect(() => {
     const selectedType = form.getFieldValue('type');
     setAvailableDays(doctorAvailability[selectedType] || []);
     // Additional logic to update available days as needed
   }, [form, doctorAvailability]);
 
-
-  useEffect(() => {
-  const selectedType = form.getFieldValue('type');
-  const timeOptions = doctorTimeOptions[selectedType] || [];
-  }, [doctorTimeOptions]);
-
-const handleTypeChange = (value) => {
-  const selectedType = value;
-  const timeOptions = doctorTimeOptions[selectedType] || [];
-  form.setFieldsValue({
-    timepicker: timeOptions.length > 0 ? timeOptions[0].value : null,
-  });
+  const handleTypeChange = (value) => {
+    const selectedType = value;
+    const timeOptions = doctorTimeOptions[selectedType] || [];
+    form.setFieldsValue({
+      timepicker: timeOptions.length > 0 ? timeOptions[0].value : null,
+    });
   };
 
-useEffect(() => {
-    const fetchExistingAppointments = async () => {
-      try {
-        const appointmentsCollection = collection(db, "appointments");
-        const q = query(appointmentsCollection, where("approved", "==", true));
-        const querySnapshot = await getDocs(q);
-
-        const appointments = [];
-        querySnapshot.forEach((doc) => {
-          appointments.push({
-            date: dayjs(doc.data().appointmentDate.toDate()).format("YYYY-MM-DD"),
-            time: JSON.parse(doc.data().appointmentTime).value,
-          });
-        });
-
-        setExistingAppointments(appointments);
-      } catch (error) {
-        console.error("Error fetching existing appointments", error);
-      }
-    };
-
-    fetchExistingAppointments();
-  }, []);
-
+  
   const onFinish = async (values) => {
-  const {
-    patientname,
-    contactno,
-    age,
-    patientaddress,
-    reasonforappointment,
-    type,
-    adate,
-    timepicker,
-  } = values;
+    const {
+      patientname,
+      contactno,
+      age,
+      patientaddress,
+      reasonforappointment,
+      type,
+      adate,
+      timepicker,
+    } = values;
 
-  const appointmentDate = new Date(adate);
-  const selectedTime = JSON.stringify(timepicker);
+    const appointmentDate = new Date(adate);
+    const selectedTime = JSON.stringify(timepicker);
 
-  const uniqueReference = generateUniqueReference();
+    const uniqueReference = generateUniqueReference();
 
     const userData = {
       createdDate: Timestamp.now(),
@@ -213,62 +166,22 @@ useEffect(() => {
   };
 
   const onFinishFailed = (errorInfo) => {
-  console.log('Failed:', errorInfo);
-};
+    console.log('Failed:', errorInfo);
+  };
 
-const disabledDate = async (current) => {
+  const disabledDate = async (current) => {
   const formattedDate = dayjs(current).format('YYYY-MM-DD');
   const selectedType = form.getFieldValue('type');
-  const existingAppointments = await fetchExistingAppointments(selectedType, formattedDate);
+
 
   return (
     // Disable past days
     current && current < dayjs().startOf('day') ||
     // Disable days based on doctor's availability
-    !availableDays.includes(dayjs(current).format('dddd')) ||
-    // Disable dates that have already been booked
-    existingAppointments.length > 0
+    !availableDays.includes(dayjs(current).format('dddd'))
   );
-};
+}
 
-const fetchExistingAppointments = async (selectedType, selectedDate) => {
-  try {
-    const appointmentsCollection = collection(db, "appointments");
-    const q = query(
-      appointmentsCollection,
-      where("typeOfDoctor", "==", selectedType),
-      where("appointmentDate", ">=", dayjs(selectedDate).startOf('day').toDate()),
-      where("appointmentDate", "<=", dayjs(selectedDate).endOf('day').toDate())
-    );
-    const querySnapshot = await getDocs(q);
-
-    const appointments = querySnapshot.docs.map((doc) => ({
-      date: dayjs(doc.data().appointmentDate.toDate()).format("YYYY-MM-DD"),
-      time: JSON.parse(doc.data().appointmentTime).value,
-    }));
-
-    return appointments;
-  } catch (error) {
-    console.error("Error fetching existing appointments", error);
-    return [];
-  }
-  };
-  
-  const disabledTime = async (current) => {
-  const selectedDate = form.getFieldValue('adate');
-  const formattedDate = dayjs(selectedDate).format('YYYY-MM-DD');
-  const selectedTime = JSON.stringify(current);
-  const existingAppointments = await fetchExistingAppointments(form.getFieldValue('type'), formattedDate);
-
-  return (
-    // Disable times that have already been booked for the selected date and time
-    existingAppointments.some(
-      (appointment) =>
-        appointment.date === formattedDate &&
-        appointment.time === selectedTime
-    )
-  );
-};
 
   // Custom validation rule for age field
   const validateAge = (rule, value) => {
@@ -390,9 +303,7 @@ const fetchExistingAppointments = async (selectedType, selectedDate) => {
                 }
                 allowClear
               >
-                <Option value="follow-up">Follow-up</Option>
                 <Option value="consultation">Consultation</Option>
-                <Option value="other">Other</Option>
               </Select>
             </Form.Item>
 
@@ -460,7 +371,6 @@ const fetchExistingAppointments = async (selectedType, selectedDate) => {
           <Form.Item
             name="timepicker"
             label="Appointment Time"
-            {...config}
             rules={[{ required: true, message: 'Select Time' }]}
           >
             <Select
