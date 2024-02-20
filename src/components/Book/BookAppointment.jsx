@@ -15,22 +15,14 @@ import pedia from "../../assets/Book/pedia.jpg";
 import physical from "../../assets/Book/physical.jpg";
 import pulmonology from "../../assets/Book/pulmonology.jpg";
 import { Link } from "react-router-dom";
-import { Radio } from "antd";
 
 function BookAppointment() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [showCaptcha, setShowCaptcha] = useState(false);
-  const [selectedReason, setSelectedReason] = useState(null);
   const [captchaValue, setCaptchaValue] = useState(null);
 
   const showModal = () => {
-    if (selectedReason === 'consultation') {
-      setIsModalVisible(true);
-    } else {
-      // Redirect to another form or handle the case where the reason is not 'Consultation'
-      // For now, we'll simply log a message to the console
-      console.log(`Redirect to another form for reason: ${selectedReason}`);
-    }
+    setIsModalVisible(true);
   };
 
   const handleCancel = () => {
@@ -53,95 +45,69 @@ function BookAppointment() {
     }
   };
 
-  const handleBookAppointment = () => {
-    // Check if the captcha has been successfully validated and a reason is selected
-    if (captchaValue && selectedReason) {
-      setIsModalVisible(true);
-    } else {
-      notification.error({
-        message: 'Validation Failed',
-        description: 'Please complete the captcha and select a reason before booking an appointment.',
-      });
-    }
-  };
-
   return (
     <ConfigProvider>
       <header className="bg-white py-4 shadow fixed w-full z-50">
-      <div className="container mx-auto flex items-center justify-between">
-        <img
-          src={clinic}
-          alt="bookheader"
-          className="relative top-0 left-10 max-h-10"
-        />
-        <div className="relative top-0 right-10 max-h-10">
-          {/* Add your login/sign-up button */}
-          <Link to="/checkappointment">
-            <Button className="mr-4">Check Appointment</Button>
-          </Link>
-          <Link to="/login">
-            <Button className="mr-4">Login</Button>
-          </Link>
-          <Link to="/register">
-            <Button className="mr-6 bg-green-600">Sign Up</Button>
-          </Link>
+        <div className="container mx-auto flex items-center justify-between">
+          <img
+            src={clinic}
+            alt="bookheader"
+            className="relative top-0 left-10 max-h-10"
+          />
+          <div className="relative top-0 right-10 max-h-10">
+            {/* Add your login/sign-up button */}
+            <Link to="/checkappointment">
+              <Button className="mr-4">Check Appointment</Button>
+            </Link>
+            <Link to="/login">
+              <Button className="mr-4">Login</Button>
+            </Link>
+            <Link to="/register">
+              <Button className="mr-6 bg-green-600">Sign Up</Button>
+            </Link>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
 
       <div>
-      <div className="relative">
-        <img
-          src={bk}
-          alt="bookheader"
-          className="w-100 max-h-97 blur"
-          style={{ filter: 'blur(4px)' }} // Adjust the blur value as needed
-        />
+        <div className="relative">
+          <img
+            src={bk}
+            alt="bookheader"
+            className="w-100 max-h-97 blur"
+            style={{ filter: 'blur(4px)' }} // Adjust the blur value as needed
+          />
           <div className="absolute bottom-40 p-20 ">
-          <div>
-            <h1 className="text-4xl font-bold text-green-900 ">
-              Elevate Your Health Journey: <br></br>
-              Seamless Booking, Exceptional Care at Mountain Top Specialty Clinic.
-            </h1>
-            {showCaptcha && !selectedReason && (
-              <div>
-                <h2 className="text-lg font-semibold text-green-700 mt-6 mb-2">
-                  Select the reason for your appointment:
-                </h2>
-                <Radio.Group
-                  onChange={(e) => setSelectedReason(e.target.value)}
-                  value={selectedReason}
-                >
-                  <Radio value="follow-up">Follow-up</Radio>
-                  <Radio value="consultation">Consultation</Radio>
-                </Radio.Group>
-              </div>
-            )}
-            {showCaptcha && (
-              <ReCAPTCHA
-                sitekey="6LdxRU8pAAAAAPtTPMi4pwlsanI-7R96R7SvkP8k"
-                onChange={handleCaptchaChange}
-              />
-            )}
-            <Button
-              onClick={showModal}
-              type="primary"
-              className="bg-green-600 rounded mt-3"
-              disabled={!showCaptcha || !captchaValue || !selectedReason}
-            >
-              Book Appointment
-            </Button>
-            {!showCaptcha && !selectedReason && (
-              <p className="text-sm text-green-600 mt-5 cursor-pointer underline" onClick={() => setShowCaptcha(true)}>
-                Click here to verify and book an appointment.
-              </p>
-            )}
-            {!captchaValue && showCaptcha && (
-              <p className="text-red-500 mt-2">
-                Please complete the captcha before proceeding with the booking.
-              </p>
-            )}
-          </div>
+            <div>
+              <h1 className="text-4xl font-bold text-green-900 ">
+                Elevate Your Health Journey: <br></br>
+                Seamless Booking, Exceptional Care at Mountain Top Specialty Clinic.
+              </h1>
+              {showCaptcha && (
+                <ReCAPTCHA
+                  sitekey="6LdxRU8pAAAAAPtTPMi4pwlsanI-7R96R7SvkP8k"
+                  onChange={handleCaptchaChange}
+                />
+              )}
+              <Button
+                onClick={showModal}
+                type="primary"
+                className="bg-green-600 rounded mt-3"
+                disabled={!showCaptcha || !captchaValue} // Disable the button if captcha is not completed
+              >
+                Book Appointment
+              </Button>
+              {!showCaptcha && (
+                <p className="text-sm text-green-600 mt-5 cursor-pointer underline" onClick={() => setShowCaptcha(true)}>
+                  Click here to verify and book an appointment.
+                </p>
+              )}
+              {!captchaValue && showCaptcha && (
+                <p className="text-red-500 mt-2">
+                  Please complete the captcha before proceeding with the booking.
+                </p>
+              )}
+            </div>
           </div>
         </div>
         <div className="pl-8 pr-8 pb-5 pt-5">
@@ -165,7 +131,7 @@ function BookAppointment() {
             </Card>
           </Modal>
         </div>
-        
+
         <div className="pl-8 pr-8 pb-5 pt-5">
           <h1 className="text-2xl font-bold text-green-600 ">Our Specialties</h1>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 content-start px-4 sm:px-8 md:px-16 py-10">
