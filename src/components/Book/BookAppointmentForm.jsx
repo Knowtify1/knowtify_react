@@ -16,13 +16,12 @@ import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import "dayjs/locale/en";
 
-let referenceCounter = 0; // Initialize counter variable
 
 const generateUniqueReference = () => {
-  const prefix = "AP";
-  referenceCounter++; // Increment counter
-  const referenceNumber = String(referenceCounter).padStart(7, "0"); // Ensure 7-digit format
-  return `${prefix}${referenceNumber}`;
+  const prefix = 'AP';
+  const randomDigits = Math.floor(Math.random() * 10000000); // Generates a random 7-digit number
+
+  return `${prefix}${randomDigits}`;
 };
 
 function BookAppointmentForm() {

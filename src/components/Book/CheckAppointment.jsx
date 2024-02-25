@@ -279,6 +279,41 @@ function DoctorAppointment() {
               </p>
             </div>
           )}
+
+          {appointmentStatus === "Appointment is assigned" && (
+            <div id="appointmentDetails">
+              <p>
+                <strong>Patient Name:</strong> {appointmentData?.patientName}
+              </p>
+              <p>
+                <strong>Contact Number:</strong> {appointmentData?.contactNo}
+              </p>
+              <p>
+                <strong>Appointment Date:</strong>{" "}
+                {appointmentData?.appointmentDate
+                  ?.toDate()
+                  .toLocaleDateString()}
+              </p>
+              <p>
+                <strong>Appointment Time:</strong>{" "}
+                {appointmentData?.appointmentTime}
+              </p>
+              <p>
+                <strong>Patient Address:</strong>{" "}
+                {appointmentData?.patientAddress}
+              </p>
+              <p>
+                <strong>Reason for Appointment:</strong>{" "}
+                {appointmentData?.reasonForAppointment}
+              </p>
+              <p>
+                <strong>Type of Doctor:</strong> {appointmentData?.typeOfDoctor}
+              </p>
+              <p>
+                <strong>Status:</strong> {appointmentData?.status}
+              </p>
+            </div>
+          )}
         </Modal>
 
         <div className="mt-4">
