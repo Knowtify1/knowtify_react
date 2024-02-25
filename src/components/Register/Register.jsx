@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import { auth, googleProvider } from "../../config/firebase";
 import { signInWithPopup, createUserWithEmailAndPassword } from "firebase/auth";
-import { Button, Form, Input, Card, Select, Spin , Upload, message} from "antd";
+import { Button, Form, Input, Card, Select, Spin } from "antd";
 import { Link, useNavigate } from "react-router-dom";
-import { setDoc, doc, db, fsTimeStamp } from "../../config/firebase";
+import { setDoc, doc, db, fsTimeStamp, getDocs, collection, where, query } from "../../config/firebase";
 import { Timestamp } from "firebase/firestore";
 import { InboxOutlined } from "@ant-design/icons";
 
@@ -12,6 +12,8 @@ import { InboxOutlined } from "@ant-design/icons";
 function Register() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showReferenceId, setShowReferenceId] = useState(false);
+
 
   const signInWithGoogle = async () => {
     try {
@@ -49,66 +51,91 @@ function Register() {
     }
   };
 
-  const createPatientCollection = async (userId, name) => {
-    const patientsCollection = doc(db, "patient", `${userId}`);
-    try {
-      const docData = {
-        name: name,
-        uid: userId,
-        // Add other patient-specific data as needed
-      };
+  const createPatientCollection = async (userId, name, referenceId) => {
+  const patientsCollection = doc(db, "patient", `${userId}`);
+  try {
+    const docData = {
+      name: name,
+      uid: userId,
+      referenceId: referenceId, // Include referenceId in patient document data
+      // Add other patient-specific data as needed
+    };
 
-      await setDoc(patientsCollection, docData);
+    await setDoc(patientsCollection, docData);
 
-      console.log("Patient collection created successfully");
-    } catch (error) {
-      console.error("Error creating patient collection:", error);
-    }
-  };
+    console.log("Patient collection created successfully");
+  } catch (error) {
+    console.error("Error creating patient collection:", error);
+  }
+};
 
   const onFinish = async (values) => {
-    const { name, email, password, role } = values;
-    try {
-      setLoading(true);
+  const { name, email, password, role, referenceId } = values; // Destructure referenceId from values
+  try {
+    setLoading(true);
 
-      await createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
+    await createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        const user = userCredential.user;
 
-          const userData = {
-            name: name,
-            uid: user.uid,
-            email: user.email,
-            type: role,
-            dateofregistration: fsTimeStamp.now(),
-            password: password,
-          };
+        const userData = {
+          name: name,
+          uid: user.uid,
+          email: user.email,
+          type: role,
+          dateofregistration: fsTimeStamp.now(),
+          password: password,
+          reference: referenceId,
+        };
 
-          addNewDocument(userData, user.uid);
+        addNewDocument(userData, user.uid);
 
-          if (role === "doctor") {
-            createDoctorCollection(user.uid, name);
-          } else if (role === "patient") {
-            createPatientCollection(user.uid, name);
-          }
+       if (role === "doctor") {
+          createDoctorCollection(user.uid, name);
+        } else if (role === "patient") {
+          createPatientCollection(user.uid, name, referenceId); // Pass referenceId to createPatientCollection
+        }
 
-          navigate("/login");
-        })
-        .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    } catch (error) {
-      console.log(error);
-    }
-  };
+        navigate("/login");
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
   };
+
+  const handleRoleChange = (value) => {
+    setShowReferenceId(value === "patient");
+  };
+
+  useEffect(() => {
+    const autoLogin = async () => {
+      try {
+        const user = auth.currentUser;
+        if (user && user.displayName) {
+          const isPatient = await checkExistingPatient(user.displayName);
+          if (isPatient) {
+            navigate("/patientdashboard");
+          }
+        }
+      } catch (error) {
+        console.error("Error auto-logging in:", error);
+      }
+    };
+
+    autoLogin();
+  }, []);
 
   return (
     <Card
@@ -184,12 +211,27 @@ function Register() {
               },
             ]}
           >
-            <Select placeholder="Select a role">
+            <Select placeholder="Select a role" onChange={handleRoleChange}>
               <Select.Option value="doctor">Doctor</Select.Option>
               <Select.Option value="admin">Secretary</Select.Option>
               <Select.Option value="patient">Patient</Select.Option>
             </Select>
           </Form.Item>
+
+          {showReferenceId && (
+            <Form.Item
+              label="Reference ID"
+              name="referenceId"
+              rules={[
+                {
+                  required: true,
+                  message: "Please input your reference ID!",
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+          )}
 
           <Form.Item
             wrapperCol={{

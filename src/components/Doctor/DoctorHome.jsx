@@ -1,7 +1,7 @@
 import React from "react";
 import DoctorSetSpecialty from "./Components/DoctorSetSpecialty.jsx";
 import { Card } from "antd";
-import DoctorOverView from "./Components/DoctorOverView.jsx";
+import DoctorPatients from "./Components/DoctorPatients.jsx";
 
 function DoctorHome() {
   return (
@@ -10,7 +10,7 @@ function DoctorHome() {
     <div style={{ position: "relative", top: 0, left: 0, right: 0, bottom: 0, overflow: "auto" }}>
         <div className="pl-8 pr-8 pb-5 pt-5">
           <Card>
-            <DoctorOverView />
+            <DoctorPatients />
           </Card>
         </div>
         <div className="pl-8 pr-8 pb-5 pt-5">

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, DatePicker, Form, Input, Select, Space, Row, Col } from 'antd';
 const { TextArea } = Input;
 import { Timestamp } from 'firebase/firestore';
-import { setDoc, doc, db, collection, addDoc, getDocs, query, where } from '../../config/firebase';
+import { setDoc, doc, db, collection, addDoc, getDocs, query, where } from '../../../config/firebase';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import 'dayjs/locale/en';
@@ -16,7 +16,7 @@ const generateUniqueReference = () => {
   return `${prefix}${referenceNumber}`;
 };
 
-function BookAppointmentForm() {
+function BookForm() {
   const [componentDisabled, setComponentDisabled] = useState(false);
   const navigate = useNavigate();
   const [form] = Form.useForm();
@@ -437,4 +437,4 @@ function BookAppointmentForm() {
   );
 }
 
-export default BookAppointmentForm;
+export default BookForm;

@@ -27,8 +27,9 @@ function TablePendingAppointments() {
     {
       title: "Appointment Time",
       dataIndex: "appointmentTime",
-      render: (text) => <span>{text.replace(/"/g, "")}</span>,
+      render: (text) => <span>{text ? text.replace(/"/g, "") : ""}</span>,
     },
+
     {
       title: "Reason",
       dataIndex: "reasonForAppointment",
@@ -341,10 +342,13 @@ function TablePendingAppointments() {
     fetchAppointments(selectedDate, setData, setLoading);
   };
 
-  const formatDate = (date) => {
+ const formatDate = (date) => {
+  if (date && date.toDate) {
     const options = { month: "long", day: "numeric", year: "numeric" };
     return date.toDate().toLocaleDateString(undefined, options);
-  };
+  }
+  return ""; // or handle it in whatever way is appropriate for your application
+};
 
   const getCurrentDateMessage = () => {
     const today = new Date();
