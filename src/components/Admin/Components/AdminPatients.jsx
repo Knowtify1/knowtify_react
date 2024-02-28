@@ -40,8 +40,8 @@ function AdminPatients() {
       const unsubscribe = onAuthStateChanged(auth, async (user) => {
         if (user) {
           const userId = user.uid;
-          const userRef = doc(db, "users", userId);
-          const docRef = doc(db, "doctors", userId);
+          const userRef = doc(db, "users_accounts_records", userId);
+          const docRef = doc(db, "doctors_accounts", userId);
 
           try {
             const docSnapshot = await getDoc(userRef);
@@ -188,8 +188,6 @@ function AdminPatients() {
         <Spin size="large" />
       ) : (
         <div>
-
-
           <Card className="w-full">
             <h2>Patients</h2>
             <Space direction="horizontal" size={10} className="mb-2">

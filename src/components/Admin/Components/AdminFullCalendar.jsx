@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Select, Calendar, Badge, Card, Space, Spin, Modal as AntModal} from "antd";
+import {
+  Select,
+  Calendar,
+  Badge,
+  Card,
+  Space,
+  Spin,
+  Modal as AntModal,
+} from "antd";
 import moment from "moment";
 import {
   collection,
@@ -30,7 +38,7 @@ const AdminFullCalendar = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const doctorsCollection = collection(db, "doctors");
+        const doctorsCollection = collection(db, "doctors_accounts");
         const q = query(doctorsCollection, where("specialty", "==", specialty));
         const querySnapshot = await getDocs(q);
 
@@ -87,7 +95,7 @@ const AdminFullCalendar = () => {
     }
   };
 
-   const cellRender = (current) => {
+  const cellRender = (current) => {
     const formattedDate = current.format("YYYY-MM-DD");
 
     if (
@@ -113,7 +121,6 @@ const AdminFullCalendar = () => {
           }
         });
 
-
       return (
         <ul className="events">
           {filteredAppointments.map((appointment) => (
@@ -125,7 +132,10 @@ const AdminFullCalendar = () => {
                     className="clickable-badge" // Add this class for styling
                     onClick={() => handleDateSelect(current, appointment)}
                   >
-                    {moment(appointment.appointmentTime, "HH:mm").format("HH:mm")} - {appointment.patientName}
+                    {moment(appointment.appointmentTime, "HH:mm").format(
+                      "HH:mm"
+                    )}{" "}
+                    - {appointment.patientName}
                   </span>
                 }
               />
@@ -198,37 +208,37 @@ const AdminFullCalendar = () => {
           ) : null}
         </Space>
         <Calendar
-            cellRender={cellRender}
-            validRange={[startOfMonth, endOfMonth]}
-            disabledDate={disabledDate}
-            mode={calendarMode}
-            onPanelChange={handlePanelChange}
-          />
+          cellRender={cellRender}
+          validRange={[startOfMonth, endOfMonth]}
+          disabledDate={disabledDate}
+          mode={calendarMode}
+          onPanelChange={handlePanelChange}
+        />
       </Card>
       <AntModal
-            title={`Appointments on ${selectedPatient?.appointmentDate
-              ?.toDate()
-              .toLocaleDateString()}`}
-            visible={modalVisible}
-            onCancel={handleModalCancel}
-            footer={null}
-          >
-            {selectedPatient && (
-              <Space direction="vertical" size={10}>
-                <p>Patient Name: {selectedPatient.patientName}</p>
-                <p>
-                  Appointment Date:{" "}
-                  {moment(selectedPatient.appointmentDate.toDate()).format(
-                    "MMMM Do YYYY"
-                  )}
-                </p>
-                <p>Appointment Time: {selectedPatient.appointmentTime}</p>
-                <p>Reason: {selectedPatient.reasonForAppointment}</p>
-                <p>Doctor: {selectedPatient.assignedDoctor}</p>
-                <p>Reference ID: {selectedPatient.reference}</p>
-              </Space>
-            )}
-          </AntModal>
+        title={`Appointments on ${selectedPatient?.appointmentDate
+          ?.toDate()
+          .toLocaleDateString()}`}
+        visible={modalVisible}
+        onCancel={handleModalCancel}
+        footer={null}
+      >
+        {selectedPatient && (
+          <Space direction="vertical" size={10}>
+            <p>Patient Name: {selectedPatient.patientName}</p>
+            <p>
+              Appointment Date:{" "}
+              {moment(selectedPatient.appointmentDate.toDate()).format(
+                "MMMM DD YYYY"
+              )}
+            </p>
+            <p>Appointment Time: {selectedPatient.appointmentTime}</p>
+            <p>Reason: {selectedPatient.reasonForAppointment}</p>
+            <p>Doctor: {selectedPatient.assignedDoctor}</p>
+            <p>Reference ID: {selectedPatient.reference}</p>
+          </Space>
+        )}
+      </AntModal>
     </>
   );
 };

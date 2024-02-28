@@ -31,12 +31,14 @@ function DoctorSetSpecialty() {
           return;
         }
 
-        const userDoc = await getDoc(doc(db, "users", user.uid));
+        const userDoc = await getDoc(
+          doc(db, "users_accounts_records", user.uid)
+        );
         const userType = userDoc.data()?.type;
         console.log("User type:", userType);
 
         if (userType === "doctor") {
-          const doctorDoc = await getDoc(doc(db, "doctors", user.uid));
+          const doctorDoc = await getDoc(doc(db, "doctors_accounts", user.uid));
           const setSpecialty = doctorDoc.data()?.setSpecialty;
 
           console.log("setSpecialty:", setSpecialty);
@@ -55,7 +57,7 @@ function DoctorSetSpecialty() {
 
   const handleModalOk = async () => {
     try {
-      await updateDoc(doc(db, "doctors", auth.currentUser.uid), {
+      await updateDoc(doc(db, "doctors_accounts", auth.currentUser.uid), {
         setSpecialty: true,
         specialty: modalInput,
       });

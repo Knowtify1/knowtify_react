@@ -12,9 +12,8 @@ const Login = () => {
   const [error, setError] = useState(null);
   const [showSpinner, setShowSpinner] = useState(false);
   const [user, setUser] = useState(null);
-  const [forgotPasswordModalVisible, setForgotPasswordModalVisible] = useState(
-    false
-  );
+  const [forgotPasswordModalVisible, setForgotPasswordModalVisible] =
+    useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -30,7 +29,7 @@ const Login = () => {
   }, []);
 
   const navigateAfterLogin = (user) => {
-    const myDoc = doc(db, "users", user.uid);
+    const myDoc = doc(db, "users_accounts_records", user.uid);
 
     getDoc(myDoc)
       .then((docSnap) => {
@@ -90,7 +89,8 @@ const Login = () => {
       await sendPasswordResetEmail(auth, email);
       Modal.success({
         title: "Password Reset Email Sent",
-        content: "Please check your email for instructions to reset your password.",
+        content:
+          "Please check your email for instructions to reset your password.",
         onOk: () => setForgotPasswordModalVisible(false),
       });
     } catch (error) {
@@ -197,7 +197,10 @@ const Login = () => {
           </h3>
 
           <div className="text-center mt-2">
-            <Button type="link" onClick={() => setForgotPasswordModalVisible(true)}>
+            <Button
+              type="link"
+              onClick={() => setForgotPasswordModalVisible(true)}
+            >
               Forgot Password?
             </Button>
           </div>

@@ -44,7 +44,7 @@ const AdminDateCalendar = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const doctorsCollection = collection(db, "doctors");
+        const doctorsCollection = collection(db, "doctors_accounts");
         const q = query(doctorsCollection, where("specialty", "==", specialty));
         const querySnapshot = await getDocs(q);
 

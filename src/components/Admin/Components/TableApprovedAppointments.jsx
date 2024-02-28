@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Table, Space, Spin, DatePicker, Button, Modal, Select, message } from "antd";
+import {
+  Table,
+  Space,
+  Spin,
+  DatePicker,
+  Button,
+  Modal,
+  Select,
+  message,
+} from "antd";
 import {
   doc,
   db,
@@ -103,7 +112,11 @@ function TableApprovedAppointments() {
     },
   ];
 
-  const fetchApprovedAppointments = async (selectedDate, setData, setLoading) => {
+  const fetchApprovedAppointments = async (
+    selectedDate,
+    setData,
+    setLoading
+  ) => {
     try {
       let appointmentsQuery = collection(db, "patients");
 
@@ -155,7 +168,7 @@ function TableApprovedAppointments() {
 
   const fetchDoctorsList = async (typeOfDoctor) => {
     try {
-      const doctorsQuery = collection(db, "doctors");
+      const doctorsQuery = collection(db, "doctors_accounts");
       const doctorsSnapshot = await getDocs(doctorsQuery);
       const doctorsData = doctorsSnapshot.docs
         .filter((doc) => doc.data().specialty === typeOfDoctor)

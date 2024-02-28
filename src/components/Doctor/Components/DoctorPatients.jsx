@@ -11,15 +11,7 @@ import {
   where,
   getDocs,
 } from "../../../config/firebase.jsx";
-import {
-  Spin,
-  Space,
-  Button,
-  Card,
-  Table,
-  Input,
-  notification,
-} from "antd";
+import { Spin, Space, Button, Card, Table, Input, notification } from "antd";
 import moment from "moment";
 import { SearchOutlined } from "@ant-design/icons";
 
@@ -38,8 +30,8 @@ function DoctorPatients() {
       const unsubscribe = onAuthStateChanged(auth, async (user) => {
         if (user) {
           const userId = user.uid;
-          const userRef = doc(db, "users", userId);
-          const docRef = doc(db, "doctors", userId);
+          const userRef = doc(db, "users_accounts_records", userId);
+          const docRef = doc(db, "doctors_accounts", userId);
 
           try {
             const docSnapshot = await getDoc(userRef);

@@ -14,8 +14,8 @@ function DoctorAccountDetails() {
       const unsubscribe = onAuthStateChanged(auth, async (user) => {
         if (user) {
           const userId = user.uid;
-          const userRef = doc(db, "users", userId);
-          const docRef = doc(db, "doctors", userId);
+          const userRef = doc(db, "users_accounts_records", userId);
+          const docRef = doc(db, "doctors_accounts", userId);
 
           try {
             const docSnapshot = await getDoc(userRef);
@@ -63,7 +63,13 @@ function DoctorAccountDetails() {
     <div>
       {userDetails ? (
         <div>
-          <h1 style={{ fontSize: "24px", fontWeight: "bold", textAlign: "center" }}>
+          <h1
+            style={{
+              fontSize: "24px",
+              fontWeight: "bold",
+              textAlign: "center",
+            }}
+          >
             {userDetails.name}
           </h1>
           <br></br>
@@ -71,12 +77,10 @@ function DoctorAccountDetails() {
           <p>Date of Registration: {userDetails.dateofregistration}</p>
           <p>User Type: {userDetails.type}</p>
           <p>Specialty: {doctorsMoreDetails.specialty}</p>
-          
         </div>
       ) : (
         <p>Loading...</p>
       )}
-
     </div>
   );
 }

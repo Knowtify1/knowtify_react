@@ -4,16 +4,23 @@ import { auth, googleProvider } from "../../config/firebase";
 import { signInWithPopup, createUserWithEmailAndPassword } from "firebase/auth";
 import { Button, Form, Input, Card, Select, Spin } from "antd";
 import { Link, useNavigate } from "react-router-dom";
-import { setDoc, doc, db, fsTimeStamp, getDocs, collection, where, query } from "../../config/firebase";
+import {
+  setDoc,
+  doc,
+  db,
+  fsTimeStamp,
+  getDocs,
+  collection,
+  where,
+  query,
+} from "../../config/firebase";
 import { Timestamp } from "firebase/firestore";
 import { InboxOutlined } from "@ant-design/icons";
-
 
 function Register() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showReferenceId, setShowReferenceId] = useState(false);
-
 
   const signInWithGoogle = async () => {
     try {
@@ -24,7 +31,7 @@ function Register() {
   };
 
   const addNewDocument = async (userData, id) => {
-    const myDoc = doc(db, "users", `${id}`);
+    const myDoc = doc(db, "users_accounts_records", `${id}`);
     try {
       await setDoc(myDoc, userData);
       console.log("firestore success");
@@ -33,14 +40,55 @@ function Register() {
     }
   };
 
-  const createDoctorCollection = async (userId, name) => {
-    const doctorsCollection = doc(db, "doctors", `${userId}`);
+  const createAdminCollection = async (
+    userId,
+    name,
+    email,
+    password,
+    role,
+    phone,
+    dateofregistration
+  ) => {
+    const adminCollection = doc(db, "admin_accounts", `${userId}`);
+    try {
+      const adminData = {
+        name: name,
+        uid: userId,
+        email: email,
+        password: password,
+        type: role,
+        phone: phone,
+        dateofregistration: dateofregistration,
+      };
+
+      await setDoc(adminCollection, adminData);
+      console.log("Doctor collection created successfully");
+    } catch (error) {
+      console.error("Error creating doctor collection:", error);
+    }
+  };
+
+  const createDoctorCollection = async (
+    userId,
+    name,
+    email,
+    password,
+    role,
+    phone,
+    dateofregistration
+  ) => {
+    const doctorsCollection = doc(db, "doctors_accounts", `${userId}`);
     try {
       const docData = {
         name: name,
         uid: userId,
         setSpecialty: false,
         specialty: "",
+        email: email,
+        password: password,
+        type: role,
+        phone: phone,
+        dateofregistration: dateofregistration,
       };
 
       await setDoc(doctorsCollection, docData);
@@ -51,65 +99,105 @@ function Register() {
     }
   };
 
-  const createPatientCollection = async (userId, name, referenceId) => {
-  const patientsCollection = doc(db, "patient", `${userId}`);
-  try {
-    const docData = {
-      name: name,
-      uid: userId,
-      referenceId: referenceId, // Include referenceId in patient document data
-      // Add other patient-specific data as needed
-    };
+  const createPatientCollection = async (
+    userId,
+    name,
+    email,
+    password,
+    role,
+    referenceId,
+    phone,
+    dateofregistration
+  ) => {
+    const patientsCollection = doc(db, "patient_accounts", `${userId}`);
+    try {
+      const docData = {
+        name: name,
+        uid: userId,
+        email: email,
+        password: password,
+        type: role,
+        referenceId: referenceId,
+        phone: phone,
+        dateofregistration: dateofregistration,
+      };
 
-    await setDoc(patientsCollection, docData);
+      await setDoc(patientsCollection, docData);
 
-    console.log("Patient collection created successfully");
-  } catch (error) {
-    console.error("Error creating patient collection:", error);
-  }
-};
+      console.log("Patient collection created successfully");
+    } catch (error) {
+      console.error("Error creating patient collection:", error);
+    }
+  };
 
   const onFinish = async (values) => {
-  const { name, email, password, role, referenceId } = values; // Destructure referenceId from values
-  try {
-    setLoading(true);
+    const { name, email, password, role, referenceId, phone } = values; // Destructure referenceId from values
+    try {
+      setLoading(true);
 
-    await createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        const user = userCredential.user;
+      await createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          const dateofregistration = fsTimeStamp.now();
 
-        const userData = {
-          name: name,
-          uid: user.uid,
-          email: user.email,
-          type: role,
-          dateofregistration: fsTimeStamp.now(),
-          password: password,
-          reference: referenceId,
-        };
+          const userData = {
+            name: name,
+            uid: user.uid,
+            email: user.email,
+            type: role,
+            dateofregistration: dateofregistration,
+            password: password,
+            phone: phone,
+          };
 
-        addNewDocument(userData, user.uid);
+          addNewDocument(userData, user.uid);
 
-       if (role === "doctor") {
-          createDoctorCollection(user.uid, name);
-        } else if (role === "patient") {
-          createPatientCollection(user.uid, name, referenceId); // Pass referenceId to createPatientCollection
-        }
+          if (role === "doctor") {
+            createDoctorCollection(
+              user.uid,
+              name,
+              email,
+              password,
+              role,
+              phone,
+              dateofregistration
+            );
+          } else if (role === "patient") {
+            createPatientCollection(
+              user.uid,
+              name,
+              email,
+              password,
+              role,
+              referenceId,
+              phone,
+              dateofregistration
+            );
+          } else if (role === "admin") {
+            createAdminCollection(
+              user.uid,
+              name,
+              email,
+              password,
+              role,
+              phone,
+              dateofregistration
+            );
+          }
 
-        navigate("/login");
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  } catch (error) {
-    console.log(error);
-  }
-};
-
+          navigate("/login");
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
@@ -186,6 +274,18 @@ function Register() {
             ]}
           >
             <Input type="email" />
+          </Form.Item>
+          <Form.Item
+            label="Phone"
+            name="phone"
+            rules={[
+              {
+                required: true,
+                message: "Please input your phone!",
+              },
+            ]}
+          >
+            <Input type="text" />
           </Form.Item>
 
           <Form.Item
