@@ -29,67 +29,92 @@ function BookAppointmentForm() {
   const [form] = Form.useForm();
   const [availableDays, setAvailableDays] = useState([]);
 
-  const [doctorAvailability, setDoctorAvailability] = useState({});
-  const [doctorTimeOptions, setdoctorTimeOptions] = useState({});
-  const [typesofDoc, settypesofDoc] = useState([]);
+  const doctorTimeOptions = {
+    Orthopedics: [
+      { value: "8:00", label: "8:00 AM" },
+      { value: "9:00", label: "9:00 AM" },
+      { value: "10:00", label: "10:00 AM" },
+      { value: "11:00", label: "11:00 AM" },
+      { value: "1:00", label: "1:00 PM" },
+      { value: "2:00", label: "2:00 PM" },
+      { value: "3:00", label: "3:00 PM" },
+    ],
+    "Internal Medicine": [
+      { value: "3:00", label: "3:00 PM" },
+      { value: "4:00", label: "4:00 PM" },
+    ],
+    Hematology: [
+      { value: "1:00", label: "1:00 PM" },
+      { value: "2:00", label: "2:00 PM" },
+      { value: "3:00", label: "3:00 PM" },
+      { value: "4:00", label: "4:00 PM" },
+    ],
+    Infectious: [
+      { value: "9:00", label: "9:00 AM" },
+      { value: "10:00", label: "10:00 AM" },
+      { value: "11:00", label: "11:00 AM" },
+      { value: "1:00", label: "1:00 PM" },
+      { value: "2:00", label: "2:00 PM" },
+      { value: "3:00", label: "3:00 PM" },
+    ],
+    Pulmonology: [
+      { value: "10:00", label: "10:00 AM" },
+      { value: "11:00", label: "11:00 AM" },
+      { value: "1:00", label: "1:00 PM" },
+    ],
+    Ob: [
+      { value: "8:00", label: "8:00 AM" },
+      { value: "9:00", label: "9:00 AM" },
+      { value: "10:00", label: "10:00 AM" },
+      { value: "11:00", label: "11:00 AM" },
+      { value: "1:00", label: "1:00 PM" },
+      { value: "2:00", label: "2:00 PM" },
+      { value: "3:00", label: "3:00 PM" },
+    ],
+    Pediatrics: [
+      { value: "9:00", label: "9:00 AM" },
+      { value: "10:00", label: "10:00 AM" },
+      { value: "11:00", label: "11:00 AM" },
+      { value: "1:00", label: "1:00 PM" },
+    ],
+    Physical: [
+      { value: "8:00", label: "8:00 AM" },
+      { value: "9:00", label: "9:00 AM" },
+      { value: "10:00", label: "10:00 AM" },
+      { value: "11:00", label: "11:00 AM" },
+      { value: "1:00", label: "1:00 PM" },
+      { value: "2:00", label: "2:00 PM" },
+      { value: "3:00", label: "3:00 PM" },
+    ],
+  };
 
-  // const fetchtypesofDoctors = async () => {
-  //   try {
-  //     const querySnapshot = await getDocs(collection(db, "settings"));
-  //     console.log("Query Snapshot:", querySnapshot); // Log querySnapshot to inspect its structure
+  const typesofDoc = [
+    { value: "Orthopedics", label: "General Orthopaedic Surgery" },
+    { value: "Internal Medicine", label: "Internal Medicine" },
+    { value: "Hematology", label: "Internal Medicine (Adult Hematology)" },
+    { value: "Infectious", label: "Internal Medicine (Infectious Diseases)" },
+    { value: "Pulmonology", label: "Internal Medicine (Pulmonology)" },
+    { value: "Ob", label: "Obstetrics and Gynecology" },
+    { value: "Physical", label: "Physical Medicine and Rehabilitation" },
+    { value: "Pediatrics", label: "Pediatrics, Vaccines, and Immunizations" },
+  ];
 
-  //     let specialtiesData = [];
-  //     querySnapshot.docs.forEach((doc) => {
-  //       const specialty = doc.data().specialty;
-  //       const specialtyLabel = doc.data().specialtyLabel;
-  //       specialtiesData = [
-  //         ...specialtiesData,
-  //         { value: specialty, label: specialtyLabel },
-  //       ];
-  //     });
-  //     settypesofDoc(specialtiesData);
-  //   } catch (error) {
-  //     console.error("Error fetching doctor specialties:", error);
-  //   }
-  // };
-
-  const fetchData = async () => {
-    try {
-      const querySnapshot = await getDocs(collection(db, "settings"));
-      const availabilityData = {};
-      const timeOptionsData = {};
-      let specialtiesData = [];
-
-      querySnapshot.forEach((doc) => {
-        const specialty = doc.data().specialty;
-        const specialtyLabel = doc.data().specialtyLabel;
-        const days = doc.data().days || [];
-        const times = doc.data().times || [];
-
-        specialtiesData = [
-          ...specialtiesData,
-          { value: specialty, label: specialtyLabel },
-        ];
-        availabilityData[specialty] = days;
-        timeOptionsData[specialty] = times.map((time) => ({
-          value: time,
-          label: `${time} ${parseInt(time.split(":")[0]) < 12 ? "AM" : "PM"}`,
-        }));
-      });
-      settypesofDoc(specialtiesData);
-      setDoctorAvailability(availabilityData);
-      setdoctorTimeOptions(timeOptionsData);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
+  const doctorAvailability = {
+    Orthopedics: ["Monday", "Tuesday", "Thursday"],
+    "Internal Medicine": ["Monday", "Wednesday", "Thursday"],
+    Hematology: ["Monday", "Wednesday", "Friday"],
+    Infectious: ["Wednesday", "Friday", "Saturday"],
+    Pulmonology: ["Tuesday", "Thursday"],
+    Ob: ["Monday", "Tuesday"],
+    Physical: ["Tuesday", "Thursday"],
+    Pediatrics: ["Monday", "Wednesday", "Friday", "Saturday"],
+    // Add more types and their corresponding available days as needed
   };
 
   useEffect(() => {
-    // fetchtypesofDoctors();
-    fetchData();
-
     const selectedType = form.getFieldValue("type");
     setAvailableDays(doctorAvailability[selectedType] || []);
+    // Additional logic to update available days as needed
   }, [form, doctorAvailability]);
 
   const handleTypeChange = (value) => {

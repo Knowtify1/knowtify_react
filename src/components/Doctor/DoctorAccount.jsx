@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import DoctorAccountDetails from "./Components/DoctorAccountDetails";
 import { auth, signOut } from "../../config/firebase";
 import doc2 from "../../assets/doc2.png";
+import DoctorsSchedule from "../Settings/DoctorsSchedule";
 
 function DoctorAccount() {
   const navigate = useNavigate();
@@ -25,8 +26,7 @@ function DoctorAccount() {
           <div className="flex items-center justify-center mb-2">
             <Avatar size={120} src={doc2} />
           </div>
-          <div className="mt-2 flex items-center justify-center">
-          </div>
+          <div className="mt-2 flex items-center justify-center"></div>
           <div className="mt-2 flex items-center justify-center">
             <DoctorAccountDetails />
           </div>
@@ -35,7 +35,9 @@ function DoctorAccount() {
             Logout
           </Button>
         </Card>
-        
+        <Card>
+          <DoctorsSchedule />
+        </Card>
       </div>
     </div>
   );
