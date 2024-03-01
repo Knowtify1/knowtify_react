@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Button, DatePicker, Form, Input, Select, Space, Row, Col } from "antd";
+import {
+  Button,
+  DatePicker,
+  Form,
+  Input,
+  Select,
+  Space,
+  Row,
+  Col,
+  Modal,
+} from "antd";
 const { TextArea } = Input;
 import { Timestamp } from "firebase/firestore";
 import {
@@ -19,7 +29,6 @@ import "dayjs/locale/en";
 const generateUniqueReference = () => {
   const prefix = "AP";
   const randomDigits = Math.floor(Math.random() * 10000000); // Generates a random 7-digit number
-
   return `${prefix}${randomDigits}`;
 };
 
@@ -29,29 +38,14 @@ function BookAppointmentForm() {
   const [form] = Form.useForm();
   const [availableDays, setAvailableDays] = useState([]);
 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalClosable, setModalClosable] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalCondition, setModalCondition] = useState("");
+
   const [doctorAvailability, setDoctorAvailability] = useState({});
   const [doctorTimeOptions, setdoctorTimeOptions] = useState({});
   const [typesofDoc, settypesofDoc] = useState([]);
-
-  // const fetchtypesofDoctors = async () => {
-  //   try {
-  //     const querySnapshot = await getDocs(collection(db, "settings"));
-  //     console.log("Query Snapshot:", querySnapshot); // Log querySnapshot to inspect its structure
-
-  //     let specialtiesData = [];
-  //     querySnapshot.docs.forEach((doc) => {
-  //       const specialty = doc.data().specialty;
-  //       const specialtyLabel = doc.data().specialtyLabel;
-  //       specialtiesData = [
-  //         ...specialtiesData,
-  //         { value: specialty, label: specialtyLabel },
-  //       ];
-  //     });
-  //     settypesofDoc(specialtiesData);
-  //   } catch (error) {
-  //     console.error("Error fetching doctor specialties:", error);
-  //   }
-  // };
 
   const fetchData = async () => {
     try {
@@ -85,7 +79,6 @@ function BookAppointmentForm() {
   };
 
   useEffect(() => {
-    // fetchtypesofDoctors();
     fetchData();
 
     const selectedType = form.getFieldValue("type");
@@ -104,6 +97,7 @@ function BookAppointmentForm() {
     const {
       patientname,
       contactno,
+      email,
       age,
       patientaddress,
       reasonforappointment,
@@ -114,35 +108,76 @@ function BookAppointmentForm() {
 
     const appointmentDate = new Date(adate);
     const selectedTime = JSON.stringify(timepicker);
-
     const uniqueReference = generateUniqueReference();
 
-    const userData = {
-      createdDate: Timestamp.now(),
-      patientName: patientname,
-      contactNo: contactno,
-      age: age,
-      patientAddress: patientaddress,
-      reasonForAppointment: reasonforappointment,
-      typeOfDoctor: type,
-      appointmentDate: appointmentDate,
-      appointmentTime: JSON.stringify(timepicker),
-      approved: false,
-      assignedDoctor: "",
-      status: "pending",
-      reference: uniqueReference,
-    };
+    const patientQuerySnapshot = await getDocs(
+      query(
+        collection(db, "appointments"),
+        where("patientName", "==", patientname),
+        where("contactNo", "==", contactno)
+      )
+    );
 
-    const myDoc = collection(db, "appointments");
+    if (!patientQuerySnapshot.empty) {
+      const message =
+        "Patient with the same name and phone number already exists!";
+      setModalClosable(false);
+      setModalCondition("exists");
+      setModalMessage(message);
+      showModal();
+      return;
+    }
 
-    try {
-      const docref = await addDoc(myDoc, userData);
-      console.log("firestore success");
-      console.log("document id", docref);
+    const existingAppointmentsQuerySnapshot = await getDocs(
+      query(
+        collection(db, "appointments"),
+        where("typeOfDoctor", "==", type),
+        where("appointmentDate", "==", appointmentDate),
+        where("appointmentTime", "==", selectedTime)
+      )
+    );
 
-      navigate("/appointmentsuccess", { state: { appointmentID: docref.id } });
-    } catch (error) {
-      console.log(error);
+    const numExistingAppointments = existingAppointmentsQuerySnapshot.size;
+    console.log(numExistingAppointments);
+    if (numExistingAppointments <= 4) {
+      const message =
+        "There are already 4 appointments booked for the selected date and time. Please choose a different date or time.";
+      setModalClosable(false);
+      setModalCondition("schedexists");
+      setModalMessage(message);
+      showModal();
+      //return;
+    } else {
+      const userData = {
+        createdDate: Timestamp.now(),
+        patientName: patientname,
+        contactNo: contactno,
+        email: email,
+        age: age,
+        patientAddress: patientaddress,
+        reasonForAppointment: reasonforappointment,
+        typeOfDoctor: type,
+        appointmentDate: appointmentDate,
+        appointmentTime: JSON.stringify(timepicker),
+        approved: false,
+        assignedDoctor: "",
+        status: "pending",
+        reference: uniqueReference,
+      };
+
+      const myDoc = collection(db, "appointments");
+
+      try {
+        const docref = await addDoc(myDoc, userData);
+        console.log("firestore success");
+        console.log("document id", docref);
+
+        navigate("/appointmentsuccess", {
+          state: { appointmentID: docref.id },
+        });
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
@@ -155,14 +190,11 @@ function BookAppointmentForm() {
     const selectedType = form.getFieldValue("type");
 
     return (
-      // Disable past days
       (current && current < dayjs().startOf("day")) ||
-      // Disable days based on doctor's availability
       !availableDays.includes(dayjs(current).format("dddd"))
     );
   };
 
-  // Custom validation rule for age field
   const validateAge = (rule, value) => {
     const age = parseInt(value);
     if (isNaN(age) || age < 18) {
@@ -174,8 +206,34 @@ function BookAppointmentForm() {
     }
   };
 
+  const showModal = () => {
+    setModalVisible(true);
+  };
+
+  const handleModalOk = () => {
+    if (modalCondition == "exists") {
+      navigate("/login");
+    } else if (modalCondition == "schedexists") {
+      setModalVisible(false);
+    } else {
+      setModalVisible(false);
+    }
+  };
+
   return (
     <>
+      <Modal
+        title="Error:"
+        open={modalVisible}
+        onOk={handleModalOk}
+        okText="OK"
+        okButtonProps={{ className: "bg-green-600 w-2/4 " }}
+        cancelButtonProps={{ style: { display: "none" } }}
+        closable={modalClosable}
+        className="mt-52"
+      >
+        <p>{modalMessage}</p>
+      </Modal>
       <Form
         labelCol={{
           span: 24,
@@ -196,7 +254,7 @@ function BookAppointmentForm() {
         autoComplete="off"
         form={form}
       >
-        <Row gutter={[16, 16]}>
+        <Row gutter={[10, 10]}>
           <Col span={8}>
             <Form.Item
               label="Patient Name"
@@ -226,7 +284,20 @@ function BookAppointmentForm() {
               <Input style={{ width: "100%" }} />
             </Form.Item>
           </Col>
-
+          <Col span={8}>
+            <Form.Item
+              label="Email Address"
+              name="email"
+              rules={[
+                {
+                  required: false,
+                  message: "Please input your email",
+                },
+              ]}
+            >
+              <Input style={{ width: "100%" }} type="email" />
+            </Form.Item>
+          </Col>
           <Col span={3}>
             <Form.Item
               label="Age"
@@ -244,10 +315,7 @@ function BookAppointmentForm() {
               <Input type="number" />
             </Form.Item>
           </Col>
-        </Row>
-
-        <Row gutter={[16, 16]}>
-          <Col span={8}>
+          <Col span={21}>
             <Form.Item
               label="Patient's Address"
               name="patientaddress"
@@ -261,7 +329,10 @@ function BookAppointmentForm() {
               <TextArea rows={2} />
             </Form.Item>
           </Col>
-
+        </Row>
+        <hr />
+        <br />
+        <Row gutter={[10, 10]}>
           <Col span={8}>
             <Form.Item
               label="Reason for Appointment"
@@ -330,7 +401,7 @@ function BookAppointmentForm() {
           </Col>
         </Row>
 
-        <Row gutter={[16, 16]}>
+        <Row gutter={[10, 10]}>
           <Col span={8}>
             <Form.Item
               label="Appointment Date"
