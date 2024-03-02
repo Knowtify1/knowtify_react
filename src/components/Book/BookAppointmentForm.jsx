@@ -47,41 +47,83 @@ function BookAppointmentForm() {
   const [doctorTimeOptions, setdoctorTimeOptions] = useState({});
   const [typesofDoc, settypesofDoc] = useState([]);
 
-  const fetchData = async () => {
-    try {
-      const querySnapshot = await getDocs(collection(db, "settings"));
-      const availabilityData = {};
-      const timeOptionsData = {};
-      let specialtiesData = [];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "settings"));
+        const availabilityData = {};
+        const timeOptionsData = {};
+        let specialtiesData = [];
 
-      querySnapshot.forEach((doc) => {
-        const specialty = doc.data().specialty;
-        const specialtyLabel = doc.data().specialtyLabel;
-        const days = doc.data().days || [];
-        const times = doc.data().times || [];
+        querySnapshot.forEach((doc) => {
+          const specialty = doc.data().specialty;
+          const specialtyLabel = doc.data().specialtyLabel;
+          const days = doc.data().days || [];
+          let times = doc.data().times || [];
 
-        specialtiesData = [
-          ...specialtiesData,
-          { value: specialty, label: specialtyLabel },
-        ];
-        availabilityData[specialty] = days;
-        timeOptionsData[specialty] = times.map((time) => ({
-          value: time,
-          label: `${time} ${parseInt(time.split(":")[0]) < 12 ? "AM" : "PM"}`,
-        }));
-      });
-      settypesofDoc(specialtiesData);
-      setDoctorAvailability(availabilityData);
-      setdoctorTimeOptions(timeOptionsData);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
+          specialtiesData = [
+            ...specialtiesData,
+            { value: specialty, label: specialtyLabel },
+          ];
+          availabilityData[specialty] = days;
+
+          // Sort times into two ranges: 7:00 - 12:00 and 1:00 - 8:00
+          times = times.sort((a, b) => {
+            const hourA = parseInt(a.split(":")[0]);
+            const hourB = parseInt(b.split(":")[0]);
+
+            if (hourA >= 7 && hourA < 12 && hourB >= 7 && hourB < 12) {
+              return hourA - hourB;
+            } else if (hourA >= 7 && hourA < 12) {
+              return -1;
+            } else if (hourB >= 7 && hourB < 12) {
+              return 1;
+            } else {
+              return hourA - hourB;
+            }
+          });
+
+          const formattedTimes = times.map((time) => ({
+            value: time,
+            label: `${time} ${
+              parseInt(time.split(":")[0]) >= 7 &&
+              parseInt(time.split(":")[0]) < 12
+                ? "AM"
+                : parseInt(time.split(":")[0]) === 12
+                ? "PM"
+                : "PM"
+            }`,
+          }));
+
+          timeOptionsData[specialty] = formattedTimes;
+        });
+
+        // Convert timeOptionsData to the desired format
+        const doctorTimeOptions = {};
+        Object.keys(timeOptionsData).forEach((specialty) => {
+          doctorTimeOptions[specialty] = timeOptionsData[specialty].map(
+            (time) => ({
+              value: time.value,
+              label: time.label,
+            })
+          );
+        });
+
+        settypesofDoc(specialtiesData);
+        setDoctorAvailability(availabilityData);
+        setdoctorTimeOptions(doctorTimeOptions);
+
+        console.log(doctorTimeOptions);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   useEffect(() => {
-    fetchData();
-
-    const selectedType = form.getFieldValue("type");
+    const selectedType = form.getFieldValue("typedoctor");
     setAvailableDays(doctorAvailability[selectedType] || []);
   }, [form, doctorAvailability]);
 
@@ -91,6 +133,7 @@ function BookAppointmentForm() {
     form.setFieldsValue({
       timepicker: timeOptions.length > 0 ? timeOptions[0].value : null,
     });
+    setAvailableDays(doctorAvailability[selectedType] || []);
   };
 
   const onFinish = async (values) => {
@@ -101,7 +144,7 @@ function BookAppointmentForm() {
       age,
       patientaddress,
       reasonforappointment,
-      type,
+      typedoctor,
       adate,
       timepicker,
     } = values;
@@ -131,22 +174,23 @@ function BookAppointmentForm() {
     const existingAppointmentsQuerySnapshot = await getDocs(
       query(
         collection(db, "appointments"),
-        where("typeOfDoctor", "==", type),
-        where("appointmentDate", "==", appointmentDate),
+        where("typeOfDoctor", "==", typedoctor),
         where("appointmentTime", "==", selectedTime)
       )
     );
 
     const numExistingAppointments = existingAppointmentsQuerySnapshot.size;
-    console.log(numExistingAppointments);
-    if (numExistingAppointments <= 4) {
+    console.log(
+      "Query:" + numExistingAppointments + existingAppointmentsQuerySnapshot
+    );
+    if (numExistingAppointments >= 4) {
       const message =
-        "There are already 4 appointments booked for the selected date and time. Please choose a different date or time.";
+        "There are already 4 appointments booked for the selected date and time. Please choose a different Time.";
       setModalClosable(false);
       setModalCondition("schedexists");
       setModalMessage(message);
       showModal();
-      //return;
+      return;
     } else {
       const userData = {
         createdDate: Timestamp.now(),
@@ -156,7 +200,7 @@ function BookAppointmentForm() {
         age: age,
         patientAddress: patientaddress,
         reasonForAppointment: reasonforappointment,
-        typeOfDoctor: type,
+        typeOfDoctor: typedoctor,
         appointmentDate: appointmentDate,
         appointmentTime: JSON.stringify(timepicker),
         approved: false,
@@ -183,16 +227,6 @@ function BookAppointmentForm() {
 
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
-  };
-
-  const disabledDate = async (current) => {
-    const formattedDate = dayjs(current).format("YYYY-MM-DD");
-    const selectedType = form.getFieldValue("type");
-
-    return (
-      (current && current < dayjs().startOf("day")) ||
-      !availableDays.includes(dayjs(current).format("dddd"))
-    );
   };
 
   const validateAge = (rule, value) => {
@@ -389,7 +423,7 @@ function BookAppointmentForm() {
             <Form.Item
               label="Type of Doctor to Consult"
               rules={[{ required: true, message: "Select Type" }]}
-              name="type"
+              name="typedoctor"
             >
               <Select
                 options={typesofDoc}
@@ -410,12 +444,9 @@ function BookAppointmentForm() {
             >
               <DatePicker
                 disabledDate={(current) => {
-                  // Disable past days
                   if (current && current < dayjs().startOf("day")) {
                     return true;
                   }
-
-                  // Disable days based on doctor's availability
                   const dayOfWeek = current.day();
                   return !availableDays.includes(
                     dayjs().day(dayOfWeek).format("dddd")
@@ -433,12 +464,11 @@ function BookAppointmentForm() {
               rules={[{ required: true, message: "Select Time" }]}
             >
               <Select
-                options={doctorTimeOptions[form.getFieldValue("type")] || []}
+                options={
+                  doctorTimeOptions[form.getFieldValue("typedoctor")] || []
+                }
                 style={{}}
                 placeholder="Select a time"
-                disabledDate={(current) =>
-                  disabledTime(current, form.getFieldValue("type"))
-                }
               />
             </Form.Item>
           </Col>

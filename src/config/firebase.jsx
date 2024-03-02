@@ -20,7 +20,6 @@ import { signOut as firebaseSignOut } from "firebase/auth";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBw9svY2hlRnUfP7B4FvN3ceAk1ZVFUKG0",
   authDomain: "know-99521.firebaseapp.com",
@@ -30,6 +29,16 @@ const firebaseConfig = {
   messagingSenderId: "1081865848898",
   appId: "1:1081865848898:web:db17d9ef1a3ac18f3185db",
 };
+
+// const firebaseConfig = {
+//   apiKey: "AIzaSyDGNFX0PLgZjEs30YPCzG22njE2lX4gMRc",
+//   authDomain: "knowtify-98d21.firebaseapp.com",
+//   projectId: "knowtify-98d21",
+//   storageBucket: "knowtify-98d21.appspot.com",
+//   messagingSenderId: "714406488736",
+//   appId: "1:714406488736:web:b6a8804df90cc56e3577c5",
+//   measurementId: "G-0Z0TV248GG",
+// };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);

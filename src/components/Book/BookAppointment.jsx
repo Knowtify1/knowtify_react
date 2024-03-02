@@ -32,8 +32,8 @@ function BookAppointment() {
 
   const openNotification = () => {
     notification.success({
-      message: 'Appointment Booked',
-      description: 'Your appointment has been successfully booked!',
+      message: "Appointment Booked",
+      description: "Your appointment has been successfully booked!",
     });
   };
 
@@ -75,13 +75,14 @@ function BookAppointment() {
             src={bk}
             alt="bookheader"
             className="w-100 max-h-97 blur"
-            style={{ filter: 'blur(4px)' }} // Adjust the blur value as needed
+            style={{ filter: "blur(4px)" }} // Adjust the blur value as needed
           />
           <div className="absolute bottom-40 p-20 ">
             <div>
               <h1 className="text-4xl font-bold text-green-900 ">
                 Elevate Your Health Journey: <br></br>
-                Seamless Booking, Exceptional Care at Mountain Top Specialty Clinic.
+                Seamless Booking, Exceptional Care at Mountain Top Specialty
+                Clinic.
               </h1>
               {showCaptcha && (
                 <ReCAPTCHA
@@ -98,13 +99,17 @@ function BookAppointment() {
                 Book Appointment
               </Button>
               {!showCaptcha && (
-                <p className="text-sm text-green-600 mt-5 cursor-pointer underline" onClick={() => setShowCaptcha(true)}>
+                <p
+                  className="text-sm text-green-600 mt-5 cursor-pointer underline"
+                  onClick={() => setShowCaptcha(true)}
+                >
                   Click here to verify and book an appointment.
                 </p>
               )}
               {!captchaValue && showCaptcha && (
                 <p className="text-red-500 mt-2">
-                  Please complete the captcha before proceeding with the booking.
+                  Please complete the captcha before proceeding with the
+                  booking.
                 </p>
               )}
             </div>
@@ -113,19 +118,22 @@ function BookAppointment() {
         <div className="pl-8 pr-8 pb-5 pt-5">
           <Modal
             title="Book Appointment"
-            visible={isModalVisible}
+            open={isModalVisible}
             onCancel={handleCancel}
             footer={null}
             width={800}
           >
             <Card>
               <p>
-                Ready to prioritize your health? Schedule an appointment with our
-                experienced healthcare professionals.
+                Ready to prioritize your health? Schedule an appointment with
+                our experienced healthcare professionals.
               </p>
               <div className="mt-12 grow">
                 <div>
-                  <BookAppointmentForm onSuccess={openNotification} onClose={handleCancel} />
+                  <BookAppointmentForm
+                    onSuccess={openNotification}
+                    onClose={handleCancel}
+                  />
                 </div>
               </div>
             </Card>
@@ -133,7 +141,9 @@ function BookAppointment() {
         </div>
 
         <div className="pl-8 pr-8 pb-5 pt-5">
-          <h1 className="text-2xl font-bold text-green-600 ">Our Specialties</h1>
+          <h1 className="text-2xl font-bold text-green-600 ">
+            Our Specialties
+          </h1>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 content-start px-4 sm:px-8 md:px-16 py-10">
             <Card
               hoverable
@@ -180,7 +190,7 @@ function BookAppointment() {
               <h2 className="text-center">Internal Medicine</h2>
               <p className="text-center">(Pulmonology)</p>
             </Card>
-            
+
             <Card
               hoverable
               className="bg-green-700	text-white p-0"
@@ -217,19 +227,19 @@ function BookAppointment() {
             </Card>
           </div>
           <div className="pl-8 pr-8 pb-5 pt-5">
-          <h1 className="text-2xl font-bold text-green-600 ">Contact Us</h1>
-          <p>
-            <span> 0977 062 5890</span>
-            <span> Mountain Top Specialty Clinic</span>
-          </p>
-        </div>
-        <div className="pl-8 pr-8 pb-5 pt-5">
-          <h1 className="text-2xl font-bold text-green-600 ">Visit Us at</h1>
-          <p>
-            101 General Luna Road, Global Multispecialty Diagnostic Center, 2nd
-            Floor, Unit 4, Baguio City, Philippines
-          </p>
-        </div>
+            <h1 className="text-2xl font-bold text-green-600 ">Contact Us</h1>
+            <p>
+              <span> 0977 062 5890</span>
+              <span> Mountain Top Specialty Clinic</span>
+            </p>
+          </div>
+          <div className="pl-8 pr-8 pb-5 pt-5">
+            <h1 className="text-2xl font-bold text-green-600 ">Visit Us at</h1>
+            <p>
+              101 General Luna Road, Global Multispecialty Diagnostic Center,
+              2nd Floor, Unit 4, Baguio City, Philippines
+            </p>
+          </div>
         </div>
       </div>
     </ConfigProvider>

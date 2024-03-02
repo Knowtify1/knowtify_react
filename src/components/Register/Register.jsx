@@ -22,14 +22,6 @@ function Register() {
   const [loading, setLoading] = useState(false);
   const [showReferenceId, setShowReferenceId] = useState(false);
 
-  const signInWithGoogle = async () => {
-    try {
-      await auth.signInWithPopup(googleProvider);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
   const addNewDocument = async (userData, id) => {
     const myDoc = doc(db, "users_accounts_records", `${id}`);
     try {
@@ -352,9 +344,6 @@ function Register() {
             </Button>
           </Form.Item>
         </Form>
-        <Button className="bg-green-600 w-full" onClick={signInWithGoogle}>
-          SignIn with Google
-        </Button>
       </div>
     </Card>
   );

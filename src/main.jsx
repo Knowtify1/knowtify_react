@@ -55,6 +55,7 @@ const router = createBrowserRouter(
         <Route path="about" element={<About />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
+
         <Route path="appointment" element={<BookAppointment />} />
         <Route path="checkappointment" element={<CheckAppointment />} />
         <Route path="appointmentsuccess" element={<AppointmentSuccess />} />
@@ -86,8 +87,6 @@ const router = createBrowserRouter(
         <Route path="patientrecords" element={<PatientRecords />} />
         <Route path="patientaccount" element={<PatientAccount />} />
       </Route>
-
-
     </>
   )
 );
