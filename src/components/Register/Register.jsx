@@ -22,6 +22,35 @@ function Register() {
   const [loading, setLoading] = useState(false);
   const [showReferenceId, setShowReferenceId] = useState(false);
 
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
+  const [verificationId, setVerificationId] = useState("");
+  const [error, setError] = useState(null);
+  const [form] = Form.useForm();
+
+  const handleSendCode = async () => {
+    try {
+      const confirmation = await auth.signInWithPhoneNumber(phoneNumber);
+      setVerificationId(confirmation.verificationId);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    try {
+      const credential = auth.PhoneAuthProvider.credential(
+        verificationId,
+        verificationCode
+      );
+      await auth.signInWithCredential(credential);
+      // User is now authenticated, you can navigate or perform other actions
+      console.log("Phone number authentication successful!");
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
   const addNewDocument = async (userData, id) => {
     const myDoc = doc(db, "users_accounts_records", `${id}`);
     try {
@@ -344,6 +373,53 @@ function Register() {
             </Button>
           </Form.Item>
         </Form>
+
+        {/* <h2>Register with Phone Number</h2>
+        <Form form={form} layout="vertical">
+          <Form.Item
+            name="phoneNumber"
+            label="Phone Number"
+            rules={[
+              { required: true, message: "Please input your phone number" },
+              {
+                pattern: /^[0-9]*$/,
+                message: "Please enter a valid phone number",
+              },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          {showReferenceId && (
+            <Form.Item
+              name="verificationCode"
+              label="Verification Code"
+              rules={[
+                {
+                  required: true,
+                  message: "Please input the verification code",
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+          )}
+          <Form.Item>
+            {!showReferenceId ? (
+              <Button type="primary" onClick={handleSendCode} loading={loading}>
+                Send Code
+              </Button>
+            ) : (
+              <Button
+                type="primary"
+                onClick={handleVerifyCode}
+                loading={loading}
+              >
+                Verify Code
+              </Button>
+            )}
+          </Form.Item>
+        </Form>
+        {error && <div>{error}</div>} */}
       </div>
     </Card>
   );

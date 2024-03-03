@@ -21,6 +21,7 @@ import {
   getDocs,
   query,
   where,
+  fsTimeStamp,
 } from "../../config/firebase";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
@@ -149,7 +150,10 @@ function BookAppointmentForm() {
       timepicker,
     } = values;
 
-    const appointmentDate = new Date(adate);
+    const datePart = adate.startOf("day");
+    //const appointmentDate = new Date(adate);
+    const appointmentDate = datePart.toDate();
+
     const selectedTime = JSON.stringify(timepicker);
     const uniqueReference = generateUniqueReference();
 
@@ -171,9 +175,15 @@ function BookAppointmentForm() {
       return;
     }
 
+    console.log("appointmentDate:", appointmentDate);
+    console.log("typedoctor:", typedoctor);
+    console.log("selectedTime:", selectedTime);
+    console.log("adate:", adate.valueOf());
+
     const existingAppointmentsQuerySnapshot = await getDocs(
       query(
         collection(db, "appointments"),
+        where("appointmentDate", "==", appointmentDate),
         where("typeOfDoctor", "==", typedoctor),
         where("appointmentTime", "==", selectedTime)
       )
@@ -183,14 +193,14 @@ function BookAppointmentForm() {
     console.log(
       "Query:" + numExistingAppointments + existingAppointmentsQuerySnapshot
     );
-    if (numExistingAppointments >= 4) {
+    if (numExistingAppointments >= 4 - 1) {
       const message =
         "There are already 4 appointments booked for the selected date and time. Please choose a different Time.";
       setModalClosable(false);
       setModalCondition("schedexists");
       setModalMessage(message);
       showModal();
-      return;
+      //return;
     } else {
       const userData = {
         createdDate: Timestamp.now(),
