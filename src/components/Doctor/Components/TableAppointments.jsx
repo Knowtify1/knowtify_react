@@ -24,7 +24,7 @@ function TableAppointments() {
         if (user) {
           setUid(user.uid);
 
-          const doctorDocRef = doc(db, "doctors", user.uid);
+          const doctorDocRef = doc(db, "doctors_accounts", user.uid);
 
           try {
             const doctorSnapshot = await getDoc(doctorDocRef);
