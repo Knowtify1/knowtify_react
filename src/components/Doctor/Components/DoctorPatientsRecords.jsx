@@ -36,7 +36,7 @@ function DoctorPatientsRecords() {
   const fetchPatientsRecords = async (doctorID) => {
     try {
       const q = query(
-        collection(db, "patientRecords"),
+        collection(db, "patients"),
         where("assignedDoctorID", "==", doctorID)
       );
       const querySnapshot = await getDocs(q);
