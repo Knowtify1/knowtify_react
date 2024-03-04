@@ -21,7 +21,7 @@ function PatientCalendar() {
   useEffect(() => {
     const fetchPatientData = async () => {
       try {
-        const patientsCollection = collection(db, "patientRecords");
+        const patientsCollection = collection(db, "patients");
         const patientSnapshot = await getDocs(patientsCollection);
         const patients = patientSnapshot.docs.map((doc) => doc.data());
         setPatientsData(patients);
