@@ -21,7 +21,7 @@ function PatientAppointment() {
       if (user) {
         try {
           const q = query(
-            collection(db, "patient"),
+            collection(db, "patient_accounts"),
             where("uid", "==", user.uid)
           );
           const querySnapshot = await getDocs(q);
@@ -29,8 +29,8 @@ function PatientAppointment() {
           if (!querySnapshot.empty) {
             const userData = querySnapshot.docs[0].data();
             setUserDetails(userData);
-            const referenceId = userData.referenceId;
-            fetchPatientDetails(referenceId);
+            const name = userData.name;
+            fetchPatientDetails(name);
           } else {
             console.error("No user data found in patient collection.");
           }
@@ -46,39 +46,38 @@ function PatientAppointment() {
     return () => unsubscribe();
   }, []);
 
-  const fetchPatientDetails = async (reference) => {
-  try {
-    const patientsCollection = collection(db, "patients"); // Add patientsCollection
-    const patientQuery = query(
-      patientsCollection, // Use patientsCollection here
-      where("reference", "==", reference)
-    );
-    const patientQuerySnapshot = await getDocs(patientQuery);
-
-    if (!patientQuerySnapshot.empty) {
-      const patientData = patientQuerySnapshot.docs[0].data();
-      setPatientDetails(patientData);
-    } else {
-      // If patient not found in patients collection, try fetching from patientRecords collection
-      const patientRecordsCollection = collection(db, "patientRecords");
-      const patientRecordsQuery = query(
-        patientRecordsCollection,
-        where("reference", "==", reference)
+  const fetchPatientDetails = async (name) => {
+    try {
+      const patientQuerySnapshot = await getDocs(
+        query(
+          collection(db, "patients"),
+          where("patientName", "==", name),
+        )
       );
-      const patientRecordsSnapshot = await getDocs(patientRecordsQuery);
 
-      if (!patientRecordsSnapshot.empty) {
-        const patientData = patientRecordsSnapshot.docs[0].data();
+      if (!patientQuerySnapshot.empty) {
+        const patientData = patientQuerySnapshot.docs[0].data();
         setPatientDetails(patientData);
       } else {
-        console.error("No patient data found in patientRecords collection.");
-      }
-    }
-  } catch (error) {
-    console.error("Error fetching patient details:", error.message);
-  }
-};
+        // If patient not found in patients collection, try fetching from patientRecords collection
+        const patientRecordsCollection = collection(db, "patient_accounts");
+        const patientRecordsQuery = query(
+          patientRecordsCollection,
+          where("patientName", "==", name)
+        );
+        const patientRecordsSnapshot = await getDocs(patientRecordsQuery);
 
+        if (!patientRecordsSnapshot.empty) {
+          const patientData = patientRecordsSnapshot.docs[0].data();
+          setPatientDetails(patientData);
+        } else {
+          console.error("No patient data found in patientRecords collection.");
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching patient details:", error.message);
+    }
+  };
 
   const openNotification = () => {
     notification.success({
@@ -110,22 +109,20 @@ function PatientAppointment() {
   return (
     <div className="overflow-auto max-h-screen p-4">
       <br />
-      <h1>Patient Appointment Details</h1>
+      <h3 className="text-3xl font-semibold text-left">
+      Patient Appointment Details</h3>
       <br />
       {patientDetails && (
-        <div>
+        <Card >
           <p><strong>Name:</strong> {patientDetails.patientName}</p>
           <p><strong>Patient Address:</strong> {patientDetails.patientAddress}</p>
           <p><strong>Patient Age:</strong> {patientDetails.age}</p>
           <p><strong>Reference ID:</strong> {patientDetails.reference}</p>
           <p><strong>Appointment Status:</strong> {patientDetails.status}</p>
           <p><strong>Type of Doctor:</strong> {patientDetails.typeOfDoctor}</p>
-          <p>
-            <strong>Appointment Date:</strong>{" "}
-            {patientDetails.appointmentDate?.toDate().toLocaleDateString()}
-          </p>
+          <p><strong>Appointment Date:</strong>{" "} {patientDetails.appointmentDate?.toDate().toLocaleDateString()}</p>
           <p><strong>Appointment Time:</strong>{" "} {patientDetails.appointmentTime}</p>
-        </div>
+        </Card>
       )}
 
       <Button
