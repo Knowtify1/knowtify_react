@@ -26,8 +26,8 @@ function DoctorCalendar() {
       const unsubscribe = onAuthStateChanged(auth, async (user) => {
         if (user) {
           const userId = user.uid;
-          const userRef = doc(db, "users", userId);
-          const docRef = doc(db, "doctors", userId);
+          const userRef = doc(db, "doctors_accounts", userId);
+          const docRef = doc(db, "doctors_accounts", userId);
           const patientsCollection = collection(db, "patients");
 
           try {
