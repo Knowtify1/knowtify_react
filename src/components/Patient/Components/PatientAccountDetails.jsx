@@ -12,7 +12,7 @@ function PatientAccountDetails() {
       const unsubscribe = onAuthStateChanged(auth, async (user) => {
         if (user) {
           const userId = user.uid;
-          const userRef = doc(db, "users", userId);
+          const userRef = doc(db, "users_accounts_records", userId);
 
           try {
             const docSnapshot = await getDoc(userRef);
