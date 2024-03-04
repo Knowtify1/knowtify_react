@@ -19,7 +19,7 @@ function PatientsRecord() {
     if (user) {
       try {
         const q = query(
-          collection(db, "patient"),
+          collection(db, "patients"),
           where("uid", "==", user.uid)
         );
         const querySnapshot = await getDocs(q);
