@@ -38,9 +38,9 @@ export const handleVerifyCode = async (
       if (user) {
         setPatientAuthID(user.uid);
         console.log("UID after verification:", user.uid);
-        // You can use the UID here as needed
       }
-      console.log("UID:" + user + " " + user.uid);
+
+      //console.log("UID:" + user.uid);
       console.log("Successfully authenticated");
       message.success("Successfully authenticated");
     } else {

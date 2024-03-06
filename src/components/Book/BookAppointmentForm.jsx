@@ -195,12 +195,8 @@ function BookAppointmentForm() {
         numExistingAppointments +
         existingAppointmentsQuerySnapshot
     );
-<<<<<<< HEAD
     //time slot counts 0 - 3 = 4 appointment/timeslots
     if (numExistingAppointments >= 4 - 1) {
-=======
-    if (numExistingAppointments == 4) {
->>>>>>> 59f382a994b020328da2d094b622722a05a7a123
       const message =
         "There are already 4 appointments booked for the selected date and time. Please choose a different Time.";
       setModalClosable(false);
@@ -226,6 +222,9 @@ function BookAppointmentForm() {
         reference: uniqueReference,
       };
 
+      navigate("/appointmentsuccess", {
+        state: { appointmentData: userData, phone: contactno },
+      });
       //const myDoc = collection(db, "appointments");
 
       // try {
@@ -240,10 +239,6 @@ function BookAppointmentForm() {
       // } catch (error) {
       //   console.log(error);
       // }
-
-      navigate("/appointmentsuccess", {
-        state: { appointmentData: userData, phone: contactno },
-      });
     }
   };
 

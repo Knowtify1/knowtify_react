@@ -34,6 +34,7 @@ function AppointmentSuccess() {
   const [PatientAuthID, setPatientAuthID] = useState("");
   const [codeSent, setCodeSent] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [register, setregister] = useState(false);
 
   const onSendCode = () => {
     handleSendCode(phoneNumber, setConfirmationResult, setCodeSent);
@@ -41,13 +42,11 @@ function AppointmentSuccess() {
   const onVerifyCode = async () => {
     setVerifying(true);
     handleVerifyCode(confirmationResult, verificationCode, setPatientAuthID);
+
     if (confirmationResult) {
       saveAppointment();
-      //await new Promise((resolve) => setTimeout(resolve, 3000));
-      // fetchAppointmentDetails();
-      // await new Promise((resolve) => setTimeout(resolve, 3000));
-      createPatientCollection();
-      setShowAppointmentDetails(true);
+      setVerifying(false);
+      setregister(true);
     } else {
       setShowAppointmentDetails(false);
     }
@@ -88,8 +87,8 @@ function AppointmentSuccess() {
   // };
 
   const createPatientCollection = async () => {
+    console.log("ID: " + PatientAuthID);
     const dateofregistration = fsTimeStamp.now();
-    const patientID = String(PatientAuthID);
 
     const patientData = {
       name: appointmentData.patientName,
@@ -102,21 +101,27 @@ function AppointmentSuccess() {
       dateofregistration: dateofregistration,
     };
 
-    const patientsCollection = doc(db, "patient_accounts", `${patientID}`);
+    console.log("patientData: " + patientData);
+
+    const patientsCollection = collection(db, "patient_accounts");
+    const patientsDocRef = doc(patientsCollection, `${PatientAuthID}`);
     try {
-      await setDoc(patientsCollection, patientData);
+      await setDoc(patientsDocRef, patientData);
       console.log("patient_accounts: firestore success");
     } catch (error) {
       console.error("Error creating patient collection:", error);
     }
 
-    const users_accounts = doc(db, "users_accounts_records", `${patientID}`);
+    const users_accounts = collection(db, "users_accounts_records");
+    const users_accountsDocRef = doc(users_accounts, `${PatientAuthID}`);
     try {
-      await setDoc(users_accounts, patientData);
+      await setDoc(users_accountsDocRef, patientData);
       console.log("users_accounts_records: firestore success");
     } catch (error) {
       console.log(error);
     }
+
+    setShowAppointmentDetails(true);
   };
 
   return (
@@ -245,6 +250,9 @@ function AppointmentSuccess() {
                     Verify Code
                   </Button>
                 </Spin>
+                <Button onClick={createPatientCollection} disabled={!register}>
+                  Register
+                </Button>
               </Form.Item>
             </Form>
           </div>
