@@ -5,22 +5,20 @@ import { ToggleThemeButton } from "./components/ToggleThemeButton";
 import { Outlet } from "react-router-dom";
 import knowtifylogov2 from "./assets/icon.ico";
 
-
 import PatientMenu from "./components/Patient/PatientMenu";
 
-const { Header, Sider } = Layout; 
+const { Header, Sider } = Layout;
 
 export function PatientDashboard() {
   const [darkTheme, setDarkTheme] = useState(false);
   const [collapsed, setCollapsed] = React.useState(false);
-  
 
   const logo = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     color: "#fff",
-    padding: "10px",
+    padding: "50px",
   };
 
   const logoIconStyle = {
@@ -28,6 +26,7 @@ export function PatientDashboard() {
     height: "55px",
     display: "flex",
     alignItems: "center",
+    position: "fixed",
     justifyContent: "center",
     fontSize: "1.5rem",
     borderRadius: "50%",
@@ -37,7 +36,6 @@ export function PatientDashboard() {
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
   };
-
 
   return (
     <ConfigProvider theme={{}}>
@@ -65,4 +63,3 @@ export function PatientDashboard() {
 }
 
 export default PatientDashboard;
-

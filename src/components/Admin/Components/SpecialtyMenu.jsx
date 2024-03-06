@@ -1,12 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Card, Button, Space, Tooltip } from "antd";
-import {
-  FileImageOutlined,
-  CalendarOutlined,
-  ClockCircleOutlined,
-  NotificationOutlined,
-} from "@ant-design/icons";
+import { Button, Space, Tooltip } from "antd";
+import { CalendarOutlined } from "@ant-design/icons";
 
 import adultDiseaseImage from "../../../assets/Book/InMedAdult.png";
 import gynoImage from "../../../assets/Book/gynecology.png";
@@ -17,93 +12,18 @@ import pediatrics from "../../../assets/Book/pediatrics.png";
 import pulmonology1 from "../../../assets/Book/pulmonology1.png";
 import rehabImage from "../../../assets/Book/rehabilitation.png";
 
-const SpecialtyMenuCard = ({ type }) => {
+const SpecialtyMenu = () => {
   const navigate = useNavigate();
-  const { value, label } = type;
-  //console.log(value);
-  const handleButtonClick = (text) => {
-    if (text == "schedule") {
-      console.log("clicked schedule", value);
-      navigate("../admincalendar", { state: { specialty: value } });
-    } else if (text == "time") {
-      //navigate("../admincalendar", { state: { specialty: value } });
-      //console.log("clicked time");
-    } else if (text == "notification") {
-      //navigate("../admincalendar", { state: { specialty: value } });
-      //console.log("clicked notification");
+
+  const handleButtonClick = (action, specialty) => {
+    if (action === "schedule") {
+      console.log("clicked schedule", specialty);
+      navigate("../admincalendar", { state: { specialty } });
     }
+    // Add handling for other actions if needed
   };
 
-  return (
-    <Card
-      className="max-w-xs mx-auto mt-2 bg-green-700"
-      style={{ width: "300px", height: "400px", paddingTop: "0" }}
-      hoverable
-    >
-      <div className="flex flex-col h-full items-center justify-between">
-        <div
-          style={{
-            width: "100%",
-            height: "220px",
-            overflow: "hidden",
-          }}
-        >
-          <img
-            src={type.images}
-            alt={label}
-            style={{ width: "100%", height: "auto", objectFit: "cover" }}
-          />
-        </div>
-        <div className="w-full flex flex-col items-center justify-center p-4">
-          <h3 className="text-lg font-bold mb-2 text-white text-center">
-            {label}
-          </h3>
-          <Space
-            direction="horizontal"
-            size={15}
-            style={{ width: "100%" }}
-            className="justify-center"
-          >
-            <Tooltip title="View Schedule">
-              <Button
-                onClick={() => handleButtonClick("schedule")}
-                type="primary"
-                icon={<CalendarOutlined style={{ fontSize: "30px" }} />}
-                className="mb-2"
-                shape="circle"
-                style={{ width: "60px", height: "60px" }}
-              ></Button>
-            </Tooltip>
-            <Tooltip title="Time">
-              <Button
-                onClick={() => handleButtonClick("time")}
-                type="primary"
-                icon={<ClockCircleOutlined style={{ fontSize: "30px" }} />}
-                className="mb-2"
-                shape="circle"
-                style={{ width: "60px", height: "60px" }}
-              ></Button>
-            </Tooltip>
-            <Tooltip title="Notification">
-              <Button
-                onClick={() => handleButtonClick("notification")}
-                type="primary"
-                icon={<NotificationOutlined style={{ fontSize: "30px" }} />}
-                className="mb-2"
-                shape="circle"
-                style={{ width: "60px", height: "60px" }}
-              ></Button>
-            </Tooltip>
-          </Space>
-        </div>
-      </div>
-    </Card>
-  );
-};
-
-const SpecialtyMenu = () => {
-  const typesofDoc = [
-    //dont change value!!!!!!!!......................................................
+  const specialties = [
     {
       value: "Internal Medicine",
       label: "Internal Medicine",
@@ -142,27 +62,82 @@ const SpecialtyMenu = () => {
     },
   ];
 
-  //   const images = [
-  //     adultDiseaseImage,
-  //     hematology,
-  //     infectiousdisease,
-  //     pulmonology1,
-  //     gynoImage,
-  //     orthoImage,
-  //     rehabImage,
-  //     pediatrics,
-  //   ];
+  // Divide the specialties into two arrays
+  const halfLength = Math.ceil(specialties.length / 2);
+  const firstHalf = specialties.slice(0, halfLength);
+  const secondHalf = specialties.slice(halfLength);
 
   return (
-    <>
-      <div className="flex flex-wrap justify-center items-center ">
-        {typesofDoc.map((type, index) => (
-          <div key={index} className="m-2">
-            <SpecialtyMenuCard type={type} />
-          </div>
-        ))}
+    <div className="container mx-auto">
+      <div className="flex">
+        <div className="w-1/2 pr-4">
+          <table className="table-fixed mx-auto border-collapse border border-green-800">
+            <tbody>
+              {firstHalf.map((specialty, index) => (
+                <tr key={index} className="border-b border-green-800">
+                  <td className="w-1/4 p-2 border-r border-green-800">
+                    <img
+                      src={specialty.images}
+                      alt={specialty.label}
+                      style={{ width: "100px", height: "auto" }}
+                    />
+                  </td>
+                  <td className="w-1/2 p-2 border-r border-green-800">
+                    <p className="text-center">{specialty.label}</p>
+                  </td>
+                  <td className="w-1/3 p-2 border-r border-green-800">
+                    <Space>
+                      <Tooltip title="View Schedule">
+                        <Button
+                          onClick={() =>
+                            handleButtonClick("schedule", specialty.value)
+                          }
+                          type="primary"
+                          icon={<CalendarOutlined style={{ color: "green" }} />}
+                        />
+                      </Tooltip>
+                    </Space>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="w-1/2 pl-4">
+          <table className="table-fixed mx-auto border-collapse border border-green-800">
+            <tbody>
+              {secondHalf.map((specialty, index) => (
+                <tr key={index} className="border-b border-green-800">
+                  <td className="w-1/4 p-2 border-r border-green-800">
+                    <img
+                      src={specialty.images}
+                      alt={specialty.label}
+                      style={{ width: "100px", height: "auto" }}
+                    />
+                  </td>
+                  <td className="w-1/2 p-2 border-r border-green-800">
+                    <p className="text-center">{specialty.label}</p>
+                  </td>
+                  <td className="w-1/3 p-2 border-r border-green-800">
+                    <Space>
+                      <Tooltip title="View Schedule">
+                        <Button
+                          onClick={() =>
+                            handleButtonClick("schedule", specialty.value)
+                          }
+                          type="primary"
+                          icon={<CalendarOutlined style={{ color: "green" }} />}
+                        />
+                      </Tooltip>
+                    </Space>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </>
+    </div>
   );
 };
 

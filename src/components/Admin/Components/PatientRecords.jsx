@@ -8,7 +8,7 @@ import {
   where,
   getDocs,
 } from "../../../config/firebase.jsx";
-import { Table, Input } from "antd";
+import { Table, Input, Card } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 
 const { Search } = Input;
@@ -35,9 +35,7 @@ function PatientRecords() {
 
   const fetchPatientsRecords = async (doctorID) => {
     try {
-      const q = query(
-        collection(db, "patientRecords"),
-      );
+      const q = query(collection(db, "patientRecords"));
       const querySnapshot = await getDocs(q);
 
       const records = querySnapshot.docs.map((doc) => ({
@@ -67,42 +65,51 @@ function PatientRecords() {
       dataIndex: "assignedDoctor",
       key: "assignedDoctor",
     },
-    {
-      title: "Medical History",
-      dataIndex: "medicalHistory",
-      key: "medicalHistory",
-    },
-    {
-      title: "Previous Diagnoses",
-      dataIndex: "previousDiagnoses",
-      key: "previousDiagnoses",
-    },
-    {
-      title: "Medications Prescribed Previously",
-      dataIndex: "medicationsPrescribed",
-      key: "medicationsPrescribed",
-    },
-    {
-      title: "Allergies",
-      dataIndex: "allergies",
-      key: "allergies",
-    },
-    {
-      title: "Previous Surgeries or Treatments",
-      dataIndex: "surgeriesTreatment",
-      key: "surgeriesTreatment",
-    },
-    {
-      title: "Family Medical History",
-      dataIndex: "familyMedicalHistory",
-      key: "familyMedicalHistory",
-    },
-    // Add more columns based on your patient record structure
   ];
+
+  const expandedRowRender = (record) => {
+    return (
+      <div>
+        <Card>
+          <p>
+            <strong>Medical History:</strong> {record.medicalHistory}
+          </p>
+          <p>
+            <strong>Previous Diagnoses:</strong> {record.previousDiagnoses}
+          </p>
+          <p>
+            <strong>Medications Prescribed Previously:</strong>{" "}
+            {record.medicationsPrescribed}
+          </p>
+          <p>
+            <strong>Allergies:</strong> {record.allergies}
+          </p>
+          <p>
+            <strong>Previous Surgeries or Treatments:</strong>{" "}
+            {record.surgeriesTreatment}
+          </p>
+          <p>
+            <strong>Family Medical History:</strong>{" "}
+            {record.familyMedicalHistory}
+          </p>
+          {/* Add more fields if needed */}
+        </Card>
+      </div>
+    );
+  };
 
   // Render the component with patient records
   return (
-    <div style={{ position: "relative", top: 0, left: 0, right: 0, bottom: 0, overflow: "auto" }}>
+    <div
+      style={{
+        position: "relative",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflow: "auto",
+      }}
+    >
       <h2>Patients Records</h2>
 
       <Table
@@ -110,6 +117,7 @@ function PatientRecords() {
           filteredPatients.length > 0 ? filteredPatients : patientsRecords
         }
         columns={columns}
+        expandable={{ expandedRowRender }}
         rowKey="id"
       />
     </div>

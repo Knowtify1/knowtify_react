@@ -1,26 +1,28 @@
-// AdminHome.jsx
 import React from "react";
-import { Card } from "antd";
+import { Card, Calendar } from "antd";
 
 import AdminOverview from "./Components/AdminOverview";
 import SpecialtyMenu from "./Components/SpecialtyMenu";
 
 function AdminHome() {
   return (
-    <>
-      <div>
-        <div className="pl-8 pr-8 pb-5 pt-5">
-          <Card>
-            <AdminOverview />
-          </Card>
-        </div>
-        <div className="pl-8 pr-8 pb-5 pt-5">
-          <Card>
-            <SpecialtyMenu />
-          </Card>
-        </div>
-      </div>
-    </>
+    <div className="flex">
+      {/* Overview Section */}
+      <Card
+        className="pl-8 pr-4 pb-5 pt-2 custom-card"
+        style={{ width: "100%", height: "auto" }}
+      >
+        <AdminOverview />
+
+        {/* Specialty Menu Section */}
+        <Card
+          className="pl-8 pr-4 pb-5 pt-2 custom-card"
+          style={{ width: "100%", height: "auto" }}
+        >
+          <SpecialtyMenu />
+        </Card>
+      </Card>
+    </div>
   );
 }
 

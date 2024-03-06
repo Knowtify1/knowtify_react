@@ -79,20 +79,30 @@ function PatientMenu() {
     flexDirection: "column",
     gap: "10px", // Added gap for spacing
     fontSize: "1.1rem",
+    position: "fixed", // Position fixed
+    top: 80, // Adjust as needed
+    left: 0, // Adjust as needed
+    bottom: 0, // Adjust as needed
+    width: 200,
+    backgroundColor: darkTheme ? "#001529" : "#fff", // Adjust background color
+    overflowY: "auto", // Enable scrolling if necessary
   };
 
   return (
-    <div style={{ position: "fixed", height: "100%", top: "5%" }}>
-      {/* You can adjust the width and other styles as needed */}
-      <Menu
-        mode="inline"
-        selectedKeys={selectedKeys}
-        onClick={handleMenuClick}
-        className="menubar"
-        items={items}
-      ></Menu>
-    </div>
+    <Menu
+      mode="inline"
+      selectedKeys={selectedKeys}
+      onClick={handleMenuClick}
+      theme={darkTheme ? "dark" : "light"}
+      style={menuStyle}
+    >
+      {items.map((item) => (
+        <Menu.Item key={item.key} icon={item.icon} style={{}}>
+          {item.label}
+        </Menu.Item>
+      ))}
+    </Menu>
   );
-};
+}
 
 export default PatientMenu;

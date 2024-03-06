@@ -1,45 +1,30 @@
 import React, { useState, useEffect } from "react";
-import {
-  Button,
-  DatePicker,
-  Form,
-  Input,
-  Select,
-  Space,
-  Row,
-  Col,
-  Modal,
-} from "antd";
-const { TextArea } = Input;
+import { Button, DatePicker, Form, Input, Select, Row, Col, Modal } from "antd";
 import { Timestamp } from "firebase/firestore";
 import {
-  setDoc,
-  doc,
-  db,
-  collection,
   addDoc,
+  collection,
+  db,
   getDocs,
   query,
   where,
 } from "../../../config/firebase";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
-import "dayjs/locale/en";
 
-function BookForm() {
+const { TextArea } = Input;
+
+function BookAppointmentForm() {
   const [componentDisabled, setComponentDisabled] = useState(false);
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [availableDays, setAvailableDays] = useState([]);
-
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalClosable, setModalClosable] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
-  const [modalCondition, setModalCondition] = useState("");
-
   const [doctorAvailability, setDoctorAvailability] = useState({});
   const [doctorTimeOptions, setdoctorTimeOptions] = useState({});
   const [typesofDoc, settypesofDoc] = useState([]);
+  const [submitButtonVisible, setSubmitButtonVisible] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,7 +32,7 @@ function BookForm() {
         const querySnapshot = await getDocs(collection(db, "settings"));
         const availabilityData = {};
         const timeOptionsData = {};
-        let specialtiesData = [];
+        const specialtiesData = [];
 
         querySnapshot.forEach((doc) => {
           const specialty = doc.data().specialty;
@@ -55,10 +40,7 @@ function BookForm() {
           const days = doc.data().days || [];
           let times = doc.data().times || [];
 
-          specialtiesData = [
-            ...specialtiesData,
-            { value: specialty, label: specialtyLabel },
-          ];
+          specialtiesData.push({ value: specialty, label: specialtyLabel });
           availabilityData[specialty] = days;
 
           // Sort times into two ranges: 7:00 - 12:00 and 1:00 - 8:00
@@ -106,8 +88,6 @@ function BookForm() {
         settypesofDoc(specialtiesData);
         setDoctorAvailability(availabilityData);
         setdoctorTimeOptions(doctorTimeOptions);
-
-        console.log(doctorTimeOptions);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -131,72 +111,43 @@ function BookForm() {
   };
 
   const onFinish = async (values) => {
-    const {
-      patientname,
-      contactno,
-      email,
-      age,
-      patientaddress,
-      reasonforappointment,
-      typedoctor,
-      adate,
-      timepicker,
-    } = values;
+    const { reference, typedoctor, adate, timepicker } = values;
 
-    const appointmentDate = new Date(adate);
+    const appointmentDate = adate.startOf("day").toDate();
     const selectedTime = JSON.stringify(timepicker);
-    const uniqueReference = generateUniqueReference();
-
-    
 
     const existingAppointmentsQuerySnapshot = await getDocs(
       query(
         collection(db, "appointments"),
+        where("reference", "==", reference),
         where("typeOfDoctor", "==", typedoctor),
-        where("appointmentTime", "==", selectedTime),
+        where("appointmentDate", "==", appointmentDate),
+        where("appointmentTime", "==", selectedTime)
       )
     );
 
     const numExistingAppointments = existingAppointmentsQuerySnapshot.size;
-    console.log(
-      "Query:" + numExistingAppointments + existingAppointmentsQuerySnapshot
-    );
-    if (numExistingAppointments == 4) {
+    if (numExistingAppointments >= 4) {
       const message =
         "There are already 4 appointments booked for the selected date and time. Please choose a different Time.";
-      setModalClosable(false);
-      setModalCondition("schedexists");
       setModalMessage(message);
       showModal();
-      return;
     } else {
-      const userData = {
-        createdDate: Timestamp.now(),
-        patientName: patientname,
-        contactNo: contactno,
-        email: email,
-        age: age,
-        patientAddress: patientaddress,
-        reasonForAppointment: reasonforappointment,
-        typeOfDoctor: typedoctor,
-        appointmentDate: appointmentDate,
-        appointmentTime: JSON.stringify(timepicker),
-        approved: false,
-        assignedDoctor: "",
-        status: "pending",
-        reference: uniqueReference,
-      };
-
-      const myDoc = collection(db, "appointments");
-
       try {
-        const docref = await addDoc(myDoc, userData);
-        console.log("firestore success");
-        console.log("document id", docref);
+        const userData = {
+          createdDate: Timestamp.now(),
+          reference: reference,
+          typeOfDoctor: typedoctor,
+          appointmentDate: appointmentDate,
+          appointmentTime: selectedTime,
+          approved: false,
+          assignedDoctor: "",
+          status: "pending",
+        };
 
-        navigate("/appointmentsuccess", {
-          state: { appointmentID: docref.id },
-        });
+        await addDoc(collection(db, "appointments"), userData);
+        setSubmitButtonVisible(false);
+        showModal();
       } catch (error) {
         console.log(error);
       }
@@ -207,42 +158,29 @@ function BookForm() {
     console.log("Failed:", errorInfo);
   };
 
-  const validateAge = (rule, value) => {
-    const age = parseInt(value);
-    if (isNaN(age) || age < 18) {
-      return Promise.reject(
-        "You must be at least 18 years old to book an appointment."
-      );
-    } else {
-      return Promise.resolve();
-    }
-  };
-
   const showModal = () => {
     setModalVisible(true);
   };
 
   const handleModalOk = () => {
-    if (modalCondition == "exists") {
-      navigate("/login");
-    } else if (modalCondition == "schedexists") {
-      setModalVisible(false);
-    } else {
-      setModalVisible(false);
+    setModalVisible(false);
+    if (!submitButtonVisible) {
+      form.resetFields();
+      setSubmitButtonVisible(true);
     }
+  };
+
+  const handleModalCancel = () => {
+    setModalVisible(false);
   };
 
   return (
     <>
       <Modal
-        title="Error:"
-        open={modalVisible}
+        title="Message"
+        visible={modalVisible}
         onOk={handleModalOk}
-        okText="OK"
-        okButtonProps={{ className: "bg-green-600 w-2/4 " }}
-        cancelButtonProps={{ style: { display: "none" } }}
-        closable={modalClosable}
-        className="mt-52"
+        onCancel={handleModalCancel}
       >
         <p>{modalMessage}</p>
       </Modal>
@@ -267,136 +205,24 @@ function BookForm() {
         form={form}
       >
         <Row gutter={[10, 10]}>
-          <Col span={8}>
+          <Col span={24}>
             <Form.Item
-              label="Patient Name"
-              name="patientname"
+              label="Reference"
+              name="reference"
               rules={[
                 {
                   required: true,
-                  message: "Please input your Name!",
+                  message: "Please provide your reference!",
                 },
               ]}
             >
               <Input type="text" />
             </Form.Item>
           </Col>
-
-          <Col span={8}>
-            <Form.Item
-              label="Contact Number"
-              name="contactno"
-              rules={[
-                {
-                  required: true,
-                  message: "Please input your number",
-                },
-              ]}
-            >
-              <Input style={{ width: "100%" }} />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item
-              label="Email Address"
-              name="email"
-              rules={[
-                {
-                  required: false,
-                  message: "Please input your email",
-                },
-              ]}
-            >
-              <Input style={{ width: "100%" }} type="email" />
-            </Form.Item>
-          </Col>
-          <Col span={3}>
-            <Form.Item
-              label="Age"
-              name="age"
-              rules={[
-                {
-                  required: true,
-                  message: "Please input your age!",
-                },
-                {
-                  validator: validateAge,
-                },
-              ]}
-            >
-              <Input type="number" />
-            </Form.Item>
-          </Col>
-          <Col span={21}>
-            <Form.Item
-              label="Patient's Address"
-              name="patientaddress"
-              rules={[
-                {
-                  required: true,
-                  message: "Please input your address!",
-                },
-              ]}
-            >
-              <TextArea rows={2} />
-            </Form.Item>
-          </Col>
         </Row>
         <hr />
         <br />
         <Row gutter={[10, 10]}>
-          <Col span={8}>
-            <Form.Item
-              label="Reason for Appointment"
-              name="reasonforappointment"
-              rules={[
-                {
-                  required: true,
-                  message: "Please select or input your reason!",
-                },
-              ]}
-            >
-              <Select
-                showSearch
-                placeholder="Select or Specify"
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
-                }
-                allowClear
-              >
-                <Option value="consultation">Consultation</Option>
-              </Select>
-            </Form.Item>
-
-            <Form.Item
-              noStyle
-              shouldUpdate={(prevValues, currentValues) =>
-                prevValues.reasonforappointment !==
-                currentValues.reasonforappointment
-              }
-            >
-              {({ getFieldValue }) => {
-                const selectedReason = getFieldValue("reasonforappointment");
-
-                return selectedReason === "other" ? (
-                  <Form.Item
-                    name="customReason"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please specify your reason!",
-                      },
-                    ]}
-                  >
-                    <Input placeholder="Specify your reason" />
-                  </Form.Item>
-                ) : null;
-              }}
-            </Form.Item>
-          </Col>
-
           <Col span={8}>
             <Form.Item
               label="Type of Doctor to Consult"
@@ -445,7 +271,6 @@ function BookForm() {
                 options={
                   doctorTimeOptions[form.getFieldValue("typedoctor")] || []
                 }
-                style={{}}
                 placeholder="Select a time"
               />
             </Form.Item>
@@ -462,15 +287,13 @@ function BookForm() {
                 marginBottom: 5,
               }}
             >
-              <div className="flex flex-col ...">
-                <Button
-                  type="primary"
-                  className="bg-green-600 w-2/4 "
-                  htmlType="submit"
-                >
-                  Submit
-                </Button>
-              </div>
+              {submitButtonVisible && (
+                <div className="flex flex-col ...">
+                  <Button type="success" htmlType="submit">
+                    Submit
+                  </Button>
+                </div>
+              )}
             </Form.Item>
           </Col>
         </Row>
@@ -479,4 +302,4 @@ function BookForm() {
   );
 }
 
-export default BookForm;
+export default BookAppointmentForm;

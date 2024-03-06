@@ -1,4 +1,4 @@
-import { Card, Space, Row, Col } from "antd";
+import { Card, Space } from "antd";
 import React, { useState, useEffect } from "react";
 import { QuestionOutlined } from "@ant-design/icons";
 import {
@@ -70,7 +70,7 @@ function generateGraph(count, lineColor) {
   );
 }
 
-function AdminOverview() {
+function PatientOverview() {
   const [appointmentsCount, setAppointmentsCount] = useState(null);
   const [approvedPatientsCount, setApprovedPatientsCount] = useState(null);
   const [assignedPatientsCount, setAssignedPatientsCount] = useState(null);
@@ -79,7 +79,9 @@ function AdminOverview() {
     const fetchAppointmentsCount = async () => {
       try {
         const appointmentsTotal = await countDocumentsInCollection(
-          "appointments"
+          "appointments",
+          "patientRecords",
+          "patients"
         );
 
         // Count patients with status === "approved"
@@ -108,71 +110,60 @@ function AdminOverview() {
   }, []);
 
   return (
-    <div className="">
-      <Space direction="vertical" size={2}>
-        <h1 className="text-center text-3xl font-small">Overview</h1>
-        <Row gutter={[16, 16]}>
-          <Col span={8}>
-            <Card
-              title="Appointments"
-              extra={<a href="../admindashboard/adminappointment">View all</a>}
-              style={{ width: 400, backgroundColor: "#E4F1FE" }}
-            >
-              <Space direction="horizontal">
-                <h1>
-                  {appointmentsCount !== null
-                    ? appointmentsCount
-                    : "Loading..."}
-                </h1>
-                <span>Appointments</span>
-              </Space>
-              <div style={{ marginTop: "10px" }}>
-                {generateGraph(appointmentsCount, "#054d94")}
-              </div>
-            </Card>
-          </Col>
-          <Col span={8}>
-            <Card
-              title="Approved Patients"
-              extra={<a href="../admindashboard/adminappointment">View all</a>}
-              style={{ width: 400, backgroundColor: "#DFF0DF" }}
-            >
-              <Space direction="horizontal">
-                <h1>
-                  {approvedPatientsCount !== null
-                    ? approvedPatientsCount
-                    : "Loading..."}
-                </h1>
-                <span>Approved Patients</span>
-              </Space>
-              <div style={{ marginTop: "10px" }}>
-                {generateGraph(approvedPatientsCount, "#316831")}
-              </div>
-            </Card>
-          </Col>
-          <Col span={8}>
-            <Card
-              title="Assigned Patients"
-              extra={<a href="../admindashboard/adminappointment">View all</a>}
-              style={{ width: 400, backgroundColor: "#FFE4E1" }}
-            >
-              <Space direction="horizontal">
-                <h1>
-                  {assignedPatientsCount !== null
-                    ? assignedPatientsCount
-                    : "Loading..."}
-                </h1>
-                <span>Assigned Patients</span>
-              </Space>
-              <div style={{ marginTop: "10px" }}>
-                {generateGraph(assignedPatientsCount, "#990f00")}
-              </div>
-            </Card>
-          </Col>
-        </Row>
+    <div className="flex justify-center">
+      <Space direction="horizontal" size={20}>
+        <Card
+          title="Appointments"
+          extra={<a href="../patientdashboard/patientappointment">View all</a>}
+          style={{ width: 400, backgroundColor: "#E4F1FE" }}
+        >
+          <Space direction="horizontal">
+            <h1>
+              {appointmentsCount !== null ? appointmentsCount : "Loading..."}
+            </h1>
+            <span>Appointments</span>
+          </Space>
+          <div style={{ marginTop: "10px" }}>
+            {generateGraph(appointmentsCount, "#054d94")}
+          </div>
+        </Card>
+        <Card
+          title="Approved Patients"
+          extra={<a href="../patientdashboard/patientappointment">View all</a>}
+          style={{ width: 400, backgroundColor: "#DFF0DF" }}
+        >
+          <Space direction="horizontal">
+            <h1>
+              {approvedPatientsCount !== null
+                ? approvedPatientsCount
+                : "Loading..."}
+            </h1>
+            <span>Approved</span>
+          </Space>
+          <div style={{ marginTop: "10px" }}>
+            {generateGraph(approvedPatientsCount, "#316831")}
+          </div>
+        </Card>
+        <Card
+          title="Assigned Patients"
+          extra={<a href="../patientdashboard/patientappointment">View all</a>}
+          style={{ width: 400, backgroundColor: "#FFE4E1" }}
+        >
+          <Space direction="horizontal">
+            <h1>
+              {assignedPatientsCount !== null
+                ? assignedPatientsCount
+                : "Loading..."}
+            </h1>
+            <span>Assigned</span>
+          </Space>
+          <div style={{ marginTop: "10px" }}>
+            {generateGraph(assignedPatientsCount, "#990f00")}
+          </div>
+        </Card>
       </Space>
     </div>
   );
 }
 
-export default AdminOverview;
+export default PatientOverview;

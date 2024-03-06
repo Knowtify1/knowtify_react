@@ -47,13 +47,14 @@ function DoctorDashboard() {
     alignItems: "center",
     justifyContent: "center",
     color: "#fff",
-    padding: "10px",
+    padding: "50px",
   };
 
   const logoIconStyle = {
     width: "55px",
     height: "55px",
     display: "flex",
+    position: "fixed",
     alignItems: "center",
     justifyContent: "center",
     fontSize: "1.5rem",
@@ -66,7 +67,7 @@ function DoctorDashboard() {
   };
 
   return (
-    <ConfigProvider theme={darkTheme ? {} : { primaryColor: "#1890ff" }}>
+    <ConfigProvider theme={darkTheme ? {} : { primaryColor: "#1890fff" }}>
       <Layout
         className={`h-screen ${darkTheme ? "dark" : ""}`}
         style={layoutStyle}

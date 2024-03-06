@@ -1,4 +1,3 @@
-// DoctorMenu.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, signOut } from "../../config/firebase";
@@ -70,7 +69,13 @@ function DoctorMenu() {
     flexDirection: "column",
     gap: "10px", // Added gap for spacing
     fontSize: "1.1rem",
-    
+    position: "fixed", // Position fixed
+    top: 80, // Adjust as needed
+    left: 0, // Adjust as needed
+    bottom: 0, // Adjust as needed
+    width: 252,
+    backgroundColor: darkTheme ? "#001529" : "#fff", // Adjust background color
+    overflowY: "auto", // Enable scrolling if necessary
   };
 
   return (
