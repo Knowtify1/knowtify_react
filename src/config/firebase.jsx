@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, RecaptchaVerifier } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import {
   doc as firestoreDoc,
@@ -44,9 +44,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
+auth.languageCode = "it";
+
 export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
-
 export const fsTimeStamp = firestoreTimeStamp;
 export const doc = firestoreDoc;
 export const setDoc = firestoreSetDoc;

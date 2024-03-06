@@ -46,6 +46,7 @@ import PatientAppointment from "./components/Patient/PatientAppointment.jsx";
 import PatientSchedule from "./components/Patient/PatientSchedule.jsx";
 import PatientRecords from "./components/Patient/PatientRecords.jsx";
 import PatientAccount from "./components/Patient/PatientAccount.jsx";
+import RegisterPhone from "./components/Register/RegisterPhone.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -55,6 +56,7 @@ const router = createBrowserRouter(
         <Route path="about" element={<About />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
+        <Route path="registerphone" element={<RegisterPhone />} />
 
         <Route path="appointment" element={<BookAppointment />} />
         <Route path="checkappointment" element={<CheckAppointment />} />
