@@ -25,6 +25,7 @@ function RegisterPhone() {
   const [verificationCode, setVerificationCode] = useState("");
   const [confirmationResult, setConfirmationResult] = useState(null);
   const [codeSent, setCodeSent] = useState(false);
+  const navigate = useNavigate();
 
   const onSendCode = () => {
     handleSendCode(phoneNumber, setConfirmationResult, setCodeSent);
@@ -32,17 +33,22 @@ function RegisterPhone() {
 
   const onVerifyCode = () => {
     handleVerifyCode(confirmationResult, verificationCode);
+    if (confirmationResult) {
+      navigate("/patientdashboard", { replace: true });
+      console.log("Verify Success");
+    } else {
+      console.log("Failed");
+    }
   };
 
   return (
     <Card
-      title="Register Phone"
+      title="SignIn Phone"
       bordered={true}
       style={{ width: 350 }}
       className="drop-shadow-md mt-20"
     >
       <div>
-        <h2>Register with Phone Number</h2>
         <div>
           <Form>
             <Form.Item
