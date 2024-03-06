@@ -7,9 +7,9 @@ import {
   query,
   where,
   getDocs,
-} from "../../config/firebase.jsx";
+} from "../../../config/firebase.jsx";
 import { Modal, Button, Card, notification } from "antd";
-import BookForm from "../Patient/Components/BookForm.jsx";
+import BookAppointmentForm from "../../Book/BookAppointmentForm.jsx";
 
 function PatientAppointment() {
   const [userDetails, setUserDetails] = useState(null);
@@ -163,7 +163,7 @@ function PatientAppointment() {
             </p>
             <div className="mt-12 grow">
               <div>
-                <BookForm
+                <BookAppointmentForm
                   onSuccess={createAppointment}
                   onClose={handleCancel}
                 />
