@@ -9,7 +9,8 @@ import {
   getDocs,
 } from "../../config/firebase.jsx";
 import { Modal, Button, Card, notification } from "antd";
-import BookForm from "../Patient/Components/BookForm.jsx";
+import BookAppointmentForm from "../Patient/Components/BookAppointmentForm.jsx";
+import { CheckCircleOutlined, ClockCircleOutlined } from "@ant-design/icons";
 
 function PatientAppointment() {
   const [userDetails, setUserDetails] = useState(null);
@@ -49,10 +50,7 @@ function PatientAppointment() {
   const fetchPatientDetails = async (name) => {
     try {
       const patientQuerySnapshot = await getDocs(
-        query(
-          collection(db, "patients"),
-          where("patientName", "==", name),
-        )
+        query(collection(db, "patients"), where("patientName", "==", name))
       );
 
       if (!patientQuerySnapshot.empty) {
@@ -60,7 +58,7 @@ function PatientAppointment() {
         setPatientDetails(patientData);
       } else {
         // If patient not found in patients collection, try fetching from patientRecords collection
-        const patientRecordsCollection = collection(db, "patient_accounts");
+        const patientRecordsCollection = collection(db, "patientRecords");
         const patientRecordsQuery = query(
           patientRecordsCollection,
           where("patientName", "==", name)
@@ -90,44 +88,115 @@ function PatientAppointment() {
     setIsModalVisible(true);
   };
 
-  const handleOk = () => {
+  const handleModalClose = () => {
     setIsModalVisible(false);
   };
 
-  const handleCancel = () => {
-    setIsModalVisible(false);
-  };
-
-  const createAppointment = () => {
+  const createAppointment = async () => {
     // Logic to create appointment
     // You can implement your appointment creation logic here
     console.log("Creating appointment...");
     openNotification(); // For demo, open notification when creating appointment
     setIsModalVisible(false); // Close modal after appointment is created
+
+    // Fetch appointment details for current appointments
+    if (reference) {
+      const referenceId = reference; // Assuming reference is stored in userDetails
+      const appointmentsQuerySnapshot = await getDocs(
+        query(
+          collection(db, "appointments"),
+          where("referenceId", "==", referenceId)
+        )
+      );
+
+      if (!appointmentsQuerySnapshot.empty) {
+        const appointmentsData = appointmentsQuerySnapshot.docs.map((doc) =>
+          doc.data()
+        );
+        console.log("Current Appointments:", appointmentsData);
+        // Set or process the fetched appointmentsData as needed
+      } else {
+        console.log("No current appointments found.");
+      }
+    }
   };
 
   return (
     <div className="overflow-auto max-h-screen p-4">
       <br />
-      <h3 className="text-3xl font-semibold text-left">
-      Patient Appointment Details</h3>
+      <div className="w-full text-center">
+        <h3 className="text-3xl font-semibold">Patient Appointment Details</h3>
+      </div>
+
       <br />
       {patientDetails && (
-        <Card >
-          <p><strong>Name:</strong> {patientDetails.patientName}</p>
-          <p><strong>Patient Address:</strong> {patientDetails.patientAddress}</p>
-          <p><strong>Patient Age:</strong> {patientDetails.age}</p>
-          <p><strong>Reference ID:</strong> {patientDetails.reference}</p>
-          <p><strong>Appointment Status:</strong> {patientDetails.status}</p>
-          <p><strong>Type of Doctor:</strong> {patientDetails.typeOfDoctor}</p>
-          <p><strong>Appointment Date:</strong>{" "} {patientDetails.appointmentDate?.toDate().toLocaleDateString()}</p>
-          <p><strong>Appointment Time:</strong>{" "} {patientDetails.appointmentTime}</p>
+        <Card title="Patient Information">
+          <p>
+            <strong>Name:</strong> {patientDetails.patientName}
+          </p>
+          <p>
+            <strong>Patient Address:</strong> {patientDetails.patientAddress}
+          </p>
+          <p>
+            <strong>Patient Age:</strong> {patientDetails.age}
+          </p>
+          <p>
+            <strong>Reference ID:</strong> {patientDetails.reference}
+          </p>
         </Card>
+      )}
+
+      {patientDetails && (
+        <div className="flex flex-wrap">
+          <Card
+            title="Current Appointment"
+            className="w-full sm:w-1/2 bg-gray-300"
+          >
+            <p>
+              <CheckCircleOutlined /> <strong>Appointment Status:</strong>{" "}
+              {patientDetails.status}
+            </p>
+            <p>
+              <ClockCircleOutlined /> <strong>Type of Doctor:</strong>{" "}
+              {patientDetails.typeOfDoctor}
+            </p>
+            <p>
+              <strong>Appointment Date:</strong>{" "}
+              {patientDetails.appointmentDate?.toDate().toLocaleDateString()}
+            </p>
+            <p>
+              <strong>Appointment Time:</strong>{" "}
+              {patientDetails.appointmentTime}
+            </p>
+          </Card>
+
+          <Card
+            title="Past Appointment"
+            className="w-full sm:w-1/2 bg-gray-500"
+          >
+            <p>
+              <CheckCircleOutlined /> <strong>Appointment Status:</strong>{" "}
+              {patientDetails.status}
+            </p>
+            <p>
+              <ClockCircleOutlined /> <strong>Type of Doctor:</strong>{" "}
+              {patientDetails.typeOfDoctor}
+            </p>
+            <p>
+              <strong>Appointment Date:</strong>{" "}
+              {patientDetails.appointmentDate?.toDate().toLocaleDateString()}
+            </p>
+            <p>
+              <strong>Appointment Time:</strong>{" "}
+              {patientDetails.appointmentTime}
+            </p>
+          </Card>
+        </div>
       )}
 
       <Button
         onClick={showModal}
-        type="primary"
+        type="success"
         className="bg-green-600 rounded mt-3"
       >
         Book Another Appointment
@@ -137,9 +206,9 @@ function PatientAppointment() {
         <Modal
           title="Book Another Appointment"
           visible={isModalVisible}
-          onOk={handleOk}
-          onCancel={handleCancel}
           width={800}
+          footer={null} // Remove OK and Cancel buttons
+          onCancel={handleModalClose} // Handle modal close
         >
           <Card>
             <p>
@@ -148,13 +217,15 @@ function PatientAppointment() {
             </p>
             <div className="mt-12 grow">
               <div>
-                <BookForm onSuccess={createAppointment} onClose={handleCancel} />
+                <BookAppointmentForm
+                  createAppointment={createAppointment}
+                  closeModal={handleModalClose}
+                />
               </div>
             </div>
           </Card>
         </Modal>
       </div>
-
     </div>
   );
 }

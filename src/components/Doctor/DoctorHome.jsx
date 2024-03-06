@@ -1,23 +1,19 @@
 import React from "react";
-import DoctorSetSpecialty from "./Components/DoctorSetSpecialty.jsx";
-import { Card } from "antd";
-import DoctorPatients from "./Components/DoctorPatients.jsx";
+import { Card, Calendar } from "antd";
+
+import DoctorOverview from "../Doctor/Components/DoctorOverView";
 
 function DoctorHome() {
   return (
-    <>
-      <DoctorSetSpecialty />
-    <div style={{ position: "relative", top: 0, left: 0, right: 0, bottom: 0, overflow: "auto" }}>
-        <div className="pl-8 pr-8 pb-5 pt-5">
-          <Card>
-            <DoctorPatients />
-          </Card>
-        </div>
-        <div className="pl-8 pr-8 pb-5 pt-5">
-          <Card></Card>
-        </div>
-      </div>
-    </>
+    <div className="flex">
+      {/* Overview Section */}
+      <Card
+        className="pl-8 pr-4 pb-5 pt-2 custom-card"
+        style={{ width: "100%", height: "auto" }}
+      >
+        <DoctorOverview />
+      </Card>
+    </div>
   );
 }
 

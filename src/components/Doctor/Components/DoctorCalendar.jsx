@@ -121,7 +121,10 @@ function DoctorCalendar() {
                     className="clickable-badge" // Add this class for styling
                     onClick={() => handleDateSelect(current, appointment)}
                   >
-                    {moment(appointment.appointmentTime, "HH:mm").format("HH:mm")} - {appointment.patientName}
+                    {moment(appointment.appointmentTime, "HH:mm").format(
+                      "HH:mm"
+                    )}{" "}
+                    - {appointment.patientName}
                   </span>
                 }
               />

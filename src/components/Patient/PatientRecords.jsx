@@ -9,14 +9,13 @@ function PatientRecords() {
         <div className="flex flex-col gap-5">
           <Card
             title={
-              <h3 className="text-3xl font-semibold text-left">
-                Patient Record
-              </h3>
+              <div className="w-full text-center">
+                <h3 className="text-3xl font-semibold pt-10">Patient Record</h3>
+              </div>
             }
             className="overflow-auto max-h-screen p-4" // Set a maximum height and padding
-
           >
-            <PatientsRecord/>
+            <PatientsRecord />
           </Card>
         </div>
       </div>

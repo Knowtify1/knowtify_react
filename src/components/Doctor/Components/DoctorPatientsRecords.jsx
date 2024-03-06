@@ -7,17 +7,18 @@ import {
   query,
   where,
   getDocs,
+  updateDoc,
+  doc,
 } from "../../../config/firebase.jsx";
-import { Table, Input } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import { Collapse, Input, Space, Button } from "antd";
+import { SaveOutlined, EditOutlined } from "@ant-design/icons";
 
-const { Search } = Input;
+const { Panel } = Collapse;
 
 function DoctorPatientsRecords() {
   const [authID, setAuthID] = useState(null);
   const [patientsRecords, setPatientsRecords] = useState([]);
-  const [filteredPatients, setFilteredPatients] = useState([]);
-  const [searchText, setSearchText] = useState("");
+  const [editingKey, setEditingKey] = useState("");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -36,7 +37,7 @@ function DoctorPatientsRecords() {
   const fetchPatientsRecords = async (doctorID) => {
     try {
       const q = query(
-        collection(db, "patients"),
+        collection(db, "patientRecords"),
         where("assignedDoctorID", "==", doctorID)
       );
       const querySnapshot = await getDocs(q);
@@ -52,71 +53,132 @@ function DoctorPatientsRecords() {
     }
   };
 
-  const columns = [
-    {
-      title: "Reference ID",
-      dataIndex: "reference",
-      key: "reference",
-    },
-    {
-      title: "Patient Name",
-      dataIndex: "patientName",
-      key: "patientName",
-    },
-    {
-      title: "Assigned Doctor",
-      dataIndex: "assignedDoctor",
-      key: "assignedDoctor",
-    },
-    {
-      title: "Medical History",
-      dataIndex: "medicalHistory",
-      key: "medicalHistory",
-    },
-    {
-      title: "Previous Diagnoses",
-      dataIndex: "previousDiagnoses",
-      key: "previousDiagnoses",
-    },
-    {
-      title: "Medications Prescribed Previously",
-      dataIndex: "medicationsPrescribed",
-      key: "medicationsPrescribed",
-    },
-    {
-      title: "Allergies",
-      dataIndex: "allergies",
-      key: "allergies",
-    },
-    {
-      title: "Previous Surgeries or Treatments",
-      dataIndex: "surgeriesTreatment",
-      key: "surgeriesTreatment",
-    },
-    {
-      title: "Family Medical History",
-      dataIndex: "familyMedicalHistory",
-      key: "familyMedicalHistory",
-    },
-    // Add more columns based on your patient record structure
-  ];
+  const handleInputChange = (e, key, dataIndex) => {
+    const updatedRecords = patientsRecords.map((record) => {
+      if (record.id === key) {
+        return { ...record, [dataIndex]: e.target.value };
+      }
+      return record;
+    });
+    setPatientsRecords(updatedRecords);
+  };
 
-  // Render the component with patient records
+  const handleEdit = (recordID) => {
+    setEditingKey(recordID);
+  };
+
+  const handleSave = async (recordID) => {
+    try {
+      const recordToUpdate = patientsRecords.find(
+        (record) => record.id === recordID
+      );
+      if (recordToUpdate) {
+        await updateDoc(doc(db, "patientRecords", recordID), recordToUpdate);
+      }
+      setEditingKey("");
+    } catch (error) {
+      console.error("Error updating patient record:", error.message);
+    }
+  };
+
+  const isEditing = (recordID) => recordID === editingKey;
+
   return (
-    <div className="overflow-auto max-h-screen p-4" >
+    <div className="overflow-auto max-h-screen p-2">
       <h2>Doctor's Patients Records</h2>
 
-      <Table
-        dataSource={
-          filteredPatients.length > 0 ? filteredPatients : patientsRecords
-        }
-        columns={columns}
-        rowKey="id"
-      />
+      <Collapse accordion>
+        {patientsRecords.map((record) => (
+          <Panel key={record.id} header={<strong>{record.patientName}</strong>}>
+            <Input
+              addonBefore={<strong>Reference ID</strong>}
+              value={record.reference}
+              onChange={(e) => handleInputChange(e, record.id, "reference")}
+              disabled={!isEditing(record.id)}
+            />
+            <Input
+              addonBefore={<strong>Patient Name</strong>}
+              value={record.patientName}
+              onChange={(e) => handleInputChange(e, record.id, "patientName")}
+              disabled={!isEditing(record.id)}
+            />
+            <Input
+              addonBefore={<strong>Assigned Doctor</strong>}
+              value={record.assignedDoctor}
+              onChange={(e) =>
+                handleInputChange(e, record.id, "assignedDoctor")
+              }
+              disabled={!isEditing(record.id)}
+            />
+            <Input
+              addonBefore={<strong>Medical History</strong>}
+              value={record.medicalHistory}
+              onChange={(e) =>
+                handleInputChange(e, record.id, "medicalHistory")
+              }
+              disabled={!isEditing(record.id)}
+            />
+            <Input
+              addonBefore={<strong>Previous Diagnoses</strong>}
+              value={record.previousDiagnoses}
+              onChange={(e) =>
+                handleInputChange(e, record.id, "previousDiagnoses")
+              }
+              disabled={!isEditing(record.id)}
+            />
+            <Input
+              addonBefore={<strong>Medications Prescribed Previously</strong>}
+              value={record.medicationsPrescribed}
+              onChange={(e) =>
+                handleInputChange(e, record.id, "medicationsPrescribed")
+              }
+              disabled={!isEditing(record.id)}
+            />
+            <Input
+              addonBefore={<strong>Allergies</strong>}
+              value={record.allergies}
+              onChange={(e) => handleInputChange(e, record.id, "allergies")}
+              disabled={!isEditing(record.id)}
+            />
+            <Input
+              addonBefore={<strong>Previous Surgeries or Treatments</strong>}
+              value={record.surgeriesTreatment}
+              onChange={(e) =>
+                handleInputChange(e, record.id, "surgeriesTreatment")
+              }
+              disabled={!isEditing(record.id)}
+            />
+            <Input
+              addonBefore={<strong>Family Medical History</strong>}
+              value={record.familyMedicalHistory}
+              onChange={(e) =>
+                handleInputChange(e, record.id, "familyMedicalHistory")
+              }
+              disabled={!isEditing(record.id)}
+            />
+
+            <Space>
+              <Button
+                type="success"
+                onClick={() => handleSave(record.id)}
+                icon={<SaveOutlined />}
+                style={{ display: isEditing(record.id) ? "block" : "none" }}
+              >
+                Save
+              </Button>
+            </Space>
+            <Button
+              onClick={() => handleEdit(record.id)}
+              icon={<EditOutlined />}
+              style={{ display: isEditing(record.id) ? "none" : "block" }}
+            >
+              Edit
+            </Button>
+          </Panel>
+        ))}
+      </Collapse>
     </div>
   );
 }
-
-
 
 export default DoctorPatientsRecords;

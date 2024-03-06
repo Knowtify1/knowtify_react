@@ -11,87 +11,142 @@ import {
   getDocs,
 } from "../../../config/firebase.jsx";
 
-function DoctorOverView() {
-  useEffect(() => {
-    const fetchAppointmentsCount = async () => {};
+async function countDocumentsInCollection(
+  collectionName,
+  filterField,
+  filterValue
+) {
+  try {
+    const querySnapshot = await getDocs(collection(db, collectionName));
+    const filteredDocs = querySnapshot.docs.filter(
+      (doc) => doc.data()[filterField] === filterValue
+    );
+    const numberOfDocuments = filteredDocs.length;
+    return numberOfDocuments;
+  } catch (error) {
+    console.error("Error counting documents:", error);
+    return 0;
+  }
+}
 
-    fetchAppointmentsCount();
-  }, []);
+function generateGraph(count, lineColor) {
+  const batteryWidth = 150; // Width of the battery container
+  const batteryHeight = 40; // Height of the battery container
+  const batteryPadding = 5; // Padding between battery and graph lines
+  const lineSpacing = 2; // Spacing between graph lines
+
+  // Calculate width of each line based on the count
+  const lineWidth =
+    (batteryWidth - 2 * batteryPadding - (count - 1) * lineSpacing) / count;
+
+  const lines = [];
+  for (let i = 0; i < count; i++) {
+    lines.push(
+      <div
+        key={i}
+        style={{
+          width: lineWidth,
+          height: "100%",
+          backgroundColor: lineColor,
+          marginRight: i === count - 1 ? 0 : lineSpacing,
+        }}
+      ></div>
+    );
+  }
+
   return (
-    <>
-      <div className="">
-        <Space direction="vertical" size={20}>
-          <h1 className="text-center text-3xl font-medium">Overview</h1>
-          <Space direction="horizontal" size={16} className="flex-wrap">
-            <Card
-              title="Appointments"
-              extra={<a href="../admindashboard/adminappointment">View all</a>}
-              style={{ width: 300 }}
-            >
-              <Space direction="horizontal">
-                <h1></h1>
-                <span>1</span>
-              </Space>
-              <Space direction="horizontal">
-                <h1></h1>
-                <span>2</span>
-              </Space>
-              <Space direction="horizontal">
-                <h1></h1>
-                <span>3</span>
-              </Space>
-            </Card>
-            <Card
-              title="Schedule"
-              extra={<a href="">View all</a>}
-              style={{ width: 300 }}
-            >
-              <h1>null</h1>
-            </Card>
-            <Card
-              title="Patient Record"
-              extra={<a href="">View all</a>}
-              style={{ width: 300 }}
-            >
-              <h1>null</h1>
-            </Card>
-            <Space direction="horizontal" size={16} className="flex-wrap">
-              <Card
-                style={{
-                  width: 300,
-                }}
-              >
-                <Space direction="horizontal" size={10}>
-                  <QuestionOutlined />
-                  <h1>Number of Patients</h1>
-                </Space>
-              </Card>
-              <Card
-                style={{
-                  width: 300,
-                }}
-              >
-                <Space direction="horizontal" size={10}>
-                  <QuestionOutlined />
-                  <h1>Schedule ni Doc</h1>
-                </Space>
-              </Card>
-              <Card
-                style={{
-                  width: 300,
-                }}
-              >
-                <Space direction="horizontal" size={10}>
-                  <QuestionOutlined />
-                  <h1>Profile Update</h1>
-                </Space>
-              </Card>
-            </Space>
-          </Space>
-        </Space>
-      </div>
-    </>
+    <div
+      style={{
+        width: batteryWidth,
+        height: batteryHeight,
+        border: "1px solid #000",
+        borderRadius: "5px",
+        display: "flex",
+        flexDirection: "row",
+      }}
+    >
+      {lines}
+    </div>
   );
 }
 
-export default DoctorOverView;
+function DoctorOverview() {
+  const [appointmentsCount, setAppointmentsCount] = useState(null);
+  const [approvedPatientsCount, setApprovedPatientsCount] = useState(null);
+  const [assignedPatientsCount, setAssignedPatientsCount] = useState(null);
+
+  useEffect(() => {
+    const fetchAppointmentsCount = async () => {
+      try {
+        const appointmentsTotal = await countDocumentsInCollection(
+          "appointments",
+          "patientRecords",
+          "patients"
+        );
+
+        // Count patients with status === "approved"
+        const approvedCount = await countDocumentsInCollection(
+          "patients",
+          "status",
+          "approved"
+        );
+        setApprovedPatientsCount(approvedCount);
+
+        // Count patients with status === "assigned"
+        const assignedCount = await countDocumentsInCollection(
+          "patients",
+          "status",
+          "assigned"
+        );
+        setAssignedPatientsCount(assignedCount);
+
+        setAppointmentsCount(appointmentsTotal);
+      } catch (error) {
+        console.error("Error fetching appointments count:", error);
+      }
+    };
+
+    fetchAppointmentsCount();
+  }, []);
+
+  return (
+    <div className="flex justify-center">
+      <Space direction="horizontal" size={20}>
+        <Card
+          title="Appointments"
+          extra={<a href="../doctordashboard/doctorappointment">View all</a>}
+          style={{ width: 400, backgroundColor: "#E4F1FE" }}
+        >
+          <Space direction="horizontal">
+            <h1>
+              {appointmentsCount !== null ? appointmentsCount : "Loading..."}
+            </h1>
+            <span>Pending Appointments</span>
+          </Space>
+          <div style={{ marginTop: "10px" }}>
+            {generateGraph(appointmentsCount, "#054d94")}
+          </div>
+        </Card>
+        <Card
+          title="Assigned Patients"
+          extra={<a href="../doctordashboard/doctorappointment">View all</a>}
+          style={{ width: 400, backgroundColor: "#FFE4E1" }}
+        >
+          <Space direction="horizontal">
+            <h1>
+              {assignedPatientsCount !== null
+                ? assignedPatientsCount
+                : "Loading..."}
+            </h1>
+            <span>Assigned</span>
+          </Space>
+          <div style={{ marginTop: "10px" }}>
+            {generateGraph(assignedPatientsCount, "#990f00")}
+          </div>
+        </Card>
+      </Space>
+    </div>
+  );
+}
+
+export default DoctorOverview;

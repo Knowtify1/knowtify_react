@@ -12,17 +12,17 @@ import { Spin, Space, Calendar, Badge, Modal as AntModal } from "antd";
 import moment from "moment";
 
 function PatientCalendar() {
-  const [patientDetails, setPatientDetails] = useState(null);
   const [patientsData, setPatientsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
 
   useEffect(() => {
-    const fetchPatientData = async () => {
+    const fetchPatientData = async (email) => {
       try {
         const patientsCollection = collection(db, "patients");
-        const patientSnapshot = await getDocs(patientsCollection);
+        const q = query(patientsCollection, where("email", "==", email));
+        const patientSnapshot = await getDocs(q);
         const patients = patientSnapshot.docs.map((doc) => doc.data());
         setPatientsData(patients);
         setLoading(false);
@@ -32,7 +32,13 @@ function PatientCalendar() {
       }
     };
 
-    fetchPatientData();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        fetchPatientData(user.email);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const cellRender = (current) => {
@@ -54,7 +60,8 @@ function PatientCalendar() {
                   className="clickable-badge" // Add this class for styling
                   onClick={() => handleDateSelect(current, appointment)}
                 >
-                  {moment(appointment.appointmentTime, "HH:mm").format("HH:mm")} - {appointment.patientName}
+                  {moment(appointment.appointmentTime, "HH:mm").format("HH:mm")}{" "}
+                  - {appointment.patientName}
                 </span>
               }
             />
@@ -88,9 +95,7 @@ function PatientCalendar() {
         </div>
       ) : (
         <>
-          <Calendar
-            cellRender={cellRender}
-          />
+          <Calendar cellRender={cellRender} />
 
           <AntModal
             title={`Appointments on ${selectedPatient?.appointmentDate

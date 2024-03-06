@@ -1,6 +1,27 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Space, Spin, DatePicker, Modal, Form, TimePicker } from "antd";
-import { setDoc, doc, db, collection, addDoc, getDoc, getDocs, where, query, fsTimeStamp, deleteDoc } from "../../../config/firebase.jsx";
+import {
+  Table,
+  Button,
+  Space,
+  Spin,
+  DatePicker,
+  Modal,
+  Form,
+  TimePicker,
+} from "antd";
+import {
+  setDoc,
+  doc,
+  db,
+  collection,
+  addDoc,
+  getDoc,
+  getDocs,
+  where,
+  query,
+  fsTimeStamp,
+  deleteDoc,
+} from "../../../config/firebase.jsx";
 import { sendSMS } from "../../../config/sendSMS.jsx";
 
 function TablePendingAppointments() {
@@ -10,7 +31,6 @@ function TablePendingAppointments() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [visible, setVisible] = useState(false);
   const [form] = Form.useForm();
-
 
   const columns = [
     {
@@ -63,17 +83,17 @@ function TablePendingAppointments() {
           <Button type="link" onClick={() => handleApproveAndSendSMS(record)}>
             Approve
           </Button>
-         <Button type="link" danger onClick={showModal}>
+          <Button type="link" danger onClick={showModal}>
             Reschedule
           </Button>
           <Modal
             title="Edit Appointment"
             visible={visible}
-             onOk={handleOk}
-             onCancel={handleCancel}
-            cancelButtonProps={{ style: { color: 'green' } }} // Change cancel button color to green
-            okButtonProps={{ style: { color: 'green' } }} // Change ok button color to green
-            bodyStyle={{ backdropFilter: 'blur(80px)' }} // Apply blur effect to modal background
+            onOk={handleOk}
+            onCancel={handleCancel}
+            cancelButtonProps={{ style: { color: "green" } }} // Change cancel button color to green
+            okButtonProps={{ style: { color: "green" } }} // Change ok button color to green
+            bodyStyle={{ backdropFilter: "blur(80px)" }} // Apply blur effect to modal background
           >
             <Form form={form} layout="vertical" initialValues={{}}>
               <Form.Item
@@ -132,25 +152,24 @@ function TablePendingAppointments() {
   };
 
   const handleApproveAndSendSMS = async (record) => {
-  try {
-    await handleApprove(record.key); // Approve the appointment
+    try {
+      await handleApprove(record.key); // Approve the appointment
 
-    // Assuming phoneNumber is a field in the appointment record
-    const { contactNo } = record;
-    const { patientName, dateOfAppointment, appointmentTime } = record;
-    const message = `Good day, ${patientName}! Your booking with Mountain Studio Specialty Clinic on ${dateOfAppointment} at ${appointmentTime} has been approved. Please be at the clinic 5 minutes before your appointment schedule. Thank you!`;
-    
-    // Send SMS
-    await sendSMS(contactNo, message);
-    
-    console.log(`SMS sent to ${contactNo}`);
-  } catch (error) {
-    console.error("Error approving appointment and sending SMS:", error);
-  }
-};
+      // Assuming phoneNumber is a field in the appointment record
+      const { contactNo } = record;
+      const { patientName, dateOfAppointment, appointmentTime } = record;
+      const message = `Good day, ${patientName}! Your booking with Mountain Studio Specialty Clinic on ${dateOfAppointment} at ${appointmentTime} has been approved. Please be at the clinic 5 minutes before your appointment schedule. Thank you!`;
 
+      // Send SMS
+      await sendSMS(contactNo, message);
 
- const showModal = (record) => {
+      console.log(`SMS sent to ${contactNo}`);
+    } catch (error) {
+      console.error("Error approving appointment and sending SMS:", error);
+    }
+  };
+
+  const showModal = (record) => {
     setVisible(true);
     form.setFieldsValue({
       dateOfAppointment: moment(record.dateOfAppointment),
@@ -165,10 +184,10 @@ function TablePendingAppointments() {
         form.resetFields();
         setVisible(false);
         // Handle form submission (update appointment)
-        console.log('Received values:', values);
+        console.log("Received values:", values);
       })
       .catch((errorInfo) => {
-        console.log('Validation failed:', errorInfo);
+        console.log("Validation failed:", errorInfo);
       });
   };
 
@@ -180,8 +199,6 @@ function TablePendingAppointments() {
   useEffect(() => {
     fetchAppointments(selectedDate, setData, setLoading);
   }, [selectedDate]);
-
- 
 
   const moveDataToTrash = async (originalCollection, trashCollection, key) => {
     try {
@@ -342,13 +359,13 @@ function TablePendingAppointments() {
     fetchAppointments(selectedDate, setData, setLoading);
   };
 
- const formatDate = (date) => {
-  if (date && date.toDate) {
-    const options = { month: "long", day: "numeric", year: "numeric" };
-    return date.toDate().toLocaleDateString(undefined, options);
-  }
-  return ""; // or handle it in whatever way is appropriate for your application
-};
+  const formatDate = (date) => {
+    if (date && date.toDate) {
+      const options = { month: "long", day: "numeric", year: "numeric" };
+      return date.toDate().toLocaleDateString(undefined, options);
+    }
+    return ""; // or handle it in whatever way is appropriate for your application
+  };
 
   const getCurrentDateMessage = () => {
     const today = new Date();
@@ -363,7 +380,7 @@ function TablePendingAppointments() {
     return `Today is ${formattedDate}`;
   };
 
-   return (
+  return (
     <>
       <div>
         <Space direction="vertical" size={20} className="flex">
@@ -379,12 +396,8 @@ function TablePendingAppointments() {
           {loading ? (
             <Spin size="small" className="block" />
           ) : (
-            <Table
-              columns={columns}
-              dataSource={data}
-            />
+            <Table columns={columns} dataSource={data} />
           )}
-
         </Space>
       </div>
     </>

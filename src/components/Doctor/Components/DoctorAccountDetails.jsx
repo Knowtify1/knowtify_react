@@ -1,41 +1,28 @@
 import React, { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../../../config/firebase.jsx";
-import { Button, Modal } from "antd";
+import { EditOutlined } from "@ant-design/icons";
 
 function DoctorAccountDetails() {
   const [userDetails, setUserDetails] = useState(null);
-  const [doctorsMoreDetails, setdoctorsMoreDetails] = useState(null);
-  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [updatedDetails, setUpdatedDetails] = useState(null);
 
   useEffect(() => {
     const fetchUserDetails = async () => {
       const unsubscribe = onAuthStateChanged(auth, async (user) => {
         if (user) {
           const userId = user.uid;
-          const userRef = doc(db, "users_accounts_records", userId);
-          const docRef = doc(db, "doctors_accounts", userId);
+          const userRef = doc(db, "doctors_accounts", userId);
 
           try {
             const docSnapshot = await getDoc(userRef);
-            const docsnapshot = await getDoc(docRef);
 
-            if (docSnapshot.exists() && docsnapshot.exists()) {
+            if (docSnapshot.exists()) {
               const userData = docSnapshot.data();
-              const specialty = docsnapshot.data();
-
-              // Convert Timestamp to a string (or to a format of your choice)
-              const dateOfRegistrationString = userData.dateofregistration
-                .toDate()
-                .toString();
-
-              setUserDetails({
-                ...userData,
-                dateofregistration: dateOfRegistrationString,
-              });
-
-              setdoctorsMoreDetails(specialty);
+              setUserDetails(userData);
+              setUpdatedDetails(userData);
             } else {
               console.log("No such document!");
             }
@@ -51,32 +38,107 @@ function DoctorAccountDetails() {
     fetchUserDetails();
   }, []);
 
-  const handleEditClick = () => {
-    setEditModalVisible(true);
+  const handleEdit = () => {
+    setEditing(true);
   };
 
-  const handleEditModalCancel = () => {
-    setEditModalVisible(false);
+  const handleSave = async () => {
+    try {
+      const userId = auth.currentUser.uid;
+      const userRef = doc(db, "doctors_accounts", userId);
+      await updateDoc(userRef, updatedDetails);
+      setUserDetails(updatedDetails);
+      setEditing(false);
+    } catch (error) {
+      console.error("Error updating document:", error);
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setUpdatedDetails({ ...updatedDetails, [name]: value });
+  };
+
+  // Function to format Firestore Timestamp to a readable string
+  const formatDate = (timestamp) => {
+    const date = timestamp.toDate();
+    return date.toLocaleString();
   };
 
   return (
     <div>
       {userDetails ? (
         <div>
-          <h1
-            style={{
-              fontSize: "24px",
-              fontWeight: "bold",
-              textAlign: "center",
-            }}
-          >
-            {userDetails.name}
-          </h1>
-          <br></br>
-          <p>Email: {userDetails.email}</p>
-          <p>Date of Registration: {userDetails.dateofregistration}</p>
-          <p>User Type: {userDetails.type}</p>
-          <p>Specialty: {doctorsMoreDetails.specialty}</p>
+          {!editing ? (
+            <div>
+              <h1
+                style={{
+                  fontSize: "24px",
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+              >
+                {userDetails.name}
+              </h1>
+              <EditOutlined
+                style={{
+                  fontSize: "16px",
+                  color: "blue",
+                  cursor: "pointer",
+                }}
+                onClick={handleEdit}
+              />
+              <br />
+              <p>Email: {userDetails.email}</p>
+              <p>Phone: {userDetails.phone}</p>
+              <p>
+                Date of Registration:{" "}
+                {formatDate(userDetails.dateofregistration)}
+              </p>
+              <p>User Type: {userDetails.type}</p>
+            </div>
+          ) : (
+            <div>
+              <input
+                type="text"
+                name="name"
+                value={updatedDetails.name}
+                onChange={handleChange}
+              />
+              <input
+                type="email"
+                name="email"
+                value={updatedDetails.email}
+                onChange={handleChange}
+              />
+              <input
+                type="tel"
+                name="phone"
+                value={updatedDetails.phone}
+                onChange={handleChange}
+              />
+              <input
+                type="text"
+                name="type"
+                value={updatedDetails.type}
+                onChange={handleChange}
+              />
+              <button
+                style={{
+                  backgroundColor: "blue",
+                  color: "white",
+                  padding: "10px 20px",
+                  border: "none",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                  fontSize: "12px",
+                }}
+                onClick={handleSave}
+              >
+                Save
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <p>Loading...</p>

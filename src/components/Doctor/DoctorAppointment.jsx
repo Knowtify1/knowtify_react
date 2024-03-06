@@ -1,26 +1,25 @@
 import { Card } from "antd";
 import React from "react";
 import TableAppointments from "./Components/TableAppointments";
+import DoctorPatients from "./Components/DoctorPatients.jsx";
 
 function DoctorAppointment() {
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex flex-col gap-4">
+    <>
+      <div className="pl-8 pr-8 pb-5 pt-5">
         <Card
           title={
-            <h3 className="text-3xl font-semibold text-left">Appointments</h3>
+            <h3 className="text-3xl font-semibold text-left ">Patients</h3>
           }
-          className="overflow-auto"
-          style={{ maxWidth: "100%", width: "100%" }}
+          className="overflow-auto max-h-screen p-4" // Set a maximum height and padding
         >
-          <TableAppointments />
+          <DoctorPatients />
         </Card>
-
-        <Card title={<h3 className="text-3xl font-semibold text-center"></h3>}></Card>
-
-        {/* Add more cards as needed */}
       </div>
-    </div>
+      <div className="pl-8 pr-8 pb-5 pt-5">
+        <Card></Card>
+      </div>
+    </>
   );
 }
 

@@ -302,24 +302,6 @@ function Home() {
             </div>
           </section>
         </main>
-
-        <div>
-          <div>
-            <input
-              type="text"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder="Phone Number"
-            />
-            <input
-              type="text"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Message"
-            />
-            <button onClick={handleSendSMS}>Send SMS</button>
-          </div>
-        </div>
       </div>
     </div>
   );

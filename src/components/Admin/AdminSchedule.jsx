@@ -1,12 +1,12 @@
 import React from "react";
-import { Calendar } from "antd";
+import { Card } from "antd";
 import SpecialtyMenu from "./Components/SpecialtyMenu";
 
 function AdminSchedule() {
   return (
-    <>
+    <Card title="Admin Schedule">
       <SpecialtyMenu />
-    </>
+    </Card>
   );
 }
 

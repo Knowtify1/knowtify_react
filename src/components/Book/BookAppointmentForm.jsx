@@ -195,8 +195,12 @@ function BookAppointmentForm() {
         numExistingAppointments +
         existingAppointmentsQuerySnapshot
     );
+<<<<<<< HEAD
     //time slot counts 0 - 3 = 4 appointment/timeslots
     if (numExistingAppointments >= 4 - 1) {
+=======
+    if (numExistingAppointments == 4) {
+>>>>>>> 59f382a994b020328da2d094b622722a05a7a123
       const message =
         "There are already 4 appointments booked for the selected date and time. Please choose a different Time.";
       setModalClosable(false);
@@ -249,9 +253,9 @@ function BookAppointmentForm() {
 
   const validateAge = (rule, value) => {
     const age = parseInt(value);
-    if (isNaN(age) || age < 18) {
+    if (isNaN(age) || age < 18 || age > 100) {
       return Promise.reject(
-        "You must be at least 18 years old to book an appointment."
+        "You must be between 18 and 100 years old to book an appointment."
       );
     } else {
       return Promise.resolve();

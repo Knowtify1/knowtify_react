@@ -21,7 +21,7 @@ function AdminAccount() {
 
   return (
     <div className="container mx-0 p-2">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-row gap-4">
         <Card style={{ width: 400, height: 600 }}>
           <div className="flex items-center justify-center mb-2">
             <Avatar size={120} src={doc2} />
@@ -35,7 +35,7 @@ function AdminAccount() {
             Logout
           </Button>
         </Card>
-        <Card>
+        <Card style={{ width: 700 }}>
           <DoctorsSchedule />
         </Card>
       </div>

@@ -26,11 +26,7 @@ export function AdminDashboard() {
           {/* <ToggleThemeButton darkTheme={darkTheme} toggleTheme={toggleTheme} /> */}
         </Sider>
         <Layout>
-          <div>
-            <Header className="bg-white">
-              <AdminSearch />
-            </Header>
-          </div>
+          <div></div>
           <div>
             <Outlet />
           </div>
