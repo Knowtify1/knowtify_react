@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  signInWithPopup,
-  createUserWithEmailAndPassword,
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
-} from "firebase/auth";
+import { signInWithPopup, createUserWithEmailAndPassword } from "firebase/auth";
 import { Button, Form, Input, Card, Select, Spin, message } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -23,6 +18,36 @@ function Register() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showReferenceId, setShowReferenceId] = useState(false);
+
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [otp, setOTP] = useState("");
+
+  const handleSendOTP = async () => {
+    try {
+      const phoneNumberWithCountryCode = `+63${phoneNumber}`; // Adjust the country code as per your requirement
+      const confirmationResult = await auth.signInWithPhoneNumber(
+        phoneNumberWithCountryCode,
+        recaptchaVerifier
+      );
+      console.log(confirmationResult);
+      message.success("OTP sent successfully!");
+    } catch (error) {
+      message.error("Failed to send OTP. Please try again.");
+    }
+  };
+
+  const handleVerifyOTP = async () => {
+    try {
+      const credential = firebase.auth.PhoneAuthProvider.credential(
+        verificationId,
+        otp
+      );
+      await firebase.auth().signInWithCredential(credential);
+      message.success("Successfully authenticated!");
+    } catch (error) {
+      message.error("Failed to verify OTP. Please try again.");
+    }
+  };
 
   const addNewDocument = async (userData, id) => {
     const myDoc = doc(db, "users_accounts_records", `${id}`);
@@ -227,7 +252,7 @@ function Register() {
       className="drop-shadow-md mt-20"
     >
       <div>
-        <Form
+        {/* <Form
           name="login"
           labelCol={{
             span: 8,
@@ -308,7 +333,7 @@ function Register() {
             <Select placeholder="Select a role" onChange={handleRoleChange}>
               <Select.Option value="doctor">Doctor</Select.Option>
               <Select.Option value="admin">Secretary</Select.Option>
-              {/* <Select.Option value="patient">Patient</Select.Option> */}
+              <Select.Option value="patient">Patient</Select.Option>
             </Select>
           </Form.Item>
 
@@ -343,6 +368,34 @@ function Register() {
               loading={loading}
             >
               Register
+            </Button>
+          </Form.Item>
+        </Form> */}
+
+        <h2>Register with Phone Number</h2>
+        <Form layout="vertical">
+          <Form.Item label="Phone Number">
+            <Input
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              placeholder="Enter phone number"
+            />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" onClick={handleSendOTP}>
+              Send OTP
+            </Button>
+          </Form.Item>
+          <Form.Item label="OTP">
+            <Input
+              value={otp}
+              onChange={(e) => setOTP(e.target.value)}
+              placeholder="Enter OTP"
+            />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" onClick={handleVerifyOTP}>
+              Verify OTP
             </Button>
           </Form.Item>
         </Form>

@@ -175,10 +175,10 @@ function BookAppointmentForm() {
       return;
     }
 
-    console.log("appointmentDate:", appointmentDate);
-    console.log("typedoctor:", typedoctor);
-    console.log("selectedTime:", selectedTime);
-    console.log("adate:", adate.valueOf());
+    // console.log("appointmentDate:", appointmentDate);
+    // console.log("typedoctor:", typedoctor);
+    // console.log("selectedTime:", selectedTime);
+    // console.log("adate:", adate.valueOf());
 
     const existingAppointmentsQuerySnapshot = await getDocs(
       query(
@@ -191,9 +191,12 @@ function BookAppointmentForm() {
 
     const numExistingAppointments = existingAppointmentsQuerySnapshot.size;
     console.log(
-      "Query:" + numExistingAppointments + existingAppointmentsQuerySnapshot
+      "Query Count:" +
+        numExistingAppointments +
+        existingAppointmentsQuerySnapshot
     );
-    if (numExistingAppointments == 4) {
+    //time slot counts 0 - 3 = 4 appointment/timeslots
+    if (numExistingAppointments >= 4 - 1) {
       const message =
         "There are already 4 appointments booked for the selected date and time. Please choose a different Time.";
       setModalClosable(false);
@@ -219,19 +222,23 @@ function BookAppointmentForm() {
         reference: uniqueReference,
       };
 
-      const myDoc = collection(db, "appointments");
+      navigate("/appointmentsuccess", {
+        state: { appointmentData: userData, phone: contactno },
+      });
+      //const myDoc = collection(db, "appointments");
 
-      try {
-        const docref = await addDoc(myDoc, userData);
-        console.log("firestore success");
-        console.log("document id", docref);
+      // try {
+      //   const docref = await addDoc(myDoc, userData);
+      //   console.log("firestore success");
+      //   console.log("document id", docref);
 
-        navigate("/appointmentsuccess", {
-          state: { appointmentID: docref.id },
-        });
-      } catch (error) {
-        console.log(error);
-      }
+      //   navigate("/appointmentsuccess", {
+      //      state: { appointmentID: docref.id, phone: contactno },
+      //     state: { appointmentData: userData, phone: contactno },
+      //   });
+      // } catch (error) {
+      //   console.log(error);
+      // }
     }
   };
 
@@ -278,235 +285,239 @@ function BookAppointmentForm() {
       >
         <p>{modalMessage}</p>
       </Modal>
-      <Form
-        labelCol={{
-          span: 24,
-        }}
-        wrapperCol={{
-          span: 24,
-        }}
-        layout="horizontal"
-        disabled={componentDisabled}
-        style={{
-          maxWidth: 1100,
-        }}
-        initialValues={{
-          remember: true,
-        }}
-        onFinish={onFinish}
-        onFinishFailed={onFinishFailed}
-        autoComplete="off"
-        form={form}
-      >
-        <Row gutter={[10, 10]}>
-          <Col span={8}>
-            <Form.Item
-              label="Patient Name"
-              name="patientname"
-              rules={[
-                {
-                  required: true,
-                  message: "Please input your Name!",
-                },
-              ]}
-            >
-              <Input type="text" />
-            </Form.Item>
-          </Col>
-
-          <Col span={8}>
-            <Form.Item
-              label="Contact Number"
-              name="contactno"
-              rules={[
-                {
-                  required: true,
-                  message: "Please input your number",
-                },
-              ]}
-            >
-              <Input style={{ width: "100%" }} />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item
-              label="Email Address"
-              name="email"
-              rules={[
-                {
-                  required: false,
-                  message: "Please input your email",
-                },
-              ]}
-            >
-              <Input style={{ width: "100%" }} type="email" />
-            </Form.Item>
-          </Col>
-          <Col span={3}>
-            <Form.Item
-              label="Age"
-              name="age"
-              rules={[
-                {
-                  required: true,
-                  message: "Please input your age!",
-                },
-                {
-                  validator: validateAge,
-                },
-              ]}
-            >
-              <Input type="number" />
-            </Form.Item>
-          </Col>
-          <Col span={21}>
-            <Form.Item
-              label="Patient's Address"
-              name="patientaddress"
-              rules={[
-                {
-                  required: true,
-                  message: "Please input your address!",
-                },
-              ]}
-            >
-              <TextArea rows={2} />
-            </Form.Item>
-          </Col>
-        </Row>
-        <hr />
-        <br />
-        <Row gutter={[10, 10]}>
-          <Col span={8}>
-            <Form.Item
-              label="Reason for Appointment"
-              name="reasonforappointment"
-              rules={[
-                {
-                  required: true,
-                  message: "Please select or input your reason!",
-                },
-              ]}
-            >
-              <Select
-                showSearch
-                placeholder="Select or Specify"
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
-                }
-                allowClear
+      <div>
+        <Form
+          labelCol={{
+            span: 24,
+          }}
+          wrapperCol={{
+            span: 24,
+          }}
+          layout="horizontal"
+          disabled={componentDisabled}
+          style={{
+            maxWidth: 1100,
+          }}
+          initialValues={{
+            remember: true,
+          }}
+          onFinish={onFinish}
+          onFinishFailed={onFinishFailed}
+          autoComplete="off"
+          form={form}
+        >
+          <Row gutter={[10, 10]}>
+            <Col span={8}>
+              <Form.Item
+                label="Patient Name"
+                name="patientname"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please input your Name!",
+                  },
+                ]}
               >
-                <Option value="consultation">Consultation</Option>
-              </Select>
-            </Form.Item>
+                <Input type="text" />
+              </Form.Item>
+            </Col>
 
-            <Form.Item
-              noStyle
-              shouldUpdate={(prevValues, currentValues) =>
-                prevValues.reasonforappointment !==
-                currentValues.reasonforappointment
-              }
-            >
-              {({ getFieldValue }) => {
-                const selectedReason = getFieldValue("reasonforappointment");
-
-                return selectedReason === "other" ? (
-                  <Form.Item
-                    name="customReason"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please specify your reason!",
-                      },
-                    ]}
-                  >
-                    <Input placeholder="Specify your reason" />
-                  </Form.Item>
-                ) : null;
-              }}
-            </Form.Item>
-          </Col>
-
-          <Col span={8}>
-            <Form.Item
-              label="Type of Doctor to Consult"
-              rules={[{ required: true, message: "Select Type" }]}
-              name="typedoctor"
-            >
-              <Select
-                options={typesofDoc}
-                style={{}}
-                placeholder="Select a type"
-                onChange={handleTypeChange}
-              />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row gutter={[10, 10]}>
-          <Col span={8}>
-            <Form.Item
-              label="Appointment Date"
-              rules={[{ required: true, message: "Select Date" }]}
-              name="adate"
-            >
-              <DatePicker
-                disabledDate={(current) => {
-                  if (current && current < dayjs().startOf("day")) {
-                    return true;
+            <Col span={8}>
+              <Form.Item
+                label="Phone Number"
+                name="contactno"
+                rules={[
+                  { required: true, message: "Please input your phone number" },
+                  {
+                    pattern: /^\+63\d{10}$/,
+                    message: "Please enter a valid phone number",
+                  },
+                ]}
+              >
+                <Input style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                label="Email Address"
+                name="email"
+                rules={[
+                  {
+                    required: false,
+                    message: "Please input your email",
+                  },
+                ]}
+              >
+                <Input style={{ width: "100%" }} type="email" />
+              </Form.Item>
+            </Col>
+            <Col span={3}>
+              <Form.Item
+                label="Age"
+                name="age"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please input your age!",
+                  },
+                  {
+                    validator: validateAge,
+                  },
+                ]}
+              >
+                <Input type="number" />
+              </Form.Item>
+            </Col>
+            <Col span={21}>
+              <Form.Item
+                label="Patient's Address"
+                name="patientaddress"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please input your address!",
+                  },
+                ]}
+              >
+                <TextArea rows={2} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <hr />
+          <br />
+          <Row gutter={[10, 10]}>
+            <Col span={8}>
+              <Form.Item
+                label="Reason for Appointment"
+                name="reasonforappointment"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select or input your reason!",
+                  },
+                ]}
+              >
+                <Select
+                  showSearch
+                  placeholder="Select or Specify"
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children
+                      .toLowerCase()
+                      .indexOf(input.toLowerCase()) >= 0
                   }
-                  const dayOfWeek = current.day();
-                  return !availableDays.includes(
-                    dayjs().day(dayOfWeek).format("dddd")
-                  );
-                }}
-                placeholder="Select Date"
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={8}>
-            <Form.Item
-              name="timepicker"
-              label="Appointment Time"
-              rules={[{ required: true, message: "Select Time" }]}
-            >
-              <Select
-                options={
-                  doctorTimeOptions[form.getFieldValue("typedoctor")] || []
-                }
-                style={{}}
-                placeholder="Select a time"
-              />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row>
-          <Col span={24}>
-            <Form.Item
-              wrapperCol={{
-                offset: 8,
-              }}
-              style={{
-                marginBottom: 5,
-              }}
-            >
-              <div className="flex flex-col ...">
-                <Button
-                  type="primary"
-                  className="bg-green-600 w-2/4 "
-                  htmlType="submit"
+                  allowClear
                 >
-                  Submit
-                </Button>
-              </div>
-            </Form.Item>
-          </Col>
-        </Row>
-      </Form>
+                  <Option value="consultation">Consultation</Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item
+                noStyle
+                shouldUpdate={(prevValues, currentValues) =>
+                  prevValues.reasonforappointment !==
+                  currentValues.reasonforappointment
+                }
+              >
+                {({ getFieldValue }) => {
+                  const selectedReason = getFieldValue("reasonforappointment");
+
+                  return selectedReason === "other" ? (
+                    <Form.Item
+                      name="customReason"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please specify your reason!",
+                        },
+                      ]}
+                    >
+                      <Input placeholder="Specify your reason" />
+                    </Form.Item>
+                  ) : null;
+                }}
+              </Form.Item>
+            </Col>
+
+            <Col span={8}>
+              <Form.Item
+                label="Type of Doctor to Consult"
+                rules={[{ required: true, message: "Select Type" }]}
+                name="typedoctor"
+              >
+                <Select
+                  options={typesofDoc}
+                  style={{}}
+                  placeholder="Select a type"
+                  onChange={handleTypeChange}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={[10, 10]}>
+            <Col span={8}>
+              <Form.Item
+                label="Appointment Date"
+                rules={[{ required: true, message: "Select Date" }]}
+                name="adate"
+              >
+                <DatePicker
+                  disabledDate={(current) => {
+                    if (current && current < dayjs().startOf("day")) {
+                      return true;
+                    }
+                    const dayOfWeek = current.day();
+                    return !availableDays.includes(
+                      dayjs().day(dayOfWeek).format("dddd")
+                    );
+                  }}
+                  placeholder="Select Date"
+                />
+              </Form.Item>
+            </Col>
+
+            <Col span={8}>
+              <Form.Item
+                name="timepicker"
+                label="Appointment Time"
+                rules={[{ required: true, message: "Select Time" }]}
+              >
+                <Select
+                  options={
+                    doctorTimeOptions[form.getFieldValue("typedoctor")] || []
+                  }
+                  style={{}}
+                  placeholder="Select a time"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row>
+            <Col span={24}>
+              <Form.Item
+                wrapperCol={{
+                  offset: 8,
+                }}
+                style={{
+                  marginBottom: 5,
+                }}
+              >
+                <div className="flex flex-col ...">
+                  <Button
+                    type="primary"
+                    className="bg-green-600 w-2/4 "
+                    htmlType="submit"
+                  >
+                    Submit
+                  </Button>
+                </div>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </div>
     </>
   );
 }
