@@ -23,6 +23,7 @@ import {
 import PatientOverview from "../Patient/Components/PatientOverview";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import moment from "moment";
+import PatientWelcome from "./Components/PatientWelcome";
 
 function PatientHome() {
   const [reminders, setReminders] = useState([]);
@@ -110,114 +111,117 @@ function PatientHome() {
   };
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="w-full text-center">
-        <h3 className="text-3xl font-semibold pt-10">Overview</h3>{" "}
-        <Space direction="vertical" size={20}>
-          <Card
-            className="pl-8 pr-4 pb-5 pt-2 custom-card"
-            style={{ height: "auto" }}
-          >
-            <PatientOverview />
-          </Card>
-        </Space>
-      </div>
-
-      <div className="w-full mt-10">
-        <Card title="Reminders">
+    <>
+      <PatientWelcome />
+      <div className="flex flex-col items-center">
+        <div className="w-full text-center">
+          <h3 className="text-3xl font-semibold pt-10">Overview</h3>{" "}
           <Space direction="vertical" size={20}>
-            <Space direction="horizontal">
-              <Button
-                type="success"
-                icon={<PlusOutlined />}
-                onClick={() => setModalVisible(true)}
-              >
-                Add Reminder
-              </Button>
-            </Space>
-            <Row gutter={[16, 16]}>
-              {reminders.map((reminder) => (
-                <Col key={reminder.id} span={8}>
-                  <Card
-                    style={{ marginBottom: "10px" }}
-                    actions={[
-                      <EditOutlined onClick={() => editReminder(reminder)} />,
-                      <DeleteOutlined
-                        onClick={() => deleteReminder(reminder.id)}
-                      />,
-                    ]}
-                  >
-                    <p>
-                      <strong>{reminder.text}</strong>
-                    </p>
-                    <p>Date: {reminder.date}</p>
-                    <p>Days Remaining: {remainingDays[reminder.id]}</p>
-                  </Card>
-                </Col>
-              ))}
-            </Row>
+            <Card
+              className="pl-8 pr-4 pb-5 pt-2 custom-card"
+              style={{ height: "auto" }}
+            >
+              <PatientOverview />
+            </Card>
           </Space>
-        </Card>
-      </div>
+        </div>
 
-      <Modal
-        title={editingReminder ? "Edit Reminder" : "Add Reminder"}
-        visible={modalVisible}
-        onCancel={() => {
-          setEditingReminder(null);
-          setModalVisible(false);
-        }}
-        footer={[
-          <Button key="cancel" onClick={() => setModalVisible(false)}>
-            Cancel
-          </Button>,
-          <Button
-            key="submit"
-            type="success"
-            onClick={() => {
-              form
-                .validateFields()
-                .then((values) => {
-                  if (editingReminder) {
-                    handleUpdate(values);
-                  } else {
-                    handleSave(values);
-                  }
-                })
-                .catch((error) => {
-                  console.error("Error validating fields: ", error);
-                });
+        <div className="w-full mt-10">
+          <Card title="Reminders">
+            <Space direction="vertical" size={20}>
+              <Space direction="horizontal">
+                <Button
+                  type="success"
+                  icon={<PlusOutlined />}
+                  onClick={() => setModalVisible(true)}
+                >
+                  Add Reminder
+                </Button>
+              </Space>
+              <Row gutter={[16, 16]}>
+                {reminders.map((reminder) => (
+                  <Col key={reminder.id} span={8}>
+                    <Card
+                      style={{ marginBottom: "10px" }}
+                      actions={[
+                        <EditOutlined onClick={() => editReminder(reminder)} />,
+                        <DeleteOutlined
+                          onClick={() => deleteReminder(reminder.id)}
+                        />,
+                      ]}
+                    >
+                      <p>
+                        <strong>{reminder.text}</strong>
+                      </p>
+                      <p>Date: {reminder.date}</p>
+                      <p>Days Remaining: {remainingDays[reminder.id]}</p>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+            </Space>
+          </Card>
+        </div>
+
+        <Modal
+          title={editingReminder ? "Edit Reminder" : "Add Reminder"}
+          visible={modalVisible}
+          onCancel={() => {
+            setEditingReminder(null);
+            setModalVisible(false);
+          }}
+          footer={[
+            <Button key="cancel" onClick={() => setModalVisible(false)}>
+              Cancel
+            </Button>,
+            <Button
+              key="submit"
+              type="success"
+              onClick={() => {
+                form
+                  .validateFields()
+                  .then((values) => {
+                    if (editingReminder) {
+                      handleUpdate(values);
+                    } else {
+                      handleSave(values);
+                    }
+                  })
+                  .catch((error) => {
+                    console.error("Error validating fields: ", error);
+                  });
+              }}
+            >
+              {editingReminder ? "Update Reminder" : "Add Reminder"}
+            </Button>,
+          ]}
+        >
+          <Form
+            form={form}
+            layout="vertical"
+            initialValues={{
+              reminder: editingReminder ? editingReminder.text : "",
+              date: editingReminder ? moment(editingReminder.date) : moment(),
             }}
           >
-            {editingReminder ? "Update Reminder" : "Add Reminder"}
-          </Button>,
-        ]}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          initialValues={{
-            reminder: editingReminder ? editingReminder.text : "",
-            date: editingReminder ? moment(editingReminder.date) : moment(),
-          }}
-        >
-          <Form.Item
-            name="reminder"
-            label="Reminder"
-            rules={[{ required: true, message: "Please enter a reminder!" }]}
-          >
-            <Input placeholder="Enter a reminder" />
-          </Form.Item>
-          <Form.Item
-            name="date"
-            label="Date"
-            rules={[{ required: true, message: "Please select a date!" }]}
-          >
-            <DatePicker />
-          </Form.Item>
-        </Form>
-      </Modal>
-    </div>
+            <Form.Item
+              name="reminder"
+              label="Reminder"
+              rules={[{ required: true, message: "Please enter a reminder!" }]}
+            >
+              <Input placeholder="Enter a reminder" />
+            </Form.Item>
+            <Form.Item
+              name="date"
+              label="Date"
+              rules={[{ required: true, message: "Please select a date!" }]}
+            >
+              <DatePicker />
+            </Form.Item>
+          </Form>
+        </Modal>
+      </div>
+    </>
   );
 }
 

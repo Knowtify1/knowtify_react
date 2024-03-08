@@ -106,6 +106,7 @@ const Login = () => {
     <div className=" flex items-center justify-center">
       {showSpinner && (
         <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-white bg-opacity-70 z-50">
+          <h1>Logging In</h1>
           <Spin indicator={<LoadingOutlined />} size="large" />
         </div>
       )}
@@ -205,9 +206,17 @@ const Login = () => {
             </Button>
           </div>
 
+          <div className="text-center mt-2">
+            <Link to="/registerphone">
+              <Button type="link" className="bg-green-600 w-full">
+                Patient Login
+              </Button>
+            </Link>
+          </div>
+
           <Modal
             title="Forgot Password"
-            visible={forgotPasswordModalVisible}
+            open={forgotPasswordModalVisible}
             onCancel={() => setForgotPasswordModalVisible(false)}
             footer={null}
           >

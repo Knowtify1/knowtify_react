@@ -5,18 +5,15 @@ import DoctorOverview from "../Doctor/Components/DoctorOverView";
 
 function DoctorHome() {
   return (
-    <>
-      <DoctorSetSpecialty />
-      <div className="flex">
-        {/* Overview Section */}
-        <Card
-          className="pl-8 pr-4 pb-5 pt-2 custom-card"
-          style={{ width: "100%", height: "auto" }}
-        >
-          <DoctorOverview />
-        </Card>
-      </div>
-    </>
+    <div className="flex">
+      {/* Overview Section */}
+      <Card
+        className="pl-8 pr-4 pb-5 pt-2 custom-card"
+        style={{ width: "100%", height: "auto" }}
+      >
+        <DoctorOverview />
+      </Card>
+    </div>
   );
 }
 //hhhh
