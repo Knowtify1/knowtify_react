@@ -15,6 +15,7 @@ import { CheckCircleOutlined, ClockCircleOutlined } from "@ant-design/icons";
 function PatientAppointment() {
   const [userDetails, setUserDetails] = useState(null);
   const [patientDetails, setPatientDetails] = useState(null);
+  const [appointments, setAppointments] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
@@ -40,7 +41,7 @@ function PatientAppointment() {
         }
       } else {
         setUserDetails(null);
-        setPatientDetails(null);
+        setAppointments([]);
       }
     });
 
@@ -49,29 +50,33 @@ function PatientAppointment() {
 
   const fetchPatientDetails = async (name) => {
     try {
-      const patientQuerySnapshot = await getDocs(
+      const appointmentsQuerySnapshot = await getDocs(
+        query(collection(db, "appointments"), where("patientName", "==", name))
+      );
+      const patientRecordsQuerySnapshot = await getDocs(
+        query(
+          collection(db, "patientRecords"),
+          where("patientName", "==", name)
+        )
+      );
+      const patientsQuerySnapshot = await getDocs(
         query(collection(db, "patients"), where("patientName", "==", name))
       );
 
-      if (!patientQuerySnapshot.empty) {
-        const patientData = patientQuerySnapshot.docs[0].data();
-        setPatientDetails(patientData);
-      } else {
-        // If patient not found in patients collection, try fetching from patientRecords collection
-        const patientRecordsCollection = collection(db, "patientRecords");
-        const patientRecordsQuery = query(
-          patientRecordsCollection,
-          where("patientName", "==", name)
-        );
-        const patientRecordsSnapshot = await getDocs(patientRecordsQuery);
+      const appointmentsData = appointmentsQuerySnapshot.docs.map((doc) =>
+        doc.data()
+      );
+      const patientRecordsData = patientRecordsQuerySnapshot.docs.map((doc) =>
+        doc.data()
+      );
+      const patientsData = patientsQuerySnapshot.docs.map((doc) => doc.data());
 
-        if (!patientRecordsSnapshot.empty) {
-          const patientData = patientRecordsSnapshot.docs[0].data();
-          setPatientDetails(patientData);
-        } else {
-          console.error("No patient data found in patientRecords collection.");
-        }
-      }
+      const allAppointments = [
+        ...appointmentsData,
+        ...patientRecordsData,
+        ...patientsData,
+      ];
+      setAppointments(allAppointments);
     } catch (error) {
       console.error("Error fetching patient details:", error.message);
     }
@@ -98,27 +103,6 @@ function PatientAppointment() {
     console.log("Creating appointment...");
     openNotification(); // For demo, open notification when creating appointment
     setIsModalVisible(false); // Close modal after appointment is created
-
-    // Fetch appointment details for current appointments
-    if (reference) {
-      const referenceId = reference; // Assuming reference is stored in userDetails
-      const appointmentsQuerySnapshot = await getDocs(
-        query(
-          collection(db, "appointments"),
-          where("referenceId", "==", referenceId)
-        )
-      );
-
-      if (!appointmentsQuerySnapshot.empty) {
-        const appointmentsData = appointmentsQuerySnapshot.docs.map((doc) =>
-          doc.data()
-        );
-        console.log("Current Appointments:", appointmentsData);
-        // Set or process the fetched appointmentsData as needed
-      } else {
-        console.log("No current appointments found.");
-      }
-    }
   };
 
   return (
@@ -129,70 +113,39 @@ function PatientAppointment() {
       </div>
 
       <br />
-      {patientDetails && (
-        <Card title="Patient Information">
-          <p>
-            <strong>Name:</strong> {patientDetails.patientName}
-          </p>
-          <p>
-            <strong>Patient Address:</strong> {patientDetails.patientAddress}
-          </p>
-          <p>
-            <strong>Patient Age:</strong> {patientDetails.age}
-          </p>
-          <p>
-            <strong>Reference ID:</strong> {patientDetails.reference}
-          </p>
-        </Card>
-      )}
-
-      {patientDetails && (
-        <div className="flex flex-wrap">
-          <Card
-            title="Current Appointment"
-            className="w-full sm:w-1/2 bg-gray-300"
-          >
+      <div className="grid grid-cols-3 gap-4">
+        {appointments.map((appointment, index) => (
+          <Card key={index} title={`Appointment ${index + 1}`}>
             <p>
-              <CheckCircleOutlined /> <strong>Appointment Status:</strong>{" "}
-              {patientDetails.status}
+              <strong>Name:</strong> {appointment.patientName}
             </p>
             <p>
-              <ClockCircleOutlined /> <strong>Type of Doctor:</strong>{" "}
-              {patientDetails.typeOfDoctor}
+              <strong>Status:</strong> {appointment.status}
+            </p>
+            <p>
+              <strong>Type of Doctor:</strong> {appointment.typeOfDoctor}
+            </p>
+            <p>
+              <strong>Assigned Doctor:</strong> {appointment.assignedDoctor}
+            </p>
+            <p>
+              <strong>Reason for Appointment:</strong>{" "}
+              {appointment.reasonForAppointment}
             </p>
             <p>
               <strong>Appointment Date:</strong>{" "}
-              {patientDetails.appointmentDate?.toDate().toLocaleDateString()}
+              {appointment.appointmentDate?.toDate().toLocaleDateString()}
             </p>
             <p>
-              <strong>Appointment Time:</strong>{" "}
-              {patientDetails.appointmentTime}
+              <strong>Appointment Time:</strong> {appointment.appointmentTime}
             </p>
+            <p>
+              <strong>Reference ID:</strong> {appointment.reference}
+            </p>
+            {/* Add other appointment details as needed */}
           </Card>
-
-          <Card
-            title="Past Appointment"
-            className="w-full sm:w-1/2 bg-gray-500"
-          >
-            <p>
-              <CheckCircleOutlined /> <strong>Appointment Status:</strong>{" "}
-              {patientDetails.status}
-            </p>
-            <p>
-              <ClockCircleOutlined /> <strong>Type of Doctor:</strong>{" "}
-              {patientDetails.typeOfDoctor}
-            </p>
-            <p>
-              <strong>Appointment Date:</strong>{" "}
-              {patientDetails.appointmentDate?.toDate().toLocaleDateString()}
-            </p>
-            <p>
-              <strong>Appointment Time:</strong>{" "}
-              {patientDetails.appointmentTime}
-            </p>
-          </Card>
-        </div>
-      )}
+        ))}
+      </div>
 
       <Button
         onClick={showModal}

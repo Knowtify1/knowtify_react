@@ -22,6 +22,7 @@ import {
   fsTimeStamp,
   deleteDoc,
 } from "../../../config/firebase.jsx";
+import moment from "moment";
 import { sendSMS } from "../../../config/sendSMS.jsx";
 
 function TablePendingAppointments() {
@@ -49,7 +50,6 @@ function TablePendingAppointments() {
       dataIndex: "appointmentTime",
       render: (text) => <span>{text ? text.replace(/"/g, "") : ""}</span>,
     },
-
     {
       title: "Reason",
       dataIndex: "reasonForAppointment",
@@ -79,40 +79,22 @@ function TablePendingAppointments() {
       title: "Action",
       dataIndex: "action",
       render: (_, record) => (
-        <>
-          <Button type="link" onClick={() => handleApproveAndSendSMS(record)}>
+        <Space>
+          <Button
+            type="primary"
+            style={{ backgroundColor: "green", borderColor: "green" }}
+            onClick={() => handleApprove(record.key)}
+          >
             Approve
           </Button>
-          <Button type="link" danger onClick={showModal}>
+          <Button
+            type="primary"
+            style={{ backgroundColor: "blue", borderColor: "blue" }}
+            onClick={() => showModal(record)}
+          >
             Reschedule
           </Button>
-          <Modal
-            title="Edit Appointment"
-            visible={visible}
-            onOk={handleOk}
-            onCancel={handleCancel}
-            cancelButtonProps={{ style: { color: "green" } }} // Change cancel button color to green
-            okButtonProps={{ style: { color: "green" } }} // Change ok button color to green
-            bodyStyle={{ backdropFilter: "blur(80px)" }} // Apply blur effect to modal background
-          >
-            <Form form={form} layout="vertical" initialValues={{}}>
-              <Form.Item
-                name="dateOfAppointment"
-                label="Appointment Date"
-                rules={[{ required: true, message: "Please select a date" }]}
-              >
-                <DatePicker />
-              </Form.Item>
-              <Form.Item
-                name="appointmentTime"
-                label="Appointment Time"
-                rules={[{ required: true, message: "Please select a time" }]}
-              >
-                <TimePicker format="HH:mm" />
-              </Form.Item>
-            </Form>
-          </Modal>
-        </>
+        </Space>
       ),
     },
   ];
@@ -151,44 +133,58 @@ function TablePendingAppointments() {
     fetchAppointments(selectedDate, setData, setLoading);
   };
 
-  const handleApproveAndSendSMS = async (record) => {
-    try {
-      await handleApprove(record.key); // Approve the appointment
-
-      // Assuming phoneNumber is a field in the appointment record
-      const { contactNo } = record;
-      const { patientName, dateOfAppointment, appointmentTime } = record;
-      const message = `Good day, ${patientName}! Your booking with Mountain Studio Specialty Clinic on ${dateOfAppointment} at ${appointmentTime} has been approved. Please be at the clinic 5 minutes before your appointment schedule. Thank you!`;
-
-      // Send SMS
-      await sendSMS(contactNo, message);
-
-      console.log(`SMS sent to ${contactNo}`);
-    } catch (error) {
-      console.error("Error approving appointment and sending SMS:", error);
-    }
-  };
-
   const showModal = (record) => {
     setVisible(true);
     form.setFieldsValue({
+      key: record.key,
       dateOfAppointment: moment(record.dateOfAppointment),
       appointmentTime: moment(record.appointmentTime, "HH:mm"),
     });
   };
 
-  const handleOk = () => {
-    form
-      .validateFields()
-      .then((values) => {
-        form.resetFields();
-        setVisible(false);
-        // Handle form submission (update appointment)
-        console.log("Received values:", values);
-      })
-      .catch((errorInfo) => {
-        console.log("Validation failed:", errorInfo);
-      });
+  const getCurrentDateMessage = () => {
+    const today = new Date();
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+    const formattedDate = today.toLocaleDateString(undefined, options);
+
+    return `Today is ${formattedDate}`;
+  };
+
+  const handleOk = async () => {
+    try {
+      const values = await form.validateFields();
+      updateAppointmentInTable(values);
+      const { key, dateOfAppointment, appointmentTime } = values;
+      const appointmentRef = doc(db, "appointments", key);
+      await setDoc(
+        appointmentRef,
+        {
+          appointmentDate: dateOfAppointment.toDate(),
+          appointmentTime: appointmentTime.format("HH:mm"),
+        },
+        { merge: true }
+      );
+      console.log("Appointment updated successfully.");
+      // Sending SMS to the patient
+      const appointmentSnapshot = await getDoc(appointmentRef);
+      const appointmentData = appointmentSnapshot.data();
+      const contactNo = appointmentData.contactNo; // Assuming contactNo is the field name for the contact number
+      const patientName = appointmentData.patientName; // Assuming patientName is the field name for the patient's name
+      const message = `Good day, ${patientName}! Your booking with Mountain Studio Specialty Clinic has been rescheduled on Date: ${dateOfAppointment.format(
+        "MM/DD/YYYY"
+      )}, Time: ${appointmentTime.format(
+        "HH:mm"
+      )}. Please be at the clinic 5 minutes before your appointment schedule. Thank you!`;
+      sendSMS(contactNo, message); // Send SMS
+      setVisible(false);
+    } catch (error) {
+      console.error("Validation failed:", error);
+    }
   };
 
   const handleCancel = () => {
@@ -196,32 +192,6 @@ function TablePendingAppointments() {
     setVisible(false);
   };
 
-  useEffect(() => {
-    fetchAppointments(selectedDate, setData, setLoading);
-  }, [selectedDate]);
-
-  const moveDataToTrash = async (originalCollection, trashCollection, key) => {
-    try {
-      const originalDocRef = doc(originalCollection, key);
-      const originalDocSnapshot = await getDoc(originalDocRef);
-      const dataToMove = originalDocSnapshot.data();
-
-      const trashDocRef = await addDoc(
-        collection(db, trashCollection),
-        dataToMove
-      );
-
-      await deleteDoc(originalDocRef);
-
-      console.log(
-        `Moved to trash. Original key: ${key}, Trash key: ${trashDocRef.id}`
-      );
-    } catch (error) {
-      console.error("Error moving data to trash:", error);
-    }
-  };
-
-  // Function to fetch appointments from Firestore
   const fetchAppointments = async (selectedDate, setData, setLoading) => {
     try {
       let appointmentsQuery = collection(db, "appointments");
@@ -242,19 +212,12 @@ function TablePendingAppointments() {
         );
       }
 
-      // Add a filter to only fetch appointments with status "Pending"
-      // appointmentsQuery = query(
-      //   appointmentsQuery,
-      //   where("status", "==", "pending")
-      // );
-
       const appointmentsSnapshot = await getDocs(appointmentsQuery);
 
       const appointmentsData = appointmentsSnapshot.docs
         .map((doc) => ({ key: doc.id, ...doc.data() }))
-        .sort((a, b) => b.appointmentDate - a.appointmentDate);
+        .sort((a, b) => b.createdDate - a.createdDate);
 
-      //setData(appointmentsData);
       if (typeof setData === "function") {
         setData(appointmentsData);
         setLoading(false);
@@ -267,76 +230,15 @@ function TablePendingAppointments() {
     }
   };
 
-  const handleDelete = async (key, setData, setLoading, selectedDate) => {
-    console.log("Deleting key:", key);
-
-    try {
-      await moveDataToTrash(
-        collection(db, "appointments"),
-        "deletedAppointment",
-        key
-      );
-      console.log("Success moving to deletedappointment");
-      if (typeof setData === "function" && typeof setLoading === "function") {
-        setData((prevData) => {
-          const updatedData = prevData.filter((item) => item.key !== key);
-          console.log("Updated Data:", updatedData);
-          return updatedData;
-        });
-      }
-
-      fetchAppointments(selectedDate, setData, setLoading);
-    } catch (error) {
-      console.error("Error deleting appointment:", error);
-    }
-  };
-
   useEffect(() => {
     fetchAppointments(selectedDate, setData, setLoading);
-  }, [selectedDate, setData, setLoading]);
+  }, [selectedDate]);
 
   const onSelectChange = (newSelectedRowKeys) => {
     console.log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
   };
 
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-    selections: [
-      Table.SELECTION_ALL,
-      Table.SELECTION_INVERT,
-      Table.SELECTION_NONE,
-      {
-        key: "odd",
-        text: "Select Odd Row",
-        onSelect: (changeableRowKeys) => {
-          let newSelectedRowKeys = [];
-          newSelectedRowKeys = changeableRowKeys.filter((_, index) => {
-            if (index % 2 !== 0) {
-              return false;
-            }
-            return true;
-          });
-          setSelectedRowKeys(newSelectedRowKeys);
-        },
-      },
-      {
-        key: "even",
-        text: "Select Even Row",
-        onSelect: (changeableRowKeys) => {
-          let newSelectedRowKeys = [];
-          newSelectedRowKeys = changeableRowKeys.filter((_, index) => {
-            if (index % 2 !== 0) {
-              return true;
-            }
-            return false;
-          });
-          setSelectedRowKeys(newSelectedRowKeys);
-        },
-      },
-    ],
-  };
   const updateAppointmentInTable = (values) => {
     const { key, dateOfAppointment, appointmentTime } = values;
     const newData = [...data];
@@ -347,10 +249,6 @@ function TablePendingAppointments() {
       setData(newData);
     }
   };
-
-  useEffect(() => {
-    fetchAppointments(selectedDate, setData, setLoading);
-  }, [selectedDate]);
 
   const handleDateChange = (date) => {
     const selectedDate = date ? date.toDate() : null;
@@ -364,20 +262,7 @@ function TablePendingAppointments() {
       const options = { month: "long", day: "numeric", year: "numeric" };
       return date.toDate().toLocaleDateString(undefined, options);
     }
-    return ""; // or handle it in whatever way is appropriate for your application
-  };
-
-  const getCurrentDateMessage = () => {
-    const today = new Date();
-    const options = {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    };
-    const formattedDate = today.toLocaleDateString(undefined, options);
-
-    return `Today is ${formattedDate}`;
+    return "";
   };
 
   return (
@@ -390,7 +275,7 @@ function TablePendingAppointments() {
               <DatePicker onChange={handleDateChange} />
             </Space>
             <h1>Pending Appointments: {data.length}</h1>
-            {/* Display current date message */}
+            <h1>{getCurrentDateMessage()}</h1>
           </Space>
 
           {loading ? (
@@ -398,6 +283,36 @@ function TablePendingAppointments() {
           ) : (
             <Table columns={columns} dataSource={data} />
           )}
+
+          <Modal
+            title="Edit Appointment"
+            visible={visible}
+            onOk={handleOk}
+            onCancel={handleCancel}
+            cancelButtonProps={{ style: { color: "green" } }}
+            okButtonProps={{ style: { color: "green" } }}
+          >
+            <Form form={form} layout="vertical" initialValues={{}}>
+              <Form.Item name="key" hidden>
+                <input type="hidden" />
+              </Form.Item>
+              <Form.Item
+                name="dateOfAppointment"
+                label="Appointment Date"
+                rules={[{ required: true, message: "Please select a date" }]}
+              >
+                <DatePicker />
+              </Form.Item>
+              <Form.Item
+                name="appointmentTime"
+                label="Appointment Time"
+                rules={[{ required: true, message: "Please select a time" }]}
+                style={{ marginBottom: 0 }}
+              >
+                <TimePicker format="HH:mm" />
+              </Form.Item>
+            </Form>
+          </Modal>
         </Space>
       </div>
     </>

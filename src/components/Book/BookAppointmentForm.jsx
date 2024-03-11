@@ -343,7 +343,7 @@ function BookAppointmentForm() {
                 name="email"
                 rules={[
                   {
-                    required: false,
+                    required: true,
                     message: "Please input your email",
                   },
                 ]}
@@ -379,7 +379,43 @@ function BookAppointmentForm() {
                   },
                 ]}
               >
-                <TextArea rows={2} />
+                <Input.Group compact>
+                  <Form.Item
+                    name={["patientaddress", "street"]}
+                    noStyle
+                    rules={[{ required: true, message: "Street is required" }]}
+                  >
+                    <Input
+                      style={{ width: "50%" }}
+                      placeholder="House No. & Street"
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    name={["patientaddress", "barangay"]}
+                    noStyleS
+                    rules={[
+                      { required: true, message: "Barangay is required" },
+                    ]}
+                  >
+                    <Input style={{ width: "50%" }} placeholder="Barangay" />
+                  </Form.Item>
+                  <Form.Item
+                    name={["patientaddress", "city"]}
+                    noStyle
+                    rules={[{ required: true, message: "City is required" }]}
+                  >
+                    <Input style={{ width: "50%" }} placeholder="City" />
+                  </Form.Item>
+                  <Form.Item
+                    name={["patientaddress", "province"]}
+                    noStyle
+                    rules={[
+                      { required: true, message: "Province is required" },
+                    ]}
+                  >
+                    <Input style={{ width: "50%" }} placeholder="Province" />
+                  </Form.Item>
+                </Input.Group>
               </Form.Item>
             </Col>
           </Row>
@@ -410,32 +446,6 @@ function BookAppointmentForm() {
                 >
                   <Option value="consultation">Consultation</Option>
                 </Select>
-              </Form.Item>
-
-              <Form.Item
-                noStyle
-                shouldUpdate={(prevValues, currentValues) =>
-                  prevValues.reasonforappointment !==
-                  currentValues.reasonforappointment
-                }
-              >
-                {({ getFieldValue }) => {
-                  const selectedReason = getFieldValue("reasonforappointment");
-
-                  return selectedReason === "other" ? (
-                    <Form.Item
-                      name="customReason"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please specify your reason!",
-                        },
-                      ]}
-                    >
-                      <Input placeholder="Specify your reason" />
-                    </Form.Item>
-                  ) : null;
-                }}
               </Form.Item>
             </Col>
 

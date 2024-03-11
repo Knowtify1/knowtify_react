@@ -10,26 +10,17 @@ import {
   updateDoc,
   doc,
 } from "../../../config/firebase.jsx";
-import { Card, Row, Col, Typography, Table, Input, Button } from "antd";
-import {
-  MedicineBoxOutlined,
-  HistoryOutlined,
-  HeartOutlined,
-  AlertOutlined,
-  ScissorOutlined,
-  FileTextOutlined,
-  EditOutlined,
-} from "@ant-design/icons";
+import { Table, Typography, Button, Input, message, Space } from "antd";
+import { EditOutlined, CloseOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
 function PatientsRecord() {
   const [userDetails, setUserDetails] = useState(null);
   const [patientDetails, setPatientDetails] = useState(null);
-  const [editableFields, setEditableFields] = useState({
-    medicalHistory: false,
-    familyMedicalHistory: false,
-  });
+  const [editableRows, setEditableRows] = useState({});
+  const [editedData, setEditedData] = useState({});
+  const [editSaved, setEditSaved] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -44,8 +35,8 @@ function PatientsRecord() {
           if (!querySnapshot.empty) {
             const userData = querySnapshot.docs[0].data();
             setUserDetails(userData);
-            const referenceId = userData.referenceId;
-            fetchPatientDetails(referenceId);
+            const name = userData.name;
+            fetchPatientDetails(name);
           } else {
             console.error("No user data found in patient collection.");
           }
@@ -61,32 +52,31 @@ function PatientsRecord() {
     return () => unsubscribe();
   }, []);
 
-  const fetchPatientDetails = async (reference) => {
+  const fetchPatientDetails = async (name) => {
     try {
-      const patientsCollection = collection(db, "patients");
+      const patientsCollection = collection(db, "patientRecords");
       const patientQuery = query(
         patientsCollection,
-        where("reference", "==", reference)
+        where("patientName", "==", name)
       );
       const patientQuerySnapshot = await getDocs(patientQuery);
 
       if (!patientQuerySnapshot.empty) {
-        const patientData = patientQuerySnapshot.docs[0].data();
+        const patientData = patientQuerySnapshot.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+        }));
         setPatientDetails(patientData);
+        const initialEditableRows = {};
+        const initialEditedData = {};
+        patientData.forEach((_, index) => {
+          initialEditableRows[index] = false; // Set all rows as not editable initially
+          initialEditedData[index] = { ...patientData[index] };
+        });
+        setEditableRows(initialEditableRows);
+        setEditedData(initialEditedData);
       } else {
-        const patientRecordsCollection = collection(db, "patientRecords");
-        const patientRecordsQuery = query(
-          patientRecordsCollection,
-          where("reference", "==", reference)
-        );
-        const patientRecordsSnapshot = await getDocs(patientRecordsQuery);
-
-        if (!patientRecordsSnapshot.empty) {
-          const patientData = patientRecordsSnapshot.docs[0].data();
-          setPatientDetails(patientData);
-        } else {
-          console.error("No patient data found in patientRecords collection.");
-        }
+        console.error("No patient data found for the given name.");
       }
     } catch (error) {
       console.error("Error fetching patient details:", error.message);
@@ -95,59 +85,104 @@ function PatientsRecord() {
 
   const handleSave = async () => {
     try {
-      const patientRef = doc(db, "patients", patientDetails.id);
-      await updateDoc(patientRef, patientDetails);
+      await Promise.all(
+        Object.keys(editedData).map(async (index) => {
+          const { id, ...data } = editedData[index];
+          const patientRef = doc(db, "patientRecords", id);
+          await updateDoc(patientRef, data);
+        })
+      );
+      setEditSaved(true);
+      setTimeout(() => {
+        setEditSaved(false);
+      }, 3000);
+      console.log("Patient details saved successfully.");
     } catch (error) {
       console.error("Error updating patient details:", error.message);
     }
   };
 
-  const handleFieldChange = (key, value) => {
-    setPatientDetails((prevPatientDetails) => ({
-      ...prevPatientDetails,
-      [key]: value,
-    }));
+  const handleCellChange = (value, field, index) => {
+    const updatedEditedData = { ...editedData };
+    updatedEditedData[index] = {
+      ...editedData[index],
+      [field]: value,
+    };
+    setEditedData(updatedEditedData);
   };
 
-  const PatientCard = ({ icon, label, value }) => (
-    <Card
-      style={{ marginBottom: 16 }}
-      bodyStyle={{ textAlign: "left", color: "red" }}
-    >
-      <div style={{ textAlign: "center", marginBottom: "10px" }}>
-        <div style={{ fontSize: "24px" }}>{icon}</div>
-      </div>
-      <Title level={5} style={{ marginBottom: "10px", textAlign: "center" }}>
-        {label}
-      </Title>
-      <Text>{value}</Text>
-    </Card>
-  );
+  const handleEditClick = (index) => {
+    const updatedEditableRows = { ...editableRows };
+    updatedEditableRows[index] = true; // Enable editing for this row
+    setEditableRows(updatedEditableRows);
+  };
+
+  const handleCancelEdit = (index) => {
+    const updatedEditableRows = { ...editableRows };
+    updatedEditableRows[index] = false; // Disable editing for this row
+    setEditableRows(updatedEditableRows);
+
+    // Reset edited data to original data
+    const updatedEditedData = { ...editedData };
+    updatedEditedData[index] = { ...patientDetails[index] };
+    setEditedData(updatedEditedData);
+  };
 
   const columns = [
+    {
+      title: "Specialty Doctor",
+      dataIndex: "typeOfDoctor",
+      key: "typeOfDoctor",
+    },
     {
       title: "Medical History",
       dataIndex: "medicalHistory",
       key: "medicalHistory",
-      render: (text, record) =>
-        editableFields.medicalHistory ? (
+      render: (text, record, index) =>
+        editableRows[index] ? (
           <Input.TextArea
-            value={text}
+            rows={4}
+            value={editedData[index]?.medicalHistory || text}
             onChange={(e) =>
-              handleFieldChange("medicalHistory", e.target.value)
+              handleCellChange(e.target.value, "medicalHistory", index)
             }
-            autoSize={{ minRows: 9, maxRows: 10 }}
           />
         ) : (
-          <>
-            {text}
-            <EditOutlined
-              style={{ marginLeft: 8 }}
-              onClick={() =>
-                setEditableFields({ ...editableFields, medicalHistory: true })
-              }
-            />
-          </>
+          text
+        ),
+    },
+    {
+      title: "Family Medical History",
+      dataIndex: "familyMedicalHistory",
+      key: "familyMedicalHistory",
+      render: (text, record, index) =>
+        editableRows[index] ? (
+          <Input.TextArea
+            rows={4}
+            value={editedData[index]?.familyMedicalHistory || text}
+            onChange={(e) =>
+              handleCellChange(e.target.value, "familyMedicalHistory", index)
+            }
+          />
+        ) : (
+          text
+        ),
+    },
+    {
+      title: "Allergies",
+      dataIndex: "allergies",
+      key: "allergies",
+      render: (text, record, index) =>
+        editableRows[index] ? (
+          <Input.TextArea
+            rows={4}
+            value={editedData[index]?.allergies || text}
+            onChange={(e) =>
+              handleCellChange(e.target.value, "allergies", index)
+            }
+          />
+        ) : (
+          text
         ),
     },
     {
@@ -156,87 +191,56 @@ function PatientsRecord() {
       key: "previousDiagnoses",
     },
     {
-      title: "Previous Surgeries or Treatments",
-      dataIndex: "surgeriesTreatment",
-      key: "surgeriesTreatment",
+      title: "Surgeries or Treatments",
+      dataIndex: "surgeriesTreatments",
+      key: "surgeriesTreatments",
     },
     {
-      title: "Family Medical History",
-      dataIndex: "familyMedicalHistory",
-      key: "familyMedicalHistory",
-      render: (text, record) =>
-        editableFields.familyMedicalHistory ? (
-          <Input.TextArea
-            value={text}
-            onChange={(e) =>
-              handleFieldChange("familyMedicalHistory", e.target.value)
-            }
-            autoSize={{ minRows: 9, maxRows: 10 }}
-          />
-        ) : (
-          <>
-            {text}
-            <EditOutlined
-              style={{ marginLeft: 8 }}
-              onClick={() =>
-                setEditableFields({
-                  ...editableFields,
-                  familyMedicalHistory: true,
-                })
-              }
-            />
-          </>
-        ),
+      title: "Actions",
+      dataIndex: "actions",
+      key: "actions",
+      render: (text, record, index) => (
+        <Space>
+          {editableRows[index] ? (
+            <>
+              <Button type="success" onClick={() => handleSave(index)}>
+                Save
+              </Button>
+              <Button onClick={() => handleCancelEdit(index)}>
+                <CloseOutlined /> Cancel
+              </Button>
+            </>
+          ) : (
+            <Button
+              icon={<EditOutlined />}
+              onClick={() => handleEditClick(index)}
+            >
+              Edit
+            </Button>
+          )}
+        </Space>
+      ),
     },
   ];
 
-  const data = patientDetails
-    ? [
-        {
-          key: "1",
-          medicalHistory: patientDetails.medicalHistory || "-",
-          previousDiagnoses: patientDetails.previousDiagnoses || "-",
-          surgeriesTreatment: patientDetails.surgeriesTreatment || "-",
-          familyMedicalHistory: patientDetails.familyMedicalHistory || "-",
-        },
-      ]
-    : [];
+  useEffect(() => {
+    if (editSaved) {
+      message.success("Edit saved successfully");
+    }
+  }, [editSaved]);
 
   return (
     <div className="overflow-auto max-h-screen p-4">
-      <Row gutter={[16, 16]}>
-        <Col xs={24}>
-          <Title level={3}>Patient Details</Title>
-          <Text>Name: {patientDetails?.patientName}</Text>
-          <br />
-          <Text>Age: {patientDetails?.age}</Text>
-        </Col>
-        <Col xs={24} sm={12} md={8} lg={6}>
-          <PatientCard
-            icon={<MedicineBoxOutlined />}
-            label="Prescriptions"
-            value={patientDetails?.medicationsPrescribed || "-"}
-          />
-        </Col>
-        <Col xs={24} sm={12} md={8} lg={6}>
-          <PatientCard
-            icon={<AlertOutlined />}
-            label="Allergies"
-            value={patientDetails?.allergies || "-"}
-          />
-        </Col>
-        {data.length > 0 && (
-          <Table
-            columns={columns}
-            dataSource={data}
-            pagination={false}
-            bordered
-            size="middle"
-            style={{ marginBottom: 16 }}
-          />
-        )}
-        <Button onClick={handleSave}>Save</Button>
-      </Row>
+      <Table
+        columns={columns}
+        dataSource={patientDetails}
+        pagination={false}
+        rowKey={(record, index) => index}
+        title={() => "Patients Records"}
+        bordered
+      />
+      <Button onClick={handleSave}>Save</Button>
+      <Button onClick={() => window.location.reload()}>Refresh Page</Button>
     </div>
   );
 }

@@ -265,8 +265,12 @@ function DoctorAppointment() {
               </p>
               <p>
                 <strong>Patient Address:</strong>{" "}
-                {appointmentData?.patientAddress}
+                {`${appointmentData?.patientAddress?.province}, 
+                  ${appointmentData?.patientAddress?.city}, 
+                  ${appointmentData?.patientAddress?.barangay}, 
+                  ${appointmentData?.patientAddress?.street}`}
               </p>
+
               <p>
                 <strong>Reason for Appointment:</strong>{" "}
                 {appointmentData?.reasonForAppointment}

@@ -18,12 +18,15 @@ function PatientCalendar() {
   const [selectedPatient, setSelectedPatient] = useState(null);
 
   useEffect(() => {
-    const fetchPatientData = async (email) => {
+    const fetchPatientData = async (phone) => {
       try {
         const patientsCollection = collection(db, "patients");
-        const q = query(patientsCollection, where("email", "==", email));
+        const q = query(patientsCollection, where("contactNo", "==", phone));
         const patientSnapshot = await getDocs(q);
-        const patients = patientSnapshot.docs.map((doc) => doc.data());
+        const patients = patientSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
         setPatientsData(patients);
         setLoading(false);
       } catch (error) {
@@ -34,7 +37,7 @@ function PatientCalendar() {
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        fetchPatientData(user.email);
+        fetchPatientData(user.phoneNumber); // Fixed 'phone' to 'phoneNumber'
       }
     });
 

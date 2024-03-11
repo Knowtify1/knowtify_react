@@ -18,7 +18,6 @@ import {
   query,
   fsTimeStamp,
   runTransaction,
-  deleteDoc as deleteDocument,
 } from "../../../config/firebase.jsx";
 import moment from "moment";
 
@@ -188,17 +187,6 @@ function TableApprovedAppointments() {
 
     const typeOfDoctor = record.typeOfDoctor || null;
     fetchDoctorsList(typeOfDoctor);
-  };
-
-  const handleDelete = async (key) => {
-    try {
-      await deleteDocument(collection(db, "patients"), key);
-      message.success("Appointment deleted successfully!");
-      fetchApprovedAppointments(selectedDate, setData, setLoading);
-    } catch (error) {
-      console.error("Error deleting appointment:", error);
-      message.error("Error deleting appointment. Please try again.");
-    }
   };
 
   const handleModalOk = async () => {

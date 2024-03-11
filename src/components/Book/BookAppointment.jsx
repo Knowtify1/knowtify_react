@@ -94,6 +94,7 @@ function BookAppointment() {
                 onClick={showModal}
                 type="primary"
                 className="bg-green-600 rounded mt-3"
+                disabled={!showCaptcha || !captchaValue} // Disable the button if captcha is not completed
               >
                 Book Appointment
               </Button>

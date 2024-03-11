@@ -7,7 +7,7 @@ const API_KEY =
 const sendSMS = async (phoneNumber, message) => {
   try {
     const response = await axios.post(
-      "https://api.infobip.com/sms/2/text/single",
+      "https://api.infobip.com/sms/1/text/single",
       {
         from: "YOUR_SENDER_ID",
         to: phoneNumber,

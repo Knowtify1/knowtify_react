@@ -140,7 +140,7 @@ function PatientHome() {
               </Space>
               <Row gutter={[16, 16]}>
                 {reminders.map((reminder) => (
-                  <Col key={reminder.id} span={8}>
+                  <Col key={reminder.id} span={38}>
                     <Card
                       style={{ marginBottom: "10px" }}
                       actions={[
