@@ -217,11 +217,10 @@ function AppointmentSuccess() {
           bordered={true}
           style={{ width: 350 }}
           className="drop-shadow-md mt-20"
+          headStyle={{ textAlign: 'center' }}
         >
-          <div>
-            <div>
-              <h1>Phone: {phone}</h1>
-            </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <h1 style={{ marginBottom: '20px' }}>Phone: {phone}</h1>
             <Form>
               <Form.Item
                 label="Verification Code"
@@ -240,17 +239,31 @@ function AppointmentSuccess() {
               </Form.Item>
               <Form.Item>
                 <Button
+                  type="primary" 
+                  className="bg-green-600 w-full"
+                  style={{ marginBottom: '10px' }}
                   onClick={onSendCode}
                   disabled={!phoneNumber || codeSent}
                 >
                   Send Code
                 </Button>
                 <Spin spinning={verifying}>
-                  <Button onClick={onVerifyCode} disabled={!verificationCode}>
+                  <Button 
+                    type="primary" 
+                    className="bg-green-600 w-full"
+                    style={{ marginBottom: '10px' }}
+                    onClick={onVerifyCode} 
+                    disabled={!verificationCode}
+                    >
                     Verify Code
                   </Button>
                 </Spin>
-                <Button onClick={createPatientCollection} disabled={!register}>
+                <Button 
+                  type="primary" 
+                  className="bg-green-600 w-full"
+                  onClick={createPatientCollection} 
+                  disabled={!register}
+                  >
                   Register
                 </Button>
               </Form.Item>

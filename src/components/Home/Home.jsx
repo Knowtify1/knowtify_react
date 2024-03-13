@@ -150,18 +150,18 @@ function Home() {
 
       <div className="flex-1">
         <header className="bg-white py-4  fixed w-full z-50">
-          <div className="container mx-auto flex items-center justify-between px-20">
+          <div className="container mx-auto flex items-center justify-between px-4 sm:px-10 lg:px-20">
             <img src={knowtifylogov2} alt="knowtifylogo" className="h-12" />
-            <div className="relative top-0 right-10 max-h-10">
+            <div className="flex flex-wrap items-center">
               {/* Add your login/sign-up button */}
-              <Link to="/appointment">
-                <Button className="mr-4">Find a Doctor</Button>
+              <Link to="/appointment" className="mr-2 sm:mr-4">
+                <Button className="text-sm sm:text-base">Find a Doctor</Button>
               </Link>
-              <Link to="/login">
-                <Button className="mr-4">Login</Button>
+              <Link to="/login" className="mr-2 sm:mr-4">
+                <Button className="text-sm sm:text-base">Login</Button>
               </Link>
-              <Link to="/register">
-                <Button className="mr-6 bg-green-600">Sign Up</Button>
+              <Link to="/register" className="mr-2 sm:mr-6">
+                <Button className="text-sm sm:text-base bg-green-600">Sign Up</Button>
               </Link>
             </div>
           </div>
