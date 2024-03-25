@@ -118,7 +118,7 @@ const SpecialtyMenu = () => {
                   <td className="w-1/2 p-2 border-r border-green-800">
                     <p className="text-center">{specialty.label}</p>
                   </td>
-                  <td className="w-1/3 p-2 border-r border-green-800">
+                  <td className="w-1/3 p-2 border-r border-green-800 ">
                     <Space>
                       <Tooltip title="View Schedule">
                         <Button

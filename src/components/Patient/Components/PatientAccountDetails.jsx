@@ -89,7 +89,6 @@ function PatientAccountDetails() {
                 onClick={handleEdit}
               />
               <br />
-              <p>Email: {userDetails.email}</p>
               <p>Phone: {userDetails.phone}</p>
               <p>
                 Date of Registration:{" "}
@@ -105,12 +104,7 @@ function PatientAccountDetails() {
                 value={updatedDetails.name}
                 onChange={handleChange}
               />
-              <input
-                type="email"
-                name="email"
-                value={updatedDetails.email}
-                onChange={handleChange}
-              />
+
               <input
                 type="tel"
                 name="phone"

@@ -8,15 +8,17 @@ import {
   where,
   getDocs,
 } from "../../config/firebase.jsx";
-import { Modal, Button, Card, notification } from "antd";
-import BookAppointmentForm from "../Patient/Components/BookAppointmentForm.jsx";
-import { CheckCircleOutlined, ClockCircleOutlined } from "@ant-design/icons";
+import { Modal, Button, notification, Table, Card } from "antd";
+import BookAppointmentForm from "./BookAppointmentForm.jsx";
+import FollowUpForm from "../Patient/Components/FollowUpForm.jsx";
+import { sendSMS } from "../../config/sendSMS.jsx";
 
 function PatientAppointment() {
   const [userDetails, setUserDetails] = useState(null);
-  const [patientDetails, setPatientDetails] = useState(null);
   const [appointments, setAppointments] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [followUpModalVisible, setFollowUpModalVisible] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -76,7 +78,21 @@ function PatientAppointment() {
         ...patientRecordsData,
         ...patientsData,
       ];
-      setAppointments(allAppointments);
+
+      // Calculate remaining days for each appointment
+      const updatedAppointments = allAppointments.map((appointment) => {
+        const appointmentDate = new Date(appointment.appointmentDate.toDate());
+        const today = new Date();
+        const diffTime = appointmentDate.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return { ...appointment, daysRemaining: diffDays };
+      });
+
+      const sortedAppointments = updatedAppointments.sort(
+        (a, b) => a.daysRemaining - b.daysRemaining
+      );
+
+      setAppointments(sortedAppointments);
     } catch (error) {
       console.error("Error fetching patient details:", error.message);
     }
@@ -97,88 +113,228 @@ function PatientAppointment() {
     setIsModalVisible(false);
   };
 
+  const sendReminderSMS = async (
+    contactNo,
+    patientName,
+    appointmentDate,
+    appointmentTime,
+    assignedDoctor
+  ) => {
+    try {
+      const appointmentDateTime = appointmentDate.toDate();
+      const cleanedAppointmentTime = appointmentTime
+        ? appointmentTime.replace(/"/g, "")
+        : "";
+
+      const message = `Hello ${patientName}, this is to remind you of your upcoming appointment with Mountain Studio Specialty Clinic on ${appointmentDateTime.toLocaleDateString()} at ${cleanedAppointmentTime}. Please be on time. Thank you!`;
+
+      sendSMS(contactNo, message);
+      console.log("SMS reminder sent successfully.");
+      // Add message when reminder is set
+      notification.success({
+        message: "Reminder Set",
+        description: "A reminder has been set for this appointment.",
+      });
+    } catch (error) {
+      console.error("Failed to send SMS reminder:", error);
+    }
+  };
+
   const createAppointment = async () => {
-    // Logic to create appointment
-    // You can implement your appointment creation logic here
     console.log("Creating appointment...");
-    openNotification(); // For demo, open notification when creating appointment
-    setIsModalVisible(false); // Close modal after appointment is created
+    openNotification();
+    setIsModalVisible(false);
+    // Add message when appointment is booked
+    notification.success({
+      message: "Appointment Booked",
+      description: "Your appointment has been successfully booked!",
+    });
+  };
+
+  const handleFollowUp = (appointment) => {
+    setSelectedAppointment(appointment);
+    setFollowUpModalVisible(true);
+  };
+
+  const columns = [
+    {
+      title: "Name",
+      dataIndex: "patientName",
+      key: "patientName",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+    },
+    {
+      title: "Type of Doctor",
+      dataIndex: "typeOfDoctor",
+      key: "typeOfDoctor",
+    },
+    {
+      title: "Assigned Doctor",
+      dataIndex: "assignedDoctor",
+      key: "assignedDoctor",
+    },
+    {
+      title: "Reason for Appointment",
+      dataIndex: "reasonForAppointment",
+      key: "reasonForAppointment",
+    },
+    {
+      title: "Appointment Date",
+      dataIndex: "appointmentDate",
+      key: "appointmentDate",
+      render: (text, record) =>
+        record.appointmentDate?.toDate().toLocaleDateString(),
+    },
+    {
+      title: "Appointment Time",
+      dataIndex: "appointmentTime",
+      key: "appointmentTime",
+      render: (text, record) => record.appointmentTime.replace(/"/g, ""),
+    },
+    {
+      title: "Reference ID",
+      dataIndex: "reference",
+      key: "reference",
+    },
+    {
+      title: "Days Remaining",
+      dataIndex: "daysRemaining",
+      key: "daysRemaining",
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (text, record) => (
+        <span>
+          <Button
+            onClick={() =>
+              sendReminderSMS(
+                record.contactNo,
+                record.patientName,
+                record.appointmentDate,
+                record.appointmentTime,
+                record.assignedDoctor
+              )
+            }
+            type="primary"
+            className="bg-yellow-400 rounded mt-3 ml-3"
+          >
+            Set Reminder
+          </Button>
+          <Button
+            onClick={() => handleFollowUp(record)}
+            type="default"
+            className="bg-green-600 rounded mt-3 ml-3"
+          >
+            Follow-Up
+          </Button>
+        </span>
+      ),
+    },
+  ];
+
+  const rowClassName = (record) => {
+    // Find the appointment with the least remaining days
+    const minRemainingDaysAppointment = appointments.reduce((prev, current) => {
+      return prev.daysRemaining < current.daysRemaining ? prev : current;
+    });
+
+    // Highlight the row if it corresponds to the appointment with the least remaining days
+    if (record === minRemainingDaysAppointment) {
+      return "bg-blue-100"; // Highlight the appointment with the least remaining days
+    }
+    return "";
   };
 
   return (
-    <div className="overflow-auto max-h-screen p-4">
-      <br />
+    <div>
       <div className="w-full text-center">
-        <h3 className="text-3xl font-semibold">Patient Appointment Details</h3>
+        <h3 className="text-3xl font-semibold pt-10" style={{ color: "#333" }}>
+          Patient Appointment Details
+        </h3>{" "}
       </div>
-
-      <br />
-      <div className="grid grid-cols-3 gap-4">
-        {appointments.map((appointment, index) => (
-          <Card key={index} title={`Appointment ${index + 1}`}>
-            <p>
-              <strong>Name:</strong> {appointment.patientName}
-            </p>
-            <p>
-              <strong>Status:</strong> {appointment.status}
-            </p>
-            <p>
-              <strong>Type of Doctor:</strong> {appointment.typeOfDoctor}
-            </p>
-            <p>
-              <strong>Assigned Doctor:</strong> {appointment.assignedDoctor}
-            </p>
-            <p>
-              <strong>Reason for Appointment:</strong>{" "}
-              {appointment.reasonForAppointment}
-            </p>
-            <p>
-              <strong>Appointment Date:</strong>{" "}
-              {appointment.appointmentDate?.toDate().toLocaleDateString()}
-            </p>
-            <p>
-              <strong>Appointment Time:</strong> {appointment.appointmentTime}
-            </p>
-            <p>
-              <strong>Reference ID:</strong> {appointment.reference}
-            </p>
-            {/* Add other appointment details as needed */}
-          </Card>
-        ))}
-      </div>
-
-      <Button
-        onClick={showModal}
-        type="success"
-        className="bg-green-600 rounded mt-3"
-      >
-        Book Another Appointment
-      </Button>
-
-      <div className="pl-8 pr-8 pb-5 pt-5">
-        <Modal
-          title="Book Another Appointment"
-          visible={isModalVisible}
-          width={800}
-          footer={null} // Remove OK and Cancel buttons
-          onCancel={handleModalClose} // Handle modal close
-        >
-          <Card>
-            <p>
-              Ready to prioritize your health? Schedule an appointment with our
-              experienced healthcare professionals.
-            </p>
-            <div className="mt-12 grow">
-              <div>
-                <BookAppointmentForm
-                  createAppointment={createAppointment}
-                  closeModal={handleModalClose}
-                />
-              </div>
+      <Card>
+        <div className="overflow-auto max-h-screen p-4">
+          <div className="w-full text-center">
+            <Button
+              onClick={showModal}
+              type="success"
+              className="bg-green-600 rounded mt-3 ml-3"
+            >
+              Book Another Appointment
+            </Button>
+          </div>
+          <br />
+          <div>
+            <div>
+              <h2 className="text-xl font-semibold">Consultations</h2>
+              <Table
+                columns={columns}
+                dataSource={appointments.filter(
+                  (appointment) =>
+                    appointment.reasonForAppointment === "consultation"
+                )}
+                rowKey={(record, index) => index}
+                rowClassName={rowClassName}
+              />
             </div>
-          </Card>
-        </Modal>
-      </div>
+            <div>
+              <h2 className="text-xl font-semibold">Follow-Ups</h2>
+              <Table
+                columns={columns}
+                dataSource={appointments.filter(
+                  (appointment) =>
+                    appointment.reasonForAppointment === "follow-up"
+                )}
+                rowKey={(record, index) => index}
+                rowClassName={rowClassName}
+              />
+            </div>
+          </div>
+          <div className="pl-8 pr-8 pb-5 pt-5">
+            <Modal
+              title="Book Another Appointment"
+              visible={isModalVisible}
+              width={800}
+              footer={null} // Remove OK and Cancel buttons
+              onCancel={handleModalClose} // Handle modal close
+            >
+              <Card>
+                <p>
+                  Ready to prioritize your health? Schedule an appointment with
+                  our experienced healthcare professionals.
+                </p>
+                <div className="mt-12 grow">
+                  <div>
+                    <BookAppointmentForm
+                      createAppointment={createAppointment}
+                      closeModal={handleModalClose}
+                    />
+                  </div>
+                </div>
+              </Card>
+            </Modal>
+          </div>
+
+          <Modal
+            title="Follow-Up Check-Up"
+            visible={followUpModalVisible}
+            onCancel={() => setFollowUpModalVisible(false)}
+            footer={null}
+          >
+            {selectedAppointment && (
+              <FollowUpForm
+                appointment={selectedAppointment}
+                handleFollowUp={() => handleFollowUp(selectedAppointment)}
+              />
+            )}
+          </Modal>
+        </div>
+      </Card>
     </div>
   );
 }

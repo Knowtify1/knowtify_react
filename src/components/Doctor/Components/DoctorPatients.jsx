@@ -200,12 +200,7 @@ function DoctorPatients() {
         <Spin size="large" />
       ) : (
         <div>
-          <Card className="overflow-auto max-h-screen p-2">
-            <p>Doctor: {userDetails.name}</p>
-            <p>Specialty: {doctorsMoreDetails.specialty}</p>
-          </Card>
-
-          <Card className="overflow-auto max-h-screen p-4">
+          <Card className="overflow-auto max-h-screen p-0">
             <h2>Patients</h2>
             <Space direction="horizontal" size={10} className="mb-2">
               <Search

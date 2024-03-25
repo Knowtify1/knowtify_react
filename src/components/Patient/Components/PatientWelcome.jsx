@@ -53,24 +53,24 @@ function PatientWelcome() {
     setIsModalVisible(false);
   };
 
-  return (
-    <>
-      {isModalVisible && (
-        <Modal
-          title="Account"
-          open={isModalVisible}
-          onOk={handleModalOk}
-          onCancel={handleModalCancel}
-          okButtonProps={{
-            className: "bg-blue-500",
-            style: { border: "1px solid #1890ff" },
-          }}
-        >
-          <h1>Hi Patient this is your account welcome!!!!</h1>
-        </Modal>
-      )}
-    </>
-  );
+  // return (
+  //   // <>
+  //   //   {isModalVisible && (
+  //   //     <Modal
+  //   //       title="Account"
+  //   //       open={isModalVisible}
+  //   //       onOk={handleModalOk}
+  //   //       onCancel={handleModalCancel}
+  //   //       okButtonProps={{
+  //   //         className: "bg-blue-500",
+  //   //         style: { border: "1px solid #1890ff" },
+  //   //       }}
+  //   //     >
+  //   //       <h1>Hi Patient this is your account welcome!!!!</h1>
+  //   //     </Modal>
+  //   //   )}
+  //   // </>
+  // );
 }
 
 export default PatientWelcome;

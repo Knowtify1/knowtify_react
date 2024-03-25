@@ -8,7 +8,7 @@ import {
   where,
   getDocs,
 } from "../../../config/firebase.jsx";
-import { Spin, Space, Calendar, Badge, Modal as AntModal } from "antd";
+import { Spin, Calendar, Badge, Modal as AntModal, Space } from "antd";
 import moment from "moment";
 
 function PatientCalendar() {
@@ -64,7 +64,7 @@ function PatientCalendar() {
                   onClick={() => handleDateSelect(current, appointment)}
                 >
                   {moment(appointment.appointmentTime, "HH:mm").format("HH:mm")}{" "}
-                  - {appointment.patientName}
+                  - {appointment.reasonForAppointment}
                 </span>
               }
             />

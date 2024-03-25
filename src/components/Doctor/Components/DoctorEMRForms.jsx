@@ -94,9 +94,11 @@ function DoctorEMRForms() {
               </p>
               <p>
                 <strong>Appointment Date:</strong>{" "}
-                {moment(patientEMRData.appointmentDate.toDate()).format(
-                  "MMMM D, YYYY"
-                )}
+                {patientEMRData.appointmentDate instanceof Date
+                  ? moment(patientEMRData.appointmentDate).format(
+                      "MMMM D, YYYY"
+                    )
+                  : "Invalid Date"}
               </p>
               <p>
                 <strong>Appointment Time:</strong>{" "}

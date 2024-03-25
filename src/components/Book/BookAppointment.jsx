@@ -3,7 +3,7 @@ import { Button, Card, Modal, notification } from "antd";
 import { ConfigProvider } from "antd";
 import ReCAPTCHA from "react-google-recaptcha";
 import BookAppointmentForm from "./BookAppointmentForm";
-import bookheader from "../../assets/Book/header.jpg";
+import bk2 from "../../assets/Book/bk2.jpg";
 import clinic from "../../assets/Book/clinic.png";
 import bk from "../../assets/Book/bk.jpg";
 import general from "../../assets/Book/generl.jpg";
@@ -72,7 +72,7 @@ function BookAppointment() {
       <div>
         <div className="relative">
           <img
-            src={bk}
+            src={bk2}
             alt="bookheader"
             className="w-100 max-h-97 blur"
             style={{ filter: "blur(4px)" }} // Adjust the blur value as needed

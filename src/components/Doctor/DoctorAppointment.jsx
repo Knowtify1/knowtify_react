@@ -7,12 +7,12 @@ function DoctorAppointment() {
   return (
     <>
       <div className="pl-8 pr-8 pb-5 pt-5">
-        <Card
-          title={
-            <h3 className="text-3xl font-semibold text-left ">Patients</h3>
-          }
-          className="overflow-auto max-h-screen p-4" // Set a maximum height and padding
-        >
+        <div className="w-full text-center">
+          <h3 className="text-3xl font-semibold pt-0" style={{ color: "#333" }}>
+            Doctor Appointments
+          </h3>{" "}
+        </div>
+        <Card>
           <DoctorPatients />
         </Card>
       </div>

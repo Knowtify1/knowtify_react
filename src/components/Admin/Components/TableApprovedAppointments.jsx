@@ -7,7 +7,7 @@ import {
   Button,
   Modal,
   Select,
-  message,
+  message, // Import message from antd
 } from "antd";
 import {
   doc,
@@ -72,9 +72,9 @@ function TableApprovedAppointments() {
         <span
           className={`inline-block px-2 py-1 rounded border ${
             text === "approved"
-              ? "bg-green-500 text-white border-blue-400"
+              ? "bg-green-600 text-white"
               : text === "assigned"
-              ? "bg-blue-500 text-white border-blue-400"
+              ? "bg-blue-600 text-white"
               : ""
           }`}
         >
@@ -212,13 +212,15 @@ function TableApprovedAppointments() {
 
         setIsModalVisible(false);
         fetchApprovedAppointments(selectedDate, setData, setLoading);
+
+        // Show success message
+        message.success("Appointment assigned successfully!");
       } catch (error) {
         console.error("Error updating patient document:", error);
       }
     }
     setIsModalVisible(false);
   };
-
   const handleModalCancel = () => {
     setIsModalVisible(false);
   };
@@ -230,7 +232,16 @@ function TableApprovedAppointments() {
   };
 
   useEffect(() => {
+    // Fetch approved appointments initially when component mounts
     fetchApprovedAppointments(selectedDate, setData, setLoading);
+
+    // Set up interval to fetch approved appointments every 60 seconds
+    const interval = setInterval(() => {
+      fetchApprovedAppointments(selectedDate, setData, setLoading);
+    }, 60000);
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(interval);
   }, [selectedDate, setData, setLoading]);
 
   const getCurrentDateMessage = () => {
@@ -268,7 +279,7 @@ function TableApprovedAppointments() {
           {/* Modal for Doctor Type Selection */}
           <Modal
             title="Select Doctor"
-            open={isModalVisible}
+            visible={isModalVisible} // Corrected prop name
             onOk={handleModalOk}
             onCancel={handleModalCancel}
             okButtonProps={{ className: "bg-green-500" }}

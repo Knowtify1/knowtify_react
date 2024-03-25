@@ -1,27 +1,16 @@
 import React, { useState, useEffect } from "react";
-import {
-  Button,
-  DatePicker,
-  Form,
-  Input,
-  Select,
-  Space,
-  Row,
-  Col,
-  Modal,
-} from "antd";
+import { Button, DatePicker, Form, Input, Select, Row, Col, Modal } from "antd";
 const { TextArea } = Input;
-import { Timestamp } from "firebase/firestore";
+import { Timestamp, getDoc, doc } from "firebase/firestore";
 import {
-  setDoc,
-  doc,
+  auth,
   db,
+  setDoc,
   collection,
   addDoc,
   getDocs,
   query,
   where,
-  fsTimeStamp,
 } from "../../../config/firebase";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
@@ -33,11 +22,12 @@ const generateUniqueReference = () => {
   return `${prefix}${randomDigits}`;
 };
 
-function BookAppointmentForm() {
+const FollowUpForm = () => {
   const [componentDisabled, setComponentDisabled] = useState(false);
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [availableDays, setAvailableDays] = useState([]);
+  const [availableTimes, setAvailableTimes] = useState([]);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [modalClosable, setModalClosable] = useState(false);
@@ -45,103 +35,97 @@ function BookAppointmentForm() {
   const [modalCondition, setModalCondition] = useState("");
 
   const [doctorAvailability, setDoctorAvailability] = useState({});
-  const [doctorTimeOptions, setdoctorTimeOptions] = useState({});
+  const [doctorTimeOptions, setDoctorTimeOptions] = useState({});
   const [typesofDoc, settypesofDoc] = useState([]);
+  const [patientDetails, setPatientDetails] = useState({});
+  const [selectedDoctor, setSelectedDoctor] = useState(null); // Track selected doctor
+  const [assignedDoctor, setAssignedDoctor] = useState(null); // Track assigned doctor
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const userDoc = await getDoc(
+          doc(db, "patient_accounts", auth.currentUser.uid)
+        );
+        if (userDoc.exists()) {
+          const userDetails = userDoc.data();
+          // Auto-fill the form with user details
+          form.setFieldsValue({
+            patientname: userDetails.name,
+            contactno: userDetails.phone,
+            age: userDetails.age,
+            patientaddress: userDetails.patientAddress,
+          });
+          setPatientDetails(userDetails);
+
+          // Fetch typeOfDoctor from other collections and set it in the form
+          const appointmentsQuerySnapshot = await getDocs(
+            query(
+              collection(db, "patients"),
+              where("patientName", "==", userDetails.name)
+            )
+          );
+          const previousDoctors = new Set();
+          appointmentsQuerySnapshot.forEach((doc) => {
+            const appointmentData = doc.data();
+            previousDoctors.add(appointmentData.typeOfDoctor);
+          });
+          settypesofDoc(
+            Array.from(previousDoctors).map((doctor) => ({
+              value: doctor,
+              label: doctor,
+            }))
+          );
+
+          // Fetch assigned doctor
+          setAssignedDoctor(userDetails.assignedDoctor);
+        } else {
+          console.log("User details not found.");
+        }
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+      }
+    };
+    fetchUserDetails();
+  }, [form]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "settings"));
-        const availabilityData = {};
-        const timeOptionsData = {};
-        let specialtiesData = [];
+        if (selectedDoctor || assignedDoctor) {
+          const doctorId = selectedDoctor || assignedDoctor;
+          const doctorDoc = await getDoc(doc(db, "doctors", doctorId));
+          if (doctorDoc.exists()) {
+            const doctorData = doctorDoc.data();
+            const { availability, timeOptions } = doctorData;
 
-        querySnapshot.forEach((doc) => {
-          const specialty = doc.data().specialty;
-          const specialtyLabel = doc.data().specialtyLabel;
-          const days = doc.data().days || [];
-          let times = doc.data().times || [];
-
-          specialtiesData = [
-            ...specialtiesData,
-            { value: specialty, label: specialtyLabel },
-          ];
-          availabilityData[specialty] = days;
-
-          // Sort times into two ranges: 7:00 - 12:00 and 1:00 - 8:00
-          times = times.sort((a, b) => {
-            const hourA = parseInt(a.split(":")[0]);
-            const hourB = parseInt(b.split(":")[0]);
-
-            if (hourA >= 7 && hourA < 12 && hourB >= 7 && hourB < 12) {
-              return hourA - hourB;
-            } else if (hourA >= 7 && hourA < 12) {
-              return -1;
-            } else if (hourB >= 7 && hourB < 12) {
-              return 1;
-            } else {
-              return hourA - hourB;
-            }
-          });
-
-          const formattedTimes = times.map((time) => ({
-            value: time,
-            label: `${time} ${
-              parseInt(time.split(":")[0]) >= 7 &&
-              parseInt(time.split(":")[0]) < 12
-                ? "AM"
-                : parseInt(time.split(":")[0]) === 12
-                ? "PM"
-                : "PM"
-            }`,
-          }));
-
-          timeOptionsData[specialty] = formattedTimes;
-        });
-
-        // Convert timeOptionsData to the desired format
-        const doctorTimeOptions = {};
-        Object.keys(timeOptionsData).forEach((specialty) => {
-          doctorTimeOptions[specialty] = timeOptionsData[specialty].map(
-            (time) => ({
-              value: time.value,
-              label: time.label,
-            })
-          );
-        });
-
-        settypesofDoc(specialtiesData);
-        setDoctorAvailability(availabilityData);
-        setdoctorTimeOptions(doctorTimeOptions);
-
-        console.log(doctorTimeOptions);
+            setDoctorAvailability(availability || {});
+            setDoctorTimeOptions(timeOptions || {});
+          }
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
     fetchData();
-  }, []);
+  }, [selectedDoctor, assignedDoctor]);
 
   useEffect(() => {
     const selectedType = form.getFieldValue("typedoctor");
     setAvailableDays(doctorAvailability[selectedType] || []);
-  }, [form, doctorAvailability]);
+    setAvailableTimes(doctorTimeOptions[selectedType] || []);
+  }, [form, doctorAvailability, doctorTimeOptions]);
 
   const handleTypeChange = (value) => {
     const selectedType = value;
-    const timeOptions = doctorTimeOptions[selectedType] || [];
-    form.setFieldsValue({
-      timepicker: timeOptions.length > 0 ? timeOptions[0].value : null,
-    });
-    setAvailableDays(doctorAvailability[selectedType] || []);
+    setSelectedDoctor(selectedType); // Update selected doctor
   };
 
   const onFinish = async (values) => {
     const {
       patientname,
       contactno,
-      email,
       age,
       patientaddress,
       reasonforappointment,
@@ -151,34 +135,10 @@ function BookAppointmentForm() {
     } = values;
 
     const datePart = adate.startOf("day");
-    //const appointmentDate = new Date(adate);
     const appointmentDate = datePart.toDate();
 
     const selectedTime = JSON.stringify(timepicker);
     const uniqueReference = generateUniqueReference();
-
-    const patientQuerySnapshot = await getDocs(
-      query(
-        collection(db, "appointments"),
-        where("patientName", "==", patientname),
-        where("contactNo", "==", contactno)
-      )
-    );
-
-    if (!patientQuerySnapshot.empty) {
-      const message =
-        "Patient with the same name and phone number already exists!";
-      setModalClosable(false);
-      setModalCondition("exists");
-      setModalMessage(message);
-      showModal();
-      return;
-    }
-
-    // console.log("appointmentDate:", appointmentDate);
-    // console.log("typedoctor:", typedoctor);
-    // console.log("selectedTime:", selectedTime);
-    // console.log("adate:", adate.valueOf());
 
     const existingAppointmentsQuerySnapshot = await getDocs(
       query(
@@ -190,26 +150,19 @@ function BookAppointmentForm() {
     );
 
     const numExistingAppointments = existingAppointmentsQuerySnapshot.size;
-    console.log(
-      "Query Count:" +
-        numExistingAppointments +
-        existingAppointmentsQuerySnapshot
-    );
-    //time slot counts 0 - 3 = 4 appointment/timeslots
-    if (numExistingAppointments >= 4 - 1) {
+
+    if (numExistingAppointments >= 2 - 1) {
       const message =
-        "There are already 4 appointments booked for the selected date and time. Please choose a different Time.";
+        "There are already 2 appointments booked for the selected date and time. Please choose a different Time.";
       setModalClosable(false);
       setModalCondition("schedexists");
       setModalMessage(message);
       showModal();
-      //return;
     } else {
       const userData = {
         createdDate: Timestamp.now(),
         patientName: patientname,
         contactNo: contactno,
-        email: email,
         age: age,
         patientAddress: patientaddress,
         reasonForAppointment: reasonforappointment,
@@ -225,25 +178,25 @@ function BookAppointmentForm() {
       navigate("/appointmentsuccess", {
         state: { appointmentData: userData, phone: contactno },
       });
-      //const myDoc = collection(db, "appointments");
-
-      // try {
-      //   const docref = await addDoc(myDoc, userData);
-      //   console.log("firestore success");
-      //   console.log("document id", docref);
-
-      //   navigate("/appointmentsuccess", {
-      //      state: { appointmentID: docref.id, phone: contactno },
-      //     state: { appointmentData: userData, phone: contactno },
-      //   });
-      // } catch (error) {
-      //   console.log(error);
-      // }
     }
   };
 
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
+  };
+
+  const showModal = () => {
+    setModalVisible(true);
+  };
+
+  const handleModalOk = () => {
+    if (modalCondition === "exists") {
+      navigate("/login");
+    } else if (modalCondition === "schedexists") {
+      setModalVisible(false);
+    } else {
+      setModalVisible(false);
+    }
   };
 
   const validateAge = (rule, value) => {
@@ -257,25 +210,11 @@ function BookAppointmentForm() {
     }
   };
 
-  const showModal = () => {
-    setModalVisible(true);
-  };
-
-  const handleModalOk = () => {
-    if (modalCondition == "exists") {
-      navigate("/login");
-    } else if (modalCondition == "schedexists") {
-      setModalVisible(false);
-    } else {
-      setModalVisible(false);
-    }
-  };
-
   return (
     <>
       <Modal
         title="Error:"
-        open={modalVisible}
+        visible={modalVisible}
         onOk={handleModalOk}
         okText="OK"
         okButtonProps={{ className: "bg-green-600 w-2/4 " }}
@@ -303,7 +242,7 @@ function BookAppointmentForm() {
           }}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
-          autoComplete="off"
+          autoComplete="on"
           form={form}
         >
           <Row gutter={[10, 10]}>
@@ -337,20 +276,7 @@ function BookAppointmentForm() {
                 <Input style={{ width: "100%" }} />
               </Form.Item>
             </Col>
-            <Col span={8}>
-              <Form.Item
-                label="Email Address"
-                name="email"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please input your email",
-                  },
-                ]}
-              >
-                <Input style={{ width: "100%" }} type="email" />
-              </Form.Item>
-            </Col>
+
             <Col span={3}>
               <Form.Item
                 label="Age"
@@ -392,7 +318,7 @@ function BookAppointmentForm() {
                   </Form.Item>
                   <Form.Item
                     name={["patientaddress", "barangay"]}
-                    noStyleS
+                    noStyle
                     rules={[
                       { required: true, message: "Barangay is required" },
                     ]}
@@ -444,21 +370,21 @@ function BookAppointmentForm() {
                   }
                   allowClear
                 >
-                  <Option value="consultation">Consultation</Option>
+                  <Select.Option value="follow-up">Follow-up</Select.Option>
                 </Select>
               </Form.Item>
             </Col>
 
             <Col span={8}>
               <Form.Item
-                label="Type of Doctor to Consult"
-                rules={[{ required: true, message: "Select Type" }]}
-                name="typedoctor"
+                label="Previous Doctor"
+                name="previousDoctor"
+                rules={[{ required: true, message: "Select Previous Doctor" }]}
               >
                 <Select
                   options={typesofDoc}
                   style={{}}
-                  placeholder="Select a type"
+                  placeholder="Select previous doctor"
                   onChange={handleTypeChange}
                 />
               </Form.Item>
@@ -494,9 +420,7 @@ function BookAppointmentForm() {
                 rules={[{ required: true, message: "Select Time" }]}
               >
                 <Select
-                  options={
-                    doctorTimeOptions[form.getFieldValue("typedoctor")] || []
-                  }
+                  options={availableTimes}
                   style={{}}
                   placeholder="Select a time"
                 />
@@ -514,15 +438,14 @@ function BookAppointmentForm() {
                   marginBottom: 5,
                 }}
               >
-                <div className="flex flex-col ...">
-                  <Button
-                    type="primary"
-                    className="bg-green-600 w-2/4 "
-                    htmlType="submit"
-                  >
-                    Submit
-                  </Button>
-                </div>
+                <Button
+                  type="primary"
+                  className="bg-green-600 w-2/4 "
+                  htmlType="submit"
+                >
+                  {" "}
+                  Book Appointment
+                </Button>
               </Form.Item>
             </Col>
           </Row>
@@ -530,6 +453,6 @@ function BookAppointmentForm() {
       </div>
     </>
   );
-}
+};
 
-export default BookAppointmentForm;
+export default FollowUpForm;

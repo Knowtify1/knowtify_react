@@ -11,11 +11,11 @@ import {
   Modal,
 } from "antd";
 const { TextArea } = Input;
-import { Timestamp } from "firebase/firestore";
+import { Timestamp, getDoc, doc } from "firebase/firestore";
 import {
-  setDoc,
-  doc,
+  auth,
   db,
+  setDoc,
   collection,
   addDoc,
   getDocs,
@@ -33,7 +33,7 @@ const generateUniqueReference = () => {
   return `${prefix}${randomDigits}`;
 };
 
-function BookAppointmentForm() {
+const BookAppointmentForm = () => {
   const [componentDisabled, setComponentDisabled] = useState(false);
   const navigate = useNavigate();
   const [form] = Form.useForm();
@@ -47,6 +47,33 @@ function BookAppointmentForm() {
   const [doctorAvailability, setDoctorAvailability] = useState({});
   const [doctorTimeOptions, setdoctorTimeOptions] = useState({});
   const [typesofDoc, settypesofDoc] = useState([]);
+  const [patientDetails, setPatientDetails] = useState({});
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const userDoc = await getDoc(
+          doc(db, "patient_accounts", auth.currentUser.uid)
+        );
+        if (userDoc.exists()) {
+          const userDetails = userDoc.data();
+          // Auto-fill the form with user details
+          form.setFieldsValue({
+            patientname: userDetails.name,
+            contactno: userDetails.phone,
+            age: userDetails.age,
+            patientaddress: userDetails.patientAddress,
+          });
+          setPatientDetails(userDetails);
+        } else {
+          console.log("User details not found.");
+        }
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+      }
+    };
+    fetchUserDetails();
+  }, [form]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,8 +117,6 @@ function BookAppointmentForm() {
               parseInt(time.split(":")[0]) >= 7 &&
               parseInt(time.split(":")[0]) < 12
                 ? "AM"
-                : parseInt(time.split(":")[0]) === 12
-                ? "PM"
                 : "PM"
             }`,
           }));
@@ -113,8 +138,6 @@ function BookAppointmentForm() {
         settypesofDoc(specialtiesData);
         setDoctorAvailability(availabilityData);
         setdoctorTimeOptions(doctorTimeOptions);
-
-        console.log(doctorTimeOptions);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -155,29 +178,6 @@ function BookAppointmentForm() {
     const selectedTime = JSON.stringify(timepicker);
     const uniqueReference = generateUniqueReference();
 
-    // Ensure the phone number includes the "+63" prefix
-    const prefixedContactNo = contactno.startsWith("+63")
-      ? contactno
-      : "+63" + contactno;
-
-    const patientQuerySnapshot = await getDocs(
-      query(
-        collection(db, "appointments"),
-        where("patientName", "==", patientname),
-        where("contactNo", "==", prefixedContactNo)
-      )
-    );
-
-    if (!patientQuerySnapshot.empty) {
-      const message =
-        "Patient with the same name and phone number already exists!";
-      setModalClosable(false);
-      setModalCondition("exists");
-      setModalMessage(message);
-      showModal();
-      return;
-    }
-
     const existingAppointmentsQuerySnapshot = await getDocs(
       query(
         collection(db, "appointments"),
@@ -200,7 +200,7 @@ function BookAppointmentForm() {
       const userData = {
         createdDate: Timestamp.now(),
         patientName: patientname,
-        contactNo: prefixedContactNo, // Save phone number with "+63" prefix
+        contactNo: contactno,
         age: age,
         patientAddress: patientaddress,
         reasonForAppointment: reasonforappointment,
@@ -216,6 +216,7 @@ function BookAppointmentForm() {
       navigate("/appointmentsuccess", {
         state: { appointmentData: userData, phone: contactno },
       });
+      s;
     }
   };
 
@@ -252,7 +253,7 @@ function BookAppointmentForm() {
     <>
       <Modal
         title="Error:"
-        open={modalVisible}
+        visible={modalVisible}
         onOk={handleModalOk}
         okText="OK"
         okButtonProps={{ className: "bg-green-600 w-2/4 " }}
@@ -280,7 +281,7 @@ function BookAppointmentForm() {
           }}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
-          autoComplete="off"
+          autoComplete="on"
           form={form}
         >
           <Row gutter={[10, 10]}>
@@ -306,11 +307,10 @@ function BookAppointmentForm() {
                 rules={[
                   { required: true, message: "Please input your phone number" },
                   {
-                    pattern: /^(\+?63)?9\d{9}$/,
+                    pattern: /^\+63\d{10}$/,
                     message: "Please enter a valid phone number",
                   },
                 ]}
-                initialValue="+63" // Add initial value for the prefix
               >
                 <Input style={{ width: "100%" }} />
               </Form.Item>
@@ -357,7 +357,7 @@ function BookAppointmentForm() {
                   </Form.Item>
                   <Form.Item
                     name={["patientaddress", "barangay"]}
-                    noStyleS
+                    noStyle
                     rules={[
                       { required: true, message: "Barangay is required" },
                     ]}
@@ -409,7 +409,9 @@ function BookAppointmentForm() {
                   }
                   allowClear
                 >
-                  <Option value="consultation">Consultation</Option>
+                  <Select.Option value="consultation">
+                    Consultation
+                  </Select.Option>
                 </Select>
               </Form.Item>
             </Col>
@@ -464,15 +466,6 @@ function BookAppointmentForm() {
                   }
                   style={{}}
                   placeholder="Select a time"
-                  disabledDate={(current) => {
-                    const currentTime = dayjs();
-                    const selectedDate = form.getFieldValue("adate");
-                    if (!selectedDate) return false; // If no date is selected, all times are enabled
-                    const selectedTime = dayjs(selectedDate)
-                      .set("hour", current.hour())
-                      .set("minute", current.minute());
-                    return currentTime.isAfter(selectedTime); // Disable times that have already passed
-                  }}
                 />
               </Form.Item>
             </Col>
@@ -488,15 +481,14 @@ function BookAppointmentForm() {
                   marginBottom: 5,
                 }}
               >
-                <div className="flex flex-col ...">
-                  <Button
-                    type="primary"
-                    className="bg-green-600 w-2/4 "
-                    htmlType="submit"
-                  >
-                    Submit
-                  </Button>
-                </div>
+                <Button
+                  type="primary"
+                  className="bg-green-600 w-2/4 "
+                  htmlType="submit"
+                >
+                  {" "}
+                  Book Appointment
+                </Button>
               </Form.Item>
             </Col>
           </Row>
@@ -504,6 +496,6 @@ function BookAppointmentForm() {
       </div>
     </>
   );
-}
+};
 
 export default BookAppointmentForm;

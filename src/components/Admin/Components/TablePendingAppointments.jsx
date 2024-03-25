@@ -8,6 +8,7 @@ import {
   Modal,
   Form,
   TimePicker,
+  message, // Import message from antd
 } from "antd";
 import {
   setDoc,
@@ -108,7 +109,7 @@ function TablePendingAppointments() {
         { merge: true },
         { approved: true }
       );
-      console.log(`Appointment ${key} approved.`);
+      message.success(`Appointment ${key} approved.`);
     } catch (error) {
       console.error("Error approving appointment:", error);
     }
@@ -125,7 +126,7 @@ function TablePendingAppointments() {
 
       fetchAppointments(selectedDate, setData, setLoading);
 
-      console.log(`Appointment ${key} approved and transferred to patients.`);
+      message.success(`Appointment approved and transferred to patients.`);
     } catch (error) {
       console.error("Error approving appointment:", error);
     }
@@ -182,6 +183,7 @@ function TablePendingAppointments() {
       )}. Please be at the clinic 5 minutes before your appointment schedule. Thank you!`;
       sendSMS(contactNo, message); // Send SMS
       setVisible(false);
+      message.success("Appointment rescheduled successfully!");
     } catch (error) {
       console.error("Validation failed:", error);
     }
@@ -233,7 +235,6 @@ function TablePendingAppointments() {
   useEffect(() => {
     fetchAppointments(selectedDate, setData, setLoading);
   }, [selectedDate]);
-
   const onSelectChange = (newSelectedRowKeys) => {
     console.log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);

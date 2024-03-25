@@ -108,13 +108,15 @@ body {
   color: #000000; /* Change to your desired hover color */
 }
 
-/* Add this to your CSS or component styles */
 .clickable-badge {
   cursor: pointer;
-  border: 1px solid #ddd; /* Add your preferred border style */
-  border-radius: 5px; /* Adjust the border-radius as needed */
-  padding: 5px; /* Adjust the padding as needed */
+  border: 0px solid #ddd; /* Add your preferred border style */
+  border-radius: 2px; /* Adjust the border-radius as needed */
+  padding: 2px 4px; /* Adjust the padding as needed */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add a soft box shadow */
+  width: 100%; /* Make the badge same width as the cell */
+  text-align: left; /* Center the text */
+  font-size: 12px; /* Adjust the font size as needed */
 }
 
 .clickable-badge:hover {

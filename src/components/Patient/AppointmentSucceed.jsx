@@ -17,7 +17,7 @@ import {
 } from "../../config/firebase.jsx";
 import { handleSendCode, handleVerifyCode } from "../../config/signinphone.jsx";
 
-function AppointmentSuccess() {
+function AppointmentSucceed() {
   const location = useLocation();
   const { appointmentData } = location.state;
   const { phone } = location.state;
@@ -96,7 +96,6 @@ function AppointmentSuccess() {
       password: "",
       type: "patient",
       referenceId: appointmentData.reference,
-      phone: phone,
       phone: phone,
       age: appointmentData.age, // Assuming age is part of appointmentData
       patientAddress: appointmentData.patientAddress,
@@ -284,4 +283,4 @@ function AppointmentSuccess() {
   );
 }
 
-export default AppointmentSuccess;
+export default AppointmentSucceed;

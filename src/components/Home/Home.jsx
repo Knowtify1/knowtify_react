@@ -149,7 +149,7 @@ function Home() {
       </Modal>
 
       <div className="flex-1">
-        <header className="bg-white py-4  fixed w-full z-50">
+        <header className="bg-white py-4  fixed w-full z-0">
           <div className="container mx-auto flex items-center justify-between px-4 sm:px-10 lg:px-20">
             <img src={knowtifylogov2} alt="knowtifylogo" className="h-12" />
             <div className="flex flex-wrap items-center">
@@ -161,7 +161,9 @@ function Home() {
                 <Button className="text-sm sm:text-base">Login</Button>
               </Link>
               <Link to="/register" className="mr-2 sm:mr-6">
-                <Button className="text-sm sm:text-base bg-green-600">Sign Up</Button>
+                <Button className="text-sm sm:text-base bg-green-600">
+                  Sign Up
+                </Button>
               </Link>
             </div>
           </div>
@@ -246,7 +248,7 @@ function Home() {
                 />
                 <Feature
                   title="SMS Notifications"
-                  description="Receive timely SMS notifications for upcoming appointments. Knowtify keeps you informed and ensures that you never miss an important meeting with a doctor. Our SMS notification system is designed to provide you with the convenience of instant alerts, allowing you to focus on delivering exceptional healthcare services."
+                  description="Receive timely SMS notifications for upcoming appointments. Knowtify keeps you informed and ensures that you never miss an important meeting with a doctor."
                 />
               </div>
             </div>
@@ -297,7 +299,10 @@ function Home() {
                     />
                   }
                 />
-                <Developer title="Marjorie B. Soposop" description="Developer" />
+                <Developer
+                  title="Marjorie B. Soposop"
+                  description="Developer"
+                />
               </div>
             </div>
           </section>

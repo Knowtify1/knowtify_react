@@ -86,69 +86,32 @@ function DoctorCalendar() {
 
   const cellRender = (current) => {
     const formattedDate = current.format("YYYY-MM-DD");
+    const filteredAppointments = patientsData.filter(
+      (patient) =>
+        moment(patient.appointmentDate.toDate()).format("YYYY-MM-DD") ===
+        formattedDate
+    );
 
-    if (
-      current.isAfter(startOfMonth, "day") &&
-      current.isBefore(endOfMonth, "day")
-    ) {
-      const filteredAppointments = patientsData
-        .filter(
-          (patient) =>
-            moment(patient.appointmentDate.toDate()).format("YYYY-MM-DD") ===
-            formattedDate
-        )
-        .sort((a, b) => {
-          const timeA = moment(a.appointmentTime, "HH:mm");
-          const timeB = moment(b.appointmentTime, "HH:mm");
-
-          if (a.appointmentDate > b.appointmentDate) {
-            return -1;
-          } else if (a.appointmentDate > b.appointmentDate) {
-            return 1;
-          } else {
-            return timeA.isBefore(timeB) ? -1 : timeA.isAfter(timeB) ? 1 : 0;
-          }
-        });
-
-      return (
-        <ul className="events">
-          {filteredAppointments.map((appointment) => (
-            <li key={appointment.id}>
-              <Badge
-                status="success"
-                text={
-                  <span
-                    className="clickable-badge" // Add this class for styling
-                    onClick={() => handleDateSelect(current, appointment)}
-                  >
-                    {moment(appointment.appointmentTime, "HH:mm").format(
-                      "HH:mm"
-                    )}{" "}
-                    - {appointment.patientName}
-                  </span>
-                }
-              />
-            </li>
-          ))}
-        </ul>
-      );
-    }
-
-    return null;
-  };
-
-  const currentDate = moment();
-  const startOfMonth = currentDate.clone().startOf("month");
-  const endOfMonth = currentDate.clone().endOf("month");
-
-  const disabledDate = (current) => {
-    return current && current < startOfMonth;
-  };
-
-  const calendarMode = "month";
-
-  const handlePanelChange = (value, mode) => {
-    console.log(value, mode);
+    return (
+      <ul className="events">
+        {filteredAppointments.map((appointment) => (
+          <li key={appointment.id}>
+            <Badge
+              status="success"
+              text={
+                <span
+                  className="clickable-badge"
+                  onClick={() => handleDateSelect(current, appointment)}
+                >
+                  {moment(appointment.appointmentTime, "HH:mm").format("HH:mm")}{" "}
+                  - {appointment.patientName}
+                </span>
+              }
+            />
+          </li>
+        ))}
+      </ul>
+    );
   };
 
   const handleDateSelect = (date, selectedPatient) => {
@@ -162,11 +125,6 @@ function DoctorCalendar() {
 
   return (
     <div>
-      <Space direction="horizontal" size={10}>
-        <h1>Date Today is:</h1>
-        <p>{formattedDate}</p>
-      </Space>
-
       {loading ? (
         <div
           style={{
@@ -180,13 +138,7 @@ function DoctorCalendar() {
         </div>
       ) : (
         <>
-          <Calendar
-            cellRender={cellRender}
-            validRange={[startOfMonth, endOfMonth]}
-            disabledDate={disabledDate}
-            mode={calendarMode}
-            onPanelChange={handlePanelChange}
-          />
+          <Calendar cellRender={cellRender} />
 
           <AntModal
             title={`Appointments on ${selectedPatient?.appointmentDate

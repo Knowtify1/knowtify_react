@@ -1,150 +1,300 @@
-import { Card, Space } from "antd";
 import React, { useState, useEffect } from "react";
-import { QuestionOutlined } from "@ant-design/icons";
 import {
-  setDoc,
-  doc,
-  db,
   collection,
-  addDoc,
-  getDoc,
+  query,
+  where,
   getDocs,
-} from "../../../config/firebase.jsx";
+  doc,
+  getDoc,
+} from "firebase/firestore";
+import { Card, Space, Typography, Progress, Row, Col } from "antd";
+import { db } from "../../../config/firebase.jsx";
+import { auth } from "../../../config/firebase.jsx";
+import {
+  CheckCircleTwoTone,
+  ClockCircleTwoTone,
+  ScheduleTwoTone,
+} from "@ant-design/icons";
 
-async function countDocumentsInCollection(
-  collectionName,
-  filterField,
-  filterValue
-) {
-  try {
-    const querySnapshot = await getDocs(collection(db, collectionName));
-    const filteredDocs = querySnapshot.docs.filter(
-      (doc) => doc.data()[filterField] === filterValue
-    );
-    const numberOfDocuments = filteredDocs.length;
-    return numberOfDocuments;
-  } catch (error) {
-    console.error("Error counting documents:", error);
-    return 0;
-  }
-}
-
-function generateGraph(count, lineColor) {
-  const batteryWidth = 150; // Width of the battery container
-  const batteryHeight = 40; // Height of the battery container
-  const batteryPadding = 5; // Padding between battery and graph lines
-  const lineSpacing = 2; // Spacing between graph lines
-
-  // Calculate width of each line based on the count
-  const lineWidth =
-    (batteryWidth - 2 * batteryPadding - (count - 1) * lineSpacing) / count;
-
-  const lines = [];
-  for (let i = 0; i < count; i++) {
-    lines.push(
-      <div
-        key={i}
-        style={{
-          width: lineWidth,
-          height: "100%",
-          backgroundColor: lineColor,
-          marginRight: i === count - 1 ? 0 : lineSpacing,
-        }}
-      ></div>
-    );
-  }
-
-  return (
-    <div
-      style={{
-        width: batteryWidth,
-        height: batteryHeight,
-        border: "1px solid #000",
-        borderRadius: "5px",
-        display: "flex",
-        flexDirection: "row",
-      }}
-    >
-      {lines}
-    </div>
-  );
-}
+const { Title } = Typography;
 
 function DoctorOverview() {
-  const [appointmentsCount, setAppointmentsCount] = useState(null);
-  const [approvedPatientsCount, setApprovedPatientsCount] = useState(null);
   const [assignedPatientsCount, setAssignedPatientsCount] = useState(null);
+  const [followUpCount, setFollowUpCount] = useState(null);
+  const [consultationCount, setConsultationCount] = useState(null);
+  const [totalAppointmentsCount, setTotalAppointmentsCount] = useState(null);
 
   useEffect(() => {
-    const fetchAppointmentsCount = async () => {
+    const fetchData = async () => {
       try {
-        const appointmentsTotal = await countDocumentsInCollection(
-          "appointments",
-          "patientRecords",
-          "patients"
-        );
+        const unsubscribe = auth.onAuthStateChanged(async (user) => {
+          if (user) {
+            const doctorDocRef = doc(db, "doctors_accounts", user.uid);
+            const doctorSnapshot = await getDoc(doctorDocRef);
 
-        // Count patients with status === "approved"
-        const approvedCount = await countDocumentsInCollection(
-          "patients",
-          "status",
-          "approved"
-        );
-        setApprovedPatientsCount(approvedCount);
+            if (doctorSnapshot.exists()) {
+              const patientsQuery = query(
+                collection(db, "patients"),
+                where("assignedDoctorID", "==", doctorSnapshot.id)
+              );
+              const patientsSnapshot = await getDocs(patientsQuery);
+              setAssignedPatientsCount(patientsSnapshot.size);
 
-        // Count patients with status === "assigned"
-        const assignedCount = await countDocumentsInCollection(
-          "patients",
-          "status",
-          "assigned"
-        );
-        setAssignedPatientsCount(assignedCount);
+              const followUpQuery = query(
+                collection(db, "patients"),
+                where("assignedDoctorID", "==", doctorSnapshot.id),
+                where("reasonForAppointment", "==", "follow-up")
+              );
+              const followUpSnapshot = await getDocs(followUpQuery);
+              setFollowUpCount(followUpSnapshot.size);
 
-        setAppointmentsCount(appointmentsTotal);
+              const consultationQuery = query(
+                collection(db, "patients"),
+                where("assignedDoctorID", "==", doctorSnapshot.id),
+                where("reasonForAppointment", "==", "consultation")
+              );
+              const consultationSnapshot = await getDocs(consultationQuery);
+              setConsultationCount(consultationSnapshot.size);
+            } else {
+              console.log("Doctor document does not exist");
+            }
+          }
+        });
+
+        return () => unsubscribe();
       } catch (error) {
-        console.error("Error fetching appointments count:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
-    fetchAppointmentsCount();
+    fetchData();
   }, []);
 
+  useEffect(() => {
+    const fetchTotalAppointmentsCount = async () => {
+      try {
+        const totalAppointmentsQuery = query(collection(db, "patients"));
+        const totalAppointmentsSnapshot = await getDocs(totalAppointmentsQuery);
+        setTotalAppointmentsCount(totalAppointmentsSnapshot.size);
+      } catch (error) {
+        console.error("Error fetching total appointments count:", error);
+      }
+    };
+
+    fetchTotalAppointmentsCount();
+  }, []);
+
+  const renderProgress = (count, color1, color2) => {
+    const percent = (count / totalAppointmentsCount) * 100;
+    return (
+      <Progress
+        percent={percent}
+        strokeWidth={18}
+        strokeColor={{
+          "0%": color1,
+          "100%": color2,
+        }}
+        showInfo={false}
+      />
+    );
+  };
+
+  const renderPieChart = () => {
+    const totalPatients =
+      followUpCount + consultationCount + assignedPatientsCount;
+    const totalAngle = 360; // Total angle for a full circle
+    const depth = 10; // Depth of the 3D effect
+    const radius = 45; // Radius of the pie chart
+    const centerX = 100; // X coordinate of the center of the circle
+    const centerY = 100; // Y coordinate of the center of the circle
+
+    // Calculate percentages for each category
+    const followUpPercentage = (followUpCount / totalPatients) * totalAngle;
+    const consultationPercentage =
+      (consultationCount / totalPatients) * totalAngle;
+    const assignedPercentage =
+      (assignedPatientsCount / totalPatients) * totalAngle;
+
+    return (
+      <svg height="200" width="200">
+        {/* Follow-up Patients */}
+        <circle
+          cx={centerX}
+          cy={centerY}
+          r={radius}
+          fill="transparent"
+          stroke="#297846"
+          strokeWidth="90"
+          strokeDasharray={`${followUpPercentage} ${totalAngle}`}
+          transform={`rotate(-90 ${centerX} ${centerY})`}
+        />
+        {/* Consultation Patients */}
+        <circle
+          cx={centerX}
+          cy={centerY}
+          r={radius}
+          fill="transparent"
+          stroke="#EEEB3C"
+          strokeWidth="90"
+          strokeDasharray={`${consultationPercentage} ${totalAngle}`}
+          transform={`rotate(${followUpPercentage - 90} ${centerX} ${centerY})`}
+        />
+        {/* Assigned Patients */}
+        <circle
+          cx={centerX}
+          cy={centerY}
+          r={radius}
+          fill="transparent"
+          stroke="#FF4D4F"
+          strokeWidth="90"
+          strokeDasharray={`${assignedPercentage} ${totalAngle}`}
+          transform={`rotate(${
+            followUpPercentage + consultationPercentage - 90
+          } ${centerX} ${centerY})`}
+        />
+        {/* Inner circle for depth effect */}
+        <circle cx={centerX} cy={centerY} r={radius - depth} fill="#fff" />
+        {/* Outer circle for depth effect */}
+        <circle
+          cx={centerX}
+          cy={centerY}
+          r={radius + depth}
+          fill="#000"
+          opacity="0.2"
+        />
+      </svg>
+    );
+  };
+
   return (
-    <div className="flex justify-center">
-      <Space direction="horizontal" size={20}>
-        <Card
-          title="Appointments"
-          extra={<a href="../doctordashboard/doctorappointment">View all</a>}
-          style={{ width: 400, backgroundColor: "#E4F1FE" }}
-        >
-          <Space direction="horizontal">
-            <h1>
-              {appointmentsCount !== null ? appointmentsCount : "Loading..."}
-            </h1>
-            <span>Pending Appointments</span>
+    <div>
+      <div className="container mx-auto">
+        <div className="flex justify-center">
+          <Space direction="horizontal" size={30}>
+            <Card
+              title={<Title level={4}>Assigned Patients</Title>}
+              extra={
+                <a href="../doctordashboard/doctorappointment">View all</a>
+              }
+              style={{
+                width: 400,
+                backgroundColor: "#FFF5F5",
+                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+              }}
+              hoverable
+            >
+              <Row justify="space-around" align="middle">
+                <Col span={20}>
+                  {renderProgress(assignedPatientsCount, "#FF4D4F", "#FAAD14")}
+                </Col>
+                <Col span={4}>
+                  <div className="text-6xl text-red-600">
+                    {assignedPatientsCount !== null
+                      ? assignedPatientsCount
+                      : "Loading..."}
+                  </div>
+                </Col>
+              </Row>
+            </Card>
+
+            <Card
+              title={<Title level={4}>Follow-up Patients</Title>}
+              extra={
+                <a href="../doctordashboard/doctorappointment">View all</a>
+              }
+              style={{
+                width: 400,
+                backgroundColor: "#BAFFC7",
+                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+              }}
+              hoverable
+            >
+              <Row justify="space-around" align="middle">
+                <Col span={20}>
+                  {renderProgress(followUpCount, "#297846", "#3AF27D")}
+                </Col>
+                <Col span={4}>
+                  <div className="text-6xl text-green-600">
+                    {followUpCount !== null ? followUpCount : "Loading..."}
+                  </div>
+                </Col>
+              </Row>
+            </Card>
+
+            <Card
+              title={<Title level={4}>Consultation Patients</Title>}
+              extra={
+                <a href="../doctordashboard/doctorappointment">View all</a>
+              }
+              style={{
+                width: 400,
+                backgroundColor: "#FCF4BD",
+                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+              }}
+              hoverable
+            >
+              <Row justify="space-around" align="middle">
+                <Col span={20}>
+                  {renderProgress(consultationCount, "#7C722C", "#F2DA3A")}
+                </Col>
+                <Col span={4}>
+                  <div className="text-6xl text-yellow-600">
+                    {consultationCount !== null
+                      ? consultationCount
+                      : "Loading..."}
+                  </div>
+                </Col>
+              </Row>
+            </Card>
           </Space>
-          <div style={{ marginTop: "10px" }}>
-            {generateGraph(appointmentsCount, "#054d94")}
+        </div>
+        <div className="mt-8">
+          <div className="flex">
+            {/* Pie Chart rendering */}
+            <div className="mr-8">{renderPieChart()}</div>
+            <div className="mt-10">
+              <div className="ml-4">
+                <div className="flex items-center mb-2">
+                  <div className="w-4 h-4 bg-red-500 rounded-full mr-2"></div>
+                  <span>
+                    Assigned Patients -{" "}
+                    {assignedPatientsCount !== null
+                      ? `${assignedPatientsCount} (${(
+                          (assignedPatientsCount / totalAppointmentsCount) *
+                          100
+                        ).toFixed(1)}%)`
+                      : "Loading..."}
+                  </span>
+                </div>
+                <div className="flex items-center mb-2">
+                  <div className="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
+                  <span>
+                    Follow-up Patients -{" "}
+                    {followUpCount !== null
+                      ? `${followUpCount} (${(
+                          (followUpCount / totalAppointmentsCount) *
+                          100
+                        ).toFixed(1)}%)`
+                      : "Loading..."}
+                  </span>
+                </div>
+                <div className="flex items-center mb-2">
+                  <div className="w-4 h-4 bg-yellow-500 rounded-full mr-2"></div>
+                  <span>
+                    Consultation Patients -{" "}
+                    {consultationCount !== null
+                      ? `${consultationCount} (${(
+                          (consultationCount / totalAppointmentsCount) *
+                          100
+                        ).toFixed(1)}%)`
+                      : "Loading..."}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
-        </Card>
-        <Card
-          title="Assigned Patients"
-          extra={<a href="../doctordashboard/doctorappointment">View all</a>}
-          style={{ width: 400, backgroundColor: "#FFE4E1" }}
-        >
-          <Space direction="horizontal">
-            <h1>
-              {assignedPatientsCount !== null
-                ? assignedPatientsCount
-                : "Loading..."}
-            </h1>
-            <span>Assigned</span>
-          </Space>
-          <div style={{ marginTop: "10px" }}>
-            {generateGraph(assignedPatientsCount, "#990f00")}
-          </div>
-        </Card>
-      </Space>
+        </div>
+      </div>
     </div>
   );
 }
