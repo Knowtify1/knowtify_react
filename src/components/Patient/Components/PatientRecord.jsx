@@ -18,9 +18,6 @@ const { Title, Text } = Typography;
 function PatientsRecord() {
   const [userDetails, setUserDetails] = useState(null);
   const [patientDetails, setPatientDetails] = useState(null);
-  const [editableRows, setEditableRows] = useState({});
-  const [editedData, setEditedData] = useState({});
-  const [editSaved, setEditSaved] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -83,51 +80,6 @@ function PatientsRecord() {
     }
   };
 
-  const handleSave = async () => {
-    try {
-      await Promise.all(
-        Object.keys(editedData).map(async (index) => {
-          const { id, ...data } = editedData[index];
-          const patientRef = doc(db, "patientRecords", id);
-          await updateDoc(patientRef, data);
-        })
-      );
-      setEditSaved(true);
-      setTimeout(() => {
-        setEditSaved(false);
-      }, 3000);
-      console.log("Patient details saved successfully.");
-    } catch (error) {
-      console.error("Error updating patient details:", error.message);
-    }
-  };
-
-  const handleCellChange = (value, field, index) => {
-    const updatedEditedData = { ...editedData };
-    updatedEditedData[index] = {
-      ...editedData[index],
-      [field]: value,
-    };
-    setEditedData(updatedEditedData);
-  };
-
-  const handleEditClick = (index) => {
-    const updatedEditableRows = { ...editableRows };
-    updatedEditableRows[index] = true; // Enable editing for this row
-    setEditableRows(updatedEditableRows);
-  };
-
-  const handleCancelEdit = (index) => {
-    const updatedEditableRows = { ...editableRows };
-    updatedEditableRows[index] = false; // Disable editing for this row
-    setEditableRows(updatedEditableRows);
-
-    // Reset edited data to original data
-    const updatedEditedData = { ...editedData };
-    updatedEditedData[index] = { ...patientDetails[index] };
-    setEditedData(updatedEditedData);
-  };
-
   const columns = [
     {
       title: "Specialty Doctor",
@@ -135,102 +87,56 @@ function PatientsRecord() {
       key: "typeOfDoctor",
     },
     {
-      title: "Medical History",
-      dataIndex: "medicalHistory",
-      key: "medicalHistory",
-      render: (text, record, index) =>
-        editableRows[index] ? (
-          <Input.TextArea
-            rows={4}
-            value={editedData[index]?.medicalHistory || text}
-            onChange={(e) =>
-              handleCellChange(e.target.value, "medicalHistory", index)
-            }
-          />
-        ) : (
-          text
-        ),
-    },
-    {
-      title: "Family Medical History",
-      dataIndex: "familyMedicalHistory",
-      key: "familyMedicalHistory",
-      render: (text, record, index) =>
-        editableRows[index] ? (
-          <Input.TextArea
-            rows={4}
-            value={editedData[index]?.familyMedicalHistory || text}
-            onChange={(e) =>
-              handleCellChange(e.target.value, "familyMedicalHistory", index)
-            }
-          />
-        ) : (
-          text
-        ),
-    },
-    {
-      title: "Allergies",
-      dataIndex: "allergies",
-      key: "allergies",
-      render: (text, record, index) =>
-        editableRows[index] ? (
-          <Input.TextArea
-            rows={4}
-            value={editedData[index]?.allergies || text}
-            onChange={(e) =>
-              handleCellChange(e.target.value, "allergies", index)
-            }
-          />
-        ) : (
-          text
-        ),
-    },
-    {
-      title: "Previous Diagnoses",
+      title: "Diagnosis",
       dataIndex: "previousDiagnoses",
       key: "previousDiagnoses",
     },
     {
-      title: "Surgeries or Treatments",
-      dataIndex: "surgeriesTreatments",
-      key: "surgeriesTreatments",
+      title: "Investigations ordered (labs, imaging, etc.)",
+      dataIndex: "investigationsOrdered",
+      key: "investigationsOrdered",
     },
     {
-      title: "Actions",
-      dataIndex: "actions",
-      key: "actions",
-      render: (text, record, index) => (
-        <Space>
-          {editableRows[index] ? (
-            <>
-              <Button type="success" onClick={() => handleSave(index)}>
-                Save
-              </Button>
-              <Button onClick={() => handleCancelEdit(index)}>
-                <CloseOutlined /> Cancel
-              </Button>
-            </>
-          ) : (
-            <Button
-              icon={<EditOutlined />}
-              onClick={() => handleEditClick(index)}
-            >
-              Edit
-            </Button>
-          )}
-        </Space>
-      ),
+      title: "Treatment plan",
+      dataIndex: "treatmentPlan",
+      key: "treatmentPlan",
+    },
+    {
+      title: "Referrals (if any)",
+      dataIndex: "referrals",
+      key: "referrals",
+    },
+    {
+      title: "Lifestyle recommendations",
+      dataIndex: "lifestyleRecommendations",
+      key: "lifestyleRecommendations",
+    },
+    {
+      title: "Follow-up plan",
+      dataIndex: "followUpPlan",
+      key: "followUpPlan",
     },
   ];
 
-  useEffect(() => {
-    if (editSaved) {
-      message.success("Edit saved successfully");
-    }
-  }, [editSaved]);
-
   return (
     <div className="overflow-auto max-h-screen p-4">
+      {userDetails && (
+        <div>
+          <p>
+            <strong>Patient Name:</strong> {userDetails.name}
+          </p>
+          <p>
+            <strong>Age:</strong> {userDetails.age}
+          </p>
+          <p>
+            <strong>Contact No.:</strong> {userDetails.phone}
+          </p>
+          <p>
+            <strong>Address:</strong>{" "}
+            {`${userDetails.patientAddress.street}, ${userDetails.patientAddress.barangay}, ${userDetails.patientAddress.city}, ${userDetails.patientAddress.province}`}
+          </p>
+        </div>
+      )}
       <Table
         columns={columns}
         dataSource={patientDetails}
@@ -239,8 +145,6 @@ function PatientsRecord() {
         title={() => "Patients Records"}
         bordered
       />
-      <Button onClick={handleSave}>Save</Button>
-      <Button onClick={() => window.location.reload()}>Refresh Page</Button>
     </div>
   );
 }

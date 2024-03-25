@@ -7,8 +7,8 @@ import {
   DatePicker,
   Modal,
   Form,
+  message,
   TimePicker,
-  message, // Import message from antd
 } from "antd";
 import {
   setDoc,
@@ -25,6 +25,7 @@ import {
 } from "../../../config/firebase.jsx";
 import moment from "moment";
 import { sendSMS } from "../../../config/sendSMS.jsx";
+import dayjs from "dayjs"; // Import dayjs
 
 function TablePendingAppointments() {
   const [data, setData] = useState([]);
@@ -49,8 +50,22 @@ function TablePendingAppointments() {
     {
       title: "Appointment Time",
       dataIndex: "appointmentTime",
-      render: (text) => <span>{text ? text.replace(/"/g, "") : ""}</span>,
+      render: (text, record) => {
+        const appointmentTime = moment(text, "h:mm A");
+        const timeLabel = appointmentTime.isBetween(
+          moment("7:00 AM", "h:mm A"),
+          moment("11:59 AM", "h:mm A")
+        )
+          ? "AM"
+          : "PM";
+        return (
+          <span>
+            {appointmentTime.format("h:mm")} {timeLabel}
+          </span>
+        );
+      },
     },
+
     {
       title: "Reason",
       dataIndex: "reasonForAppointment",
@@ -139,7 +154,7 @@ function TablePendingAppointments() {
     form.setFieldsValue({
       key: record.key,
       dateOfAppointment: moment(record.dateOfAppointment),
-      appointmentTime: moment(record.appointmentTime, "HH:mm"),
+      appointmentTime: moment(record.appointmentTime, "h:mm A"),
     });
   };
 
@@ -166,7 +181,7 @@ function TablePendingAppointments() {
         appointmentRef,
         {
           appointmentDate: dateOfAppointment.toDate(),
-          appointmentTime: appointmentTime.format("HH:mm"),
+          appointmentTime: appointmentTime.format("h:mm A"),
         },
         { merge: true }
       );
@@ -179,7 +194,7 @@ function TablePendingAppointments() {
       const message = `Good day, ${patientName}! Your booking with Mountain Studio Specialty Clinic has been rescheduled on Date: ${dateOfAppointment.format(
         "MM/DD/YYYY"
       )}, Time: ${appointmentTime.format(
-        "HH:mm"
+        "h:mm A"
       )}. Please be at the clinic 5 minutes before your appointment schedule. Thank you!`;
       sendSMS(contactNo, message); // Send SMS
       setVisible(false);
@@ -235,6 +250,7 @@ function TablePendingAppointments() {
   useEffect(() => {
     fetchAppointments(selectedDate, setData, setLoading);
   }, [selectedDate]);
+
   const onSelectChange = (newSelectedRowKeys) => {
     console.log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
@@ -246,7 +262,7 @@ function TablePendingAppointments() {
     const index = newData.findIndex((item) => key === item.key);
     if (index > -1) {
       newData[index].dateOfAppointment = dateOfAppointment;
-      newData[index].appointmentTime = appointmentTime.format("HH:mm");
+      newData[index].appointmentTime = appointmentTime.format("h:mm A");
       setData(newData);
     }
   };
@@ -266,6 +282,11 @@ function TablePendingAppointments() {
     return "";
   };
 
+  const disabledDate = (current) => {
+    // Disable past dates
+    return current && current < dayjs().startOf("day");
+  };
+
   return (
     <>
       <div>
@@ -273,7 +294,10 @@ function TablePendingAppointments() {
           <Space direction="horizontal" size={40}>
             <Space direction="horizontal">
               <h1>Select Appointment Date:</h1>
-              <DatePicker onChange={handleDateChange} />
+              <DatePicker
+                onChange={handleDateChange}
+                disabledDate={disabledDate}
+              />
             </Space>
             <h1>Pending Appointments: {data.length}</h1>
             <h1>{getCurrentDateMessage()}</h1>
@@ -302,7 +326,7 @@ function TablePendingAppointments() {
                 label="Appointment Date"
                 rules={[{ required: true, message: "Please select a date" }]}
               >
-                <DatePicker />
+                <DatePicker disabledDate={disabledDate} />
               </Form.Item>
               <Form.Item
                 name="appointmentTime"
@@ -310,7 +334,7 @@ function TablePendingAppointments() {
                 rules={[{ required: true, message: "Please select a time" }]}
                 style={{ marginBottom: 0 }}
               >
-                <TimePicker format="HH:mm" />
+                <TimePicker format="h:mm A" minuteStep={30} />
               </Form.Item>
             </Form>
           </Modal>

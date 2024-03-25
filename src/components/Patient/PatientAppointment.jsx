@@ -12,6 +12,7 @@ import { Modal, Button, notification, Table, Card } from "antd";
 import BookAppointmentForm from "./BookAppointmentForm.jsx";
 import FollowUpForm from "../Patient/Components/FollowUpForm.jsx";
 import { sendSMS } from "../../config/sendSMS.jsx";
+import moment from "moment";
 
 function PatientAppointment() {
   const [userDetails, setUserDetails] = useState(null);
@@ -79,13 +80,14 @@ function PatientAppointment() {
         ...patientsData,
       ];
 
-      // Calculate remaining days for each appointment
+      // Update appointments status and remaining days
       const updatedAppointments = allAppointments.map((appointment) => {
         const appointmentDate = new Date(appointment.appointmentDate.toDate());
         const today = new Date();
         const diffTime = appointmentDate.getTime() - today.getTime();
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return { ...appointment, daysRemaining: diffDays };
+        const status = diffDays <= 0 ? "Done" : appointment.status;
+        return { ...appointment, daysRemaining: diffDays, status: status };
       });
 
       const sortedAppointments = updatedAppointments.sort(
@@ -121,16 +123,35 @@ function PatientAppointment() {
     assignedDoctor
   ) => {
     try {
+      // Calculate the date one day before the appointment
       const appointmentDateTime = appointmentDate.toDate();
+      const reminderDate = new Date(appointmentDateTime);
+      reminderDate.setDate(reminderDate.getDate() - 1);
+
+      // Remove quotation marks if appointmentTime is defined
       const cleanedAppointmentTime = appointmentTime
         ? appointmentTime.replace(/"/g, "")
         : "";
 
-      const message = `Hello ${patientName}, this is to remind you of your upcoming appointment with Mountain Studio Specialty Clinic on ${appointmentDateTime.toLocaleDateString()} at ${cleanedAppointmentTime}. Please be on time. Thank you!`;
+      // Ensure assignedDoctor is defined
+      const doctor = assignedDoctor || "Doctor"; // If assignedDoctor is undefined, use "Doctor" as default
 
-      sendSMS(contactNo, message);
-      console.log("SMS reminder sent successfully.");
-      // Add message when reminder is set
+      // Construct SMS message
+      const message = `Hello ${patientName}, this is to remind you of your upcoming appointment with Mountain Top Specialty Clinic on ${appointmentDateTime.toLocaleDateString()} at ${cleanedAppointmentTime} with Dr. ${doctor}. Please be on time. Thank you!`;
+
+      // Check if it's time to send the reminder
+      const today = new Date();
+      if (
+        today.getDate() === reminderDate.getDate() &&
+        today.getMonth() === reminderDate.getMonth() &&
+        today.getFullYear() === reminderDate.getFullYear()
+      ) {
+        // Sending SMS to the patient
+        sendSMS(contactNo, message); // Send SMS
+        console.log("SMS reminder sent successfully.");
+      } else {
+        console.log("Reminder SMS not sent. It's not time yet.");
+      }
       notification.success({
         message: "Reminder Set",
         description: "A reminder has been set for this appointment.",
@@ -187,13 +208,25 @@ function PatientAppointment() {
       dataIndex: "appointmentDate",
       key: "appointmentDate",
       render: (text, record) =>
-        record.appointmentDate?.toDate().toLocaleDateString(),
+        moment(record.appointmentDate.toDate()).format("MMMM D, YYYY"),
     },
     {
       title: "Appointment Time",
       dataIndex: "appointmentTime",
-      key: "appointmentTime",
-      render: (text, record) => record.appointmentTime.replace(/"/g, ""),
+      render: (text, record) => {
+        const appointmentTime = moment(text, "h:mm A");
+        const timeLabel = appointmentTime.isBetween(
+          moment("7:00 AM", "h:mm A"),
+          moment("11:59 AM", "h:mm A")
+        )
+          ? "AM"
+          : "PM";
+        return (
+          <span>
+            {appointmentTime.format("h:mm")} {timeLabel}
+          </span>
+        );
+      },
     },
     {
       title: "Reference ID",
@@ -220,14 +253,14 @@ function PatientAppointment() {
                 record.assignedDoctor
               )
             }
-            type="primary"
+            type="success"
             className="bg-yellow-400 rounded mt-3 ml-3"
           >
             Set Reminder
           </Button>
           <Button
             onClick={() => handleFollowUp(record)}
-            type="default"
+            type="success"
             className="bg-green-600 rounded mt-3 ml-3"
           >
             Follow-Up

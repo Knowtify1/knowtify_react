@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Card, Table, Input, Button, Form } from "antd";
+import { Card, Table, Input, Button } from "antd";
 import {
   auth,
   db,
   collection,
   addDoc,
-  getDoc,
   updateDoc,
   query,
   where,
@@ -40,6 +39,39 @@ function PatientRecords() {
     };
     fetchData();
   }, []);
+
+  const handleHistoryChange = (e, record) => {
+    const { value } = e.target;
+    setPatients(
+      patients.map((patient) =>
+        patient.patientName === record.patientName
+          ? { ...patient, patientHistory: value }
+          : patient
+      )
+    );
+  };
+
+  const handleFamilyHistoryChange = (e, record) => {
+    const { value } = e.target;
+    setPatients(
+      patients.map((patient) =>
+        patient.patientName === record.patientName
+          ? { ...patient, patientFamilyHistory: value }
+          : patient
+      )
+    );
+  };
+
+  const handleAllergiesChange = (e, record) => {
+    const { value } = e.target;
+    setPatients(
+      patients.map((patient) =>
+        patient.patientName === record.patientName
+          ? { ...patient, patientAllergies: value }
+          : patient
+      )
+    );
+  };
 
   const onFinish = async () => {
     const user = auth.currentUser;
@@ -89,21 +121,40 @@ function PatientRecords() {
       title: "Name",
       dataIndex: "patientName",
       key: "patientName",
+      render: (text) => <span>{text}</span>,
     },
     {
       title: "Patient History",
       dataIndex: "patientHistory",
       key: "patientHistory",
+      render: (_, record) => (
+        <TextArea
+          value={record.patientHistory}
+          onChange={(e) => handleHistoryChange(e, record)}
+        />
+      ),
     },
     {
       title: "Patient Family History",
       dataIndex: "patientFamilyHistory",
       key: "patientFamilyHistory",
+      render: (_, record) => (
+        <TextArea
+          value={record.patientFamilyHistory}
+          onChange={(e) => handleFamilyHistoryChange(e, record)}
+        />
+      ),
     },
     {
       title: "Patient Allergies",
       dataIndex: "patientAllergies",
       key: "patientAllergies",
+      render: (_, record) => (
+        <TextArea
+          value={record.patientAllergies}
+          onChange={(e) => handleAllergiesChange(e, record)}
+        />
+      ),
     },
   ];
 
@@ -125,41 +176,13 @@ function PatientRecords() {
           >
             <PatientsRecord />
           </Card>
-          <Card
-            className="overflow-auto max-h-screen p-4" // Set a maximum height and padding
-          >
-            <Form layout="vertical" onFinish={onFinish}>
-              <Form.Item label="Name">
-                <span>{name}</span> {/* Display name as text */}
-              </Form.Item>
-              <Form.Item label="Patient History" name="patientHistory">
-                <TextArea
-                  value={patientHistory}
-                  onChange={(e) => setPatientHistory(e.target.value)}
-                />
-              </Form.Item>
-              <Form.Item
-                label="Patient Family History"
-                name="patientFamilyHistory"
-              >
-                <TextArea
-                  value={patientFamilyHistory}
-                  onChange={(e) => setPatientFamilyHistory(e.target.value)}
-                />
-              </Form.Item>
-              <Form.Item label="Patient Allergies" name="patientAllergies">
-                <TextArea
-                  value={patientAllergies}
-                  onChange={(e) => setPatientAllergies(e.target.value)}
-                />
-              </Form.Item>
-              <Form.Item>
-                <Button type="primary" htmlType="submit">
-                  Save
-                </Button>
-              </Form.Item>
-            </Form>
-            <Table dataSource={patients} columns={columns} />
+          <Card className="overflow-auto max-h-screen p-4">
+            {" "}
+            {/* Set a maximum height and padding */}
+            <Button type="primary" onClick={onFinish}>
+              Save
+            </Button>
+            <Table dataSource={patients} columns={columns} pagination={false} />
           </Card>
         </div>
       </div>

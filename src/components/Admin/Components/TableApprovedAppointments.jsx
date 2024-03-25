@@ -53,13 +53,26 @@ function TableApprovedAppointments() {
       title: "Appointment Date",
       dataIndex: "dateOfAppointment",
       render: (text, record) => (
-        <span>{record.appointmentDate?.toDate().toLocaleDateString()}</span>
+        <span>{formatDate(record.appointmentDate)}</span>
       ),
     },
     {
       title: "Appointment Time",
       dataIndex: "appointmentTime",
-      render: (text) => <span>{text ? text.replace(/"/g, "") : ""}</span>,
+      render: (text, record) => {
+        const appointmentTime = moment(text, "h:mm A");
+        const timeLabel = appointmentTime.isBetween(
+          moment("7:00 AM", "h:mm A"),
+          moment("11:59 AM", "h:mm A")
+        )
+          ? "AM"
+          : "PM";
+        return (
+          <span>
+            {appointmentTime.format("h:mm")} {timeLabel}
+          </span>
+        );
+      },
     },
     {
       title: "Reason",
@@ -110,6 +123,14 @@ function TableApprovedAppointments() {
       ),
     },
   ];
+
+  const formatDate = (date) => {
+    if (date && date.toDate) {
+      const options = { month: "long", day: "numeric", year: "numeric" };
+      return date.toDate().toLocaleDateString(undefined, options);
+    }
+    return "";
+  };
 
   const fetchApprovedAppointments = async (
     selectedDate,

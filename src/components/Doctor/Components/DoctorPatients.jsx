@@ -140,11 +140,22 @@ function DoctorPatients() {
         moment(record.appointmentDate.toDate()).format("MMMM D, YYYY"),
     },
     {
-      title: "Time",
+      title: "Appointment Time",
       dataIndex: "appointmentTime",
-      key: "appointmentTime",
-      render: (text, record) =>
-        moment(record.appointmentTime, "HH:mm").format("HH:mm"),
+      render: (text, record) => {
+        const appointmentTime = moment(text, "h:mm A");
+        const timeLabel = appointmentTime.isBetween(
+          moment("7:00 AM", "h:mm A"),
+          moment("11:59 AM", "h:mm A")
+        )
+          ? "AM"
+          : "PM";
+        return (
+          <span>
+            {appointmentTime.format("h:mm")} {timeLabel}
+          </span>
+        );
+      },
     },
     {
       title: "Reason",
@@ -157,7 +168,7 @@ function DoctorPatients() {
       key: "action",
       render: (text, record) => (
         <Button type="link" onClick={() => onEditClick(record)}>
-          Edit
+          EMR
         </Button>
       ),
     },

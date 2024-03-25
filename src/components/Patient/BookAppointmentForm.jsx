@@ -216,7 +216,6 @@ const BookAppointmentForm = () => {
       navigate("/appointmentsuccess", {
         state: { appointmentData: userData, phone: contactno },
       });
-      s;
     }
   };
 

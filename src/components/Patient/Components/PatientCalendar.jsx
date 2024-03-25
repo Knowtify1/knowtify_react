@@ -103,7 +103,11 @@ function PatientCalendar() {
           <AntModal
             title={`Appointments on ${selectedPatient?.appointmentDate
               ?.toDate()
-              .toLocaleDateString()}`}
+              .toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}`}
             visible={modalVisible}
             onCancel={handleModalCancel}
             footer={null}
@@ -114,10 +118,13 @@ function PatientCalendar() {
                 <p>
                   Appointment Date:{" "}
                   {moment(selectedPatient.appointmentDate.toDate()).format(
-                    "MMMM Do YYYY"
+                    "MMMM D, YYYY"
                   )}
                 </p>
-                <p>Appointment Time: {selectedPatient.appointmentTime}</p>
+                <p>
+                  Appointment Time:{" "}
+                  {selectedPatient.appointmentTime.replace(/"/g, "")}
+                </p>
                 <p>Reason: {selectedPatient.reasonForAppointment}</p>
                 <p>Doctor: {selectedPatient.assignedDoctor}</p>
                 <p>Reference ID: {selectedPatient.reference}</p>

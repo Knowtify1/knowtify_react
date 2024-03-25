@@ -1,26 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { Button, DatePicker, Form, Input, Select, Row, Col, Modal } from "antd";
 const { TextArea } = Input;
-import { Timestamp, getDoc, doc } from "firebase/firestore";
 import {
-  auth,
-  db,
-  setDoc,
+  Timestamp,
+  getDoc,
+  doc,
   collection,
-  addDoc,
   getDocs,
   query,
   where,
-} from "../../../config/firebase";
+} from "firebase/firestore";
+import { auth, db } from "../../../config/firebase";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import "dayjs/locale/en";
-
-const generateUniqueReference = () => {
-  const prefix = "AP";
-  const randomDigits = Math.floor(Math.random() * 10000000); // Generates a random 7-digit number
-  return `${prefix}${randomDigits}`;
-};
 
 const FollowUpForm = () => {
   const [componentDisabled, setComponentDisabled] = useState(false);
@@ -40,7 +33,6 @@ const FollowUpForm = () => {
   const [patientDetails, setPatientDetails] = useState({});
   const [selectedDoctor, setSelectedDoctor] = useState(null); // Track selected doctor
   const [assignedDoctor, setAssignedDoctor] = useState(null); // Track assigned doctor
-
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
@@ -78,7 +70,10 @@ const FollowUpForm = () => {
           );
 
           // Fetch assigned doctor
-          setAssignedDoctor(userDetails.assignedDoctor);
+          const assignedDoctorId =
+            userDetails.assignedDoctor || userDetails.previousDoctor;
+          setAssignedDoctor(assignedDoctorId);
+          setSelectedDoctor(userDetails.previousDoctor); // Select previous doctor by default
         } else {
           console.log("User details not found.");
         }
@@ -112,14 +107,96 @@ const FollowUpForm = () => {
   }, [selectedDoctor, assignedDoctor]);
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "settings"));
+        const availabilityData = {};
+        const timeOptionsData = {};
+        let specialtiesData = [];
+
+        querySnapshot.forEach((doc) => {
+          const specialty = doc.data().specialty;
+          const specialtyLabel = doc.data().specialtyLabel;
+          const days = doc.data().days || [];
+          let times = doc.data().times || [];
+
+          specialtiesData = [
+            ...specialtiesData,
+            { value: specialty, label: specialtyLabel },
+          ];
+          availabilityData[specialty] = days;
+
+          // Sort times into two ranges: 7:00 - 12:00 and 1:00 - 8:00
+          times = times.sort((a, b) => {
+            const hourA = parseInt(a.split(":")[0]);
+            const hourB = parseInt(b.split(":")[0]);
+
+            if (hourA >= 7 && hourA < 12 && hourB >= 7 && hourB < 12) {
+              return hourA - hourB;
+            } else if (hourA >= 7 && hourA < 12) {
+              return -1;
+            } else if (hourB >= 7 && hourB < 12) {
+              return 1;
+            } else {
+              return hourA - hourB;
+            }
+          });
+
+          const formattedTimes = times.map((time) => ({
+            value: time,
+            label: `${time} ${
+              parseInt(time.split(":")[0]) >= 7 &&
+              parseInt(time.split(":")[0]) < 12
+                ? "AM"
+                : parseInt(time.split(":")[0]) === 12
+                ? "PM"
+                : "PM"
+            }`,
+          }));
+
+          timeOptionsData[specialty] = formattedTimes;
+        });
+
+        // Convert timeOptionsData to the desired format
+        const doctorTimeOptions = {};
+        Object.keys(timeOptionsData).forEach((specialty) => {
+          doctorTimeOptions[specialty] = timeOptionsData[specialty].map(
+            (time) => ({
+              value: time.value,
+              label: time.label,
+            })
+          );
+        });
+
+        settypesofDoc(specialtiesData);
+        setDoctorAvailability(availabilityData);
+        setDoctorTimeOptions(doctorTimeOptions);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
     const selectedType = form.getFieldValue("typedoctor");
     setAvailableDays(doctorAvailability[selectedType] || []);
-    setAvailableTimes(doctorTimeOptions[selectedType] || []);
+    const timeOptions = doctorTimeOptions[selectedType] || [];
+    form.setFieldsValue({
+      timepicker: timeOptions.length > 0 ? timeOptions[0].value : null,
+    });
+    setAvailableTimes(timeOptions);
   }, [form, doctorAvailability, doctorTimeOptions]);
 
   const handleTypeChange = (value) => {
     const selectedType = value;
-    setSelectedDoctor(selectedType); // Update selected doctor
+    const timeOptions = doctorTimeOptions[selectedType] || [];
+    form.setFieldsValue({
+      timepicker: timeOptions.length > 0 ? timeOptions[0].value : null,
+    });
+    setAvailableDays(doctorAvailability[selectedType] || []);
+    setAvailableTimes(timeOptions);
   };
 
   const onFinish = async (values) => {

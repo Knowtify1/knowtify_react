@@ -97,7 +97,6 @@ function AppointmentSuccess() {
       type: "patient",
       referenceId: appointmentData.reference,
       phone: phone,
-      phone: phone,
       age: appointmentData.age, // Assuming age is part of appointmentData
       patientAddress: appointmentData.patientAddress,
       dateofregistration: dateofregistration,
@@ -162,6 +161,7 @@ function AppointmentSuccess() {
                   <p className="text-lg">
                     <strong>Appointment Time:</strong>{" "}
                     {appointmentData.appointmentTime}{" "}
+                    {/* Display the appointment time with label */}
                   </p>
                 </div>
               </div>
@@ -183,22 +183,22 @@ function AppointmentSuccess() {
               </div>
 
               {/* <div className="mt-6">
-                <p className="text-lg mb-2">
-                  Upon a successful appointment, you will receive a confirmation
-                  receipt. Please present this receipt when you visit the
-                  clinic.
-                </p>
-                <Button
-                  type="primary"
-                  className="bg-blue-500 hover:bg-blue-700"
-                  disabled
-                >
-                  View Receipt
-                </Button>
-                <p className="text-base mb-2 text-rose-600">
-                  Wait for approval and you will receive your receipt
-                </p>
-              </div> */}
+            <p className="text-lg mb-2">
+              Upon a successful appointment, you will receive a confirmation
+              receipt. Please present this receipt when you visit the
+              clinic.
+            </p>
+            <Button
+              type="primary"
+              className="bg-blue-500 hover:bg-blue-700"
+              disabled
+            >
+              View Receipt
+            </Button>
+            <p className="text-base mb-2 text-rose-600">
+              Wait for approval and you will receive your receipt
+            </p>
+          </div> */}
             </Card>
 
             <div className="mt-4 flex justify-center">

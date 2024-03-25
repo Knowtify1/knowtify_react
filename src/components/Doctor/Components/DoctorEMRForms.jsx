@@ -1,14 +1,6 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  Card,
-  Typography,
-  Form,
-  Input,
-  Button,
-  Space,
-  notification,
-} from "antd";
+import { Card, Typography, Form, Input, Button, Row, Col } from "antd";
 import moment from "moment";
 import {
   auth,
@@ -80,93 +72,89 @@ function DoctorEMRForms() {
   return (
     <>
       <div>
-        <Card title="Patient Details">
-          {patientEMRData ? (
-            <div>
-              <p>
-                <strong>Patient Name:</strong> {patientEMRData.patientName}
-              </p>
-              <p>
-                <strong>Age:</strong> {patientEMRData.age}
-              </p>
-              <p>
-                <strong>Contact Number:</strong> {patientEMRData.contactNo}
-              </p>
-              <p>
-                <strong>Appointment Date:</strong>{" "}
-                {patientEMRData.appointmentDate instanceof Date
-                  ? moment(patientEMRData.appointmentDate).format(
+        <Row gutter={[4, 4]} justify="center">
+          <Col span={10}>
+            <Card title="Patient Details">
+              {patientEMRData ? (
+                <div>
+                  <p>
+                    <strong>Patient Name:</strong> {patientEMRData.patientName}
+                  </p>
+                  <p>
+                    <strong>Age:</strong> {patientEMRData.age}
+                  </p>
+                  <p>
+                    <strong>Contact Number:</strong> {patientEMRData.contactNo}
+                  </p>
+                  <p>
+                    <strong>Appointment Date:</strong>{" "}
+                    {moment(patientEMRData.appointmentDate.toDate()).format(
                       "MMMM D, YYYY"
-                    )
-                  : "Invalid Date"}
-              </p>
-              <p>
-                <strong>Appointment Time:</strong>{" "}
-                {patientEMRData.appointmentTime}
-              </p>
-              <p>
-                <strong>Reason:</strong> {patientEMRData.reasonForAppointment}
-              </p>
-            </div>
-          ) : (
-            <p>No Data</p>
-          )}
-        </Card>
-        <Card title="Medical Information">
-          <Form name="medicalInformationForm" onFinish={onFinish}>
-            <Form.Item name="medicalHistory" label="Medical History">
-              <Input.TextArea />
-            </Form.Item>
-            <Form.Item name="previousDiagnoses" label="Previous Diagnoses">
-              <Input.TextArea />
-            </Form.Item>
-            <Form.Item
-              name="medicationsPrescribed"
-              label="Medications Prescribed Previously"
-            >
-              <Input.TextArea />
-            </Form.Item>
-            <Form.Item name="allergies" label="Allergies">
-              <Input.TextArea />
-            </Form.Item>
-            <Form.Item
-              name="surgeriesTreatments"
-              label="Previous Surgeries or Treatments"
-            >
-              <Input.TextArea />
-            </Form.Item>
-            <Form.Item
-              name="familyMedicalHistory"
-              label="Family Medical History"
-            >
-              <Input.TextArea />
-            </Form.Item>
-
-            <Form.Item name="appointmentRecords" label="Appointment Records">
-              <Input.TextArea />
-            </Form.Item>
-
-            <Form.Item>
-              <Space direction="horizontal" size={10}>
-                <Button
-                  type="primary"
-                  onClick={onCancel}
-                  style={{ marginLeft: 8 }}
-                  className="bg-blue-500 hover:bg-blue-700 text-white"
+                    )}
+                  </p>
+                  <p>
+                    <strong>Appointment Time:</strong>{" "}
+                    {patientEMRData.appointmentTime.replace(/"/g, "")}
+                  </p>
+                  <p>
+                    <strong>Reason:</strong>{" "}
+                    {patientEMRData.reasonForAppointment}
+                  </p>
+                </div>
+              ) : (
+                <p>No Data</p>
+              )}
+            </Card>
+          </Col>
+          <Col span={14}>
+            <Card title="Medical Information">
+              <Form
+                name="medicalInformationForm"
+                onFinish={onFinish}
+                className="space-y-4"
+              >
+                <Form.Item name="previousDiagnoses" label="Diagnosis">
+                  <Input.TextArea />
+                </Form.Item>
+                <Form.Item
+                  name="investigationsOrdered"
+                  label="Investigations ordered (labs, imaging, etc.)"
                 >
-                  Cancel
-                </Button>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  className="bg-blue-500 hover:bg-blue-700 text-white"
+                  <Input.TextArea />
+                </Form.Item>
+                <Form.Item name="treatmentPlan" label="Treatment plan">
+                  <Input.TextArea />
+                </Form.Item>
+                <Form.Item
+                  name="medicationsPrescribed"
+                  label="Medications prescribed"
                 >
-                  Save
-                </Button>
-              </Space>
-            </Form.Item>
-          </Form>
-        </Card>
+                  <Input.TextArea />
+                </Form.Item>
+                <Form.Item name="referrals" label="Referrals (if any)">
+                  <Input.TextArea />
+                </Form.Item>
+                <Form.Item
+                  name="lifestyleRecommendations"
+                  label="Lifestyle recommendations"
+                >
+                  <Input.TextArea />
+                </Form.Item>
+                <Form.Item name="followUpPlan" label="Follow-up plan">
+                  <Input.TextArea />
+                </Form.Item>
+                <Form.Item className="flex justify-center">
+                  <Button type="success" onClick={onCancel} className="mr-4">
+                    Cancel
+                  </Button>
+                  <Button type="success" htmlType="submit">
+                    Save
+                  </Button>
+                </Form.Item>
+              </Form>
+            </Card>
+          </Col>
+        </Row>
       </div>
     </>
   );

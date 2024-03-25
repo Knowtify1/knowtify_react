@@ -111,15 +111,7 @@ function DoctorPatientsRecords() {
               disabled={!isEditing(record.id)}
             />
             <Input
-              addonBefore={<strong>Medical History</strong>}
-              value={record.medicalHistory}
-              onChange={(e) =>
-                handleInputChange(e, record.id, "medicalHistory")
-              }
-              disabled={!isEditing(record.id)}
-            />
-            <Input
-              addonBefore={<strong>Previous Diagnoses</strong>}
+              addonBefore={<strong>Diagnosis</strong>}
               value={record.previousDiagnoses}
               onChange={(e) =>
                 handleInputChange(e, record.id, "previousDiagnoses")
@@ -127,7 +119,13 @@ function DoctorPatientsRecords() {
               disabled={!isEditing(record.id)}
             />
             <Input
-              addonBefore={<strong>Medications Prescribed Previously</strong>}
+              addonBefore={<strong>Treatment plan</strong>}
+              value={record.treatmentPlan}
+              onChange={(e) => handleInputChange(e, record.id, "treatmentPlan")}
+              disabled={!isEditing(record.id)}
+            />
+            <Input
+              addonBefore={<strong>Medications Prescribed </strong>}
               value={record.medicationsPrescribed}
               onChange={(e) =>
                 handleInputChange(e, record.id, "medicationsPrescribed")
@@ -135,25 +133,15 @@ function DoctorPatientsRecords() {
               disabled={!isEditing(record.id)}
             />
             <Input
-              addonBefore={<strong>Allergies</strong>}
-              value={record.allergies}
-              onChange={(e) => handleInputChange(e, record.id, "allergies")}
+              addonBefore={<strong>Referrals (if any)</strong>}
+              value={record.referrals}
+              onChange={(e) => handleInputChange(e, record.id, "referrals")}
               disabled={!isEditing(record.id)}
             />
             <Input
-              addonBefore={<strong>Previous Surgeries or Treatments</strong>}
-              value={record.surgeriesTreatment}
-              onChange={(e) =>
-                handleInputChange(e, record.id, "surgeriesTreatment")
-              }
-              disabled={!isEditing(record.id)}
-            />
-            <Input
-              addonBefore={<strong>Family Medical History</strong>}
-              value={record.familyMedicalHistory}
-              onChange={(e) =>
-                handleInputChange(e, record.id, "familyMedicalHistory")
-              }
+              addonBefore={<strong>Follow-up plan</strong>}
+              value={record.followUpPlan}
+              onChange={(e) => handleInputChange(e, record.id, "followUpPlan")}
               disabled={!isEditing(record.id)}
             />
 
