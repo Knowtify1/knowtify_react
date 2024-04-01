@@ -3,6 +3,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../../../config/firebase.jsx";
 import { EditOutlined } from "@ant-design/icons";
+import { message } from "antd";
 
 function AdminAccountDetails() {
   const [userDetails, setUserDetails] = useState(null);
@@ -48,7 +49,13 @@ function AdminAccountDetails() {
       const userRef = doc(db, "admin_accounts", userId);
       await updateDoc(userRef, updatedDetails);
       setUserDetails(updatedDetails);
+
+      // Save changes to users_accounts_records
+      const userRecordsRef = doc(db, "users_accounts_records", userId);
+      await updateDoc(userRecordsRef, updatedDetails);
+
       setEditing(false);
+      message.success("Changes saved successfully.");
     } catch (error) {
       console.error("Error updating document:", error);
     }
@@ -62,7 +69,11 @@ function AdminAccountDetails() {
   // Function to format Firestore Timestamp to a readable string
   const formatDate = (timestamp) => {
     const date = timestamp.toDate();
-    return date.toLocaleString();
+    return new Intl.DateTimeFormat("en-US", {
+      month: "long",
+      day: "2-digit",
+      year: "numeric",
+    }).format(date);
   };
 
   return (

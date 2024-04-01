@@ -12,13 +12,17 @@ import {
 } from "../../../config/firebase.jsx";
 import { Collapse, Input, Space, Button } from "antd";
 import { SaveOutlined, EditOutlined } from "@ant-design/icons";
+import moment from "moment";
 
 const { Panel } = Collapse;
 
 function DoctorPatientsRecords() {
   const [authID, setAuthID] = useState(null);
   const [patientsRecords, setPatientsRecords] = useState([]);
+  const [filteredRecords, setFilteredRecords] = useState([]);
   const [editingKey, setEditingKey] = useState("");
+  const [searchName, setSearchName] = useState("");
+  const [highlightedPanelKey, setHighlightedPanelKey] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -28,11 +32,26 @@ function DoctorPatientsRecords() {
       } else {
         setAuthID(null);
         setPatientsRecords([]);
+        setFilteredRecords([]);
       }
     });
 
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const filtered = patientsRecords.filter((patient) =>
+      patient.patientName.toLowerCase().includes(searchName.toLowerCase())
+    );
+    setFilteredRecords(filtered);
+
+    // Highlight the first matching panel
+    if (filtered.length > 0) {
+      setHighlightedPanelKey(filtered[0].id);
+    } else {
+      setHighlightedPanelKey(null);
+    }
+  }, [searchName, patientsRecords]);
 
   const fetchPatientsRecords = async (doctorID) => {
     try {
@@ -46,6 +65,9 @@ function DoctorPatientsRecords() {
         id: doc.id,
         ...doc.data(),
       }));
+
+      // Sort the records by patient name
+      records.sort((a, b) => a.patientName.localeCompare(b.patientName));
 
       setPatientsRecords(records);
     } catch (error) {
@@ -87,27 +109,58 @@ function DoctorPatientsRecords() {
     <div className="overflow-auto max-h-screen p-2">
       <h2>Doctor's Patients Records</h2>
 
-      <Collapse accordion>
-        {patientsRecords.map((record) => (
+      {/* Search Input */}
+      <Input
+        placeholder="Search by name"
+        value={searchName}
+        onChange={(e) => setSearchName(e.target.value)}
+        style={{ marginBottom: "1rem" }}
+      />
+
+      {/* Rendering Filtered and Sorted Patient Records */}
+      <Collapse
+        accordion
+        activeKey={highlightedPanelKey}
+        onChange={setHighlightedPanelKey}
+      >
+        {filteredRecords.map((record) => (
           <Panel key={record.id} header={<strong>{record.patientName}</strong>}>
+            {/* Display patient details */}
+            <div>
+              <p>
+                <strong>Patient Name:</strong> {record.patientName}
+              </p>
+              <p>
+                <strong>Age:</strong> {record.age}
+              </p>
+              <p>
+                <strong>Contact Number:</strong> {record.contactNo}
+              </p>
+              <p>
+                <strong>Appointment Date:</strong>{" "}
+                {moment(record.appointmentDate.toDate()).format("MMMM D, YYYY")}
+              </p>
+              <p>
+                <strong>Appointment Time:</strong>{" "}
+                {record.appointmentTime.replace(/"/g, "")}
+              </p>
+              <p>
+                <strong>Reason:</strong> {record.reasonForAppointment}
+              </p>
+              <p>
+                <strong>Family History:</strong> {record.patientFamilyHistory}
+              </p>
+              <p>
+                <strong>History:</strong> {record.patientHistory}
+              </p>
+              <p>
+                <strong>Allergies:</strong> {record.patientAllergies}
+              </p>
+            </div>
             <Input
               addonBefore={<strong>Reference ID</strong>}
               value={record.reference}
               onChange={(e) => handleInputChange(e, record.id, "reference")}
-              disabled={!isEditing(record.id)}
-            />
-            <Input
-              addonBefore={<strong>Patient Name</strong>}
-              value={record.patientName}
-              onChange={(e) => handleInputChange(e, record.id, "patientName")}
-              disabled={!isEditing(record.id)}
-            />
-            <Input
-              addonBefore={<strong>Assigned Doctor</strong>}
-              value={record.assignedDoctor}
-              onChange={(e) =>
-                handleInputChange(e, record.id, "assignedDoctor")
-              }
               disabled={!isEditing(record.id)}
             />
             <Input

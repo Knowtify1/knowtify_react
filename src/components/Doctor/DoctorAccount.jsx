@@ -3,7 +3,7 @@ import { Button, Card, Avatar } from "antd";
 import { useNavigate } from "react-router-dom";
 import DoctorAccountDetails from "./Components/DoctorAccountDetails";
 import { auth, signOut } from "../../config/firebase";
-import doc2 from "../../assets/doc2.png";
+import doc from "../../assets/doc.png";
 import DoctorsSchedule from "../Settings/DoctorsSchedule";
 
 function DoctorAccount() {
@@ -24,7 +24,7 @@ function DoctorAccount() {
       <div className="flex flex-row gap-4">
         <Card style={{ width: 400, height: 600 }}>
           <div className="flex items-center justify-center mb-2">
-            <Avatar size={120} src={doc2} />
+            <Avatar size={120} src={doc} />
           </div>
           <div className="mt-2 flex items-center justify-center"></div>
           <div className="mt-2 flex items-center justify-center">

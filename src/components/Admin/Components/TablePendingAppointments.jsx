@@ -124,7 +124,6 @@ function TablePendingAppointments() {
         { merge: true },
         { approved: true }
       );
-      message.success(`Appointment ${key} approved.`);
     } catch (error) {
       console.error("Error approving appointment:", error);
     }
@@ -289,53 +288,48 @@ function TablePendingAppointments() {
 
   return (
     <>
-      <div>
-        <Space direction="vertical" size={20} className="flex">
-          <Space direction="horizontal" size={40}>
-            <Space direction="horizontal">
-              <h1>Select Appointment Date:</h1>
+      <div className="container mx-auto px-4">
+        <Space direction="vertical" size={4} className="md:flex md:flex-col">
+          {/* Date selection, pending appointments count, and current date */}
+          <div className="flex justify-between items-center">
+            <div className="flex items-center">
+              <h1 className="mr-2">Select Appointment Date:</h1>
               <DatePicker
                 onChange={handleDateChange}
                 disabledDate={disabledDate}
               />
-            </Space>
-            <h1>Pending Appointments: {data.length}</h1>
-            <h1>{getCurrentDateMessage()}</h1>
-          </Space>
+            </div>
+            <div className="flex items-center">
+              <h1 className="mr-2">Pending Appointments: {data.length}</h1>
+              <h1>{getCurrentDateMessage()}</h1>
+            </div>
+          </div>
 
+          {/* Loading spinner or table */}
           {loading ? (
-            <Spin size="small" className="block" />
+            <div className="flex justify-center">
+              <Spin size="large" />
+            </div>
           ) : (
-            <Table columns={columns} dataSource={data} />
+            <Table
+              columns={columns}
+              dataSource={data}
+              pagination={{ pageSize: 5 }}
+              scroll={{ x: true }} // Enable horizontal scrolling
+            />
           )}
 
+          {/* Modal for editing appointment */}
           <Modal
             title="Edit Appointment"
             visible={visible}
             onOk={handleOk}
             onCancel={handleCancel}
-            cancelButtonProps={{ style: { color: "green" } }}
-            okButtonProps={{ style: { color: "green" } }}
+            cancelButtonProps={{ className: "text-green-500" }}
+            okButtonProps={{ className: "text-green-500" }}
           >
             <Form form={form} layout="vertical" initialValues={{}}>
-              <Form.Item name="key" hidden>
-                <input type="hidden" />
-              </Form.Item>
-              <Form.Item
-                name="dateOfAppointment"
-                label="Appointment Date"
-                rules={[{ required: true, message: "Please select a date" }]}
-              >
-                <DatePicker disabledDate={disabledDate} />
-              </Form.Item>
-              <Form.Item
-                name="appointmentTime"
-                label="Appointment Time"
-                rules={[{ required: true, message: "Please select a time" }]}
-                style={{ marginBottom: 0 }}
-              >
-                <TimePicker format="h:mm A" minuteStep={30} />
-              </Form.Item>
+              {/* Form items */}
             </Form>
           </Modal>
         </Space>

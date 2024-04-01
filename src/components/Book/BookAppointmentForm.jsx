@@ -48,6 +48,7 @@ function BookAppointmentForm() {
   const [doctorTimeOptions, setdoctorTimeOptions] = useState({});
   const [typesofDoc, settypesofDoc] = useState([]);
 
+  const [buttonLoading, setButtonLoading] = useState(false); // State to manage button loading state
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -141,13 +142,20 @@ function BookAppointmentForm() {
     const {
       patientname,
       contactno,
-      age,
+      birthdate, // Replace 'age' with 'birthdate'
       patientaddress,
       reasonforappointment,
       typedoctor,
       adate,
       timepicker,
     } = values;
+
+    // Disable the submit button to prevent multiple submissions
+    setButtonLoading(true);
+
+    // Calculate age from birthdate
+    const birthDate = dayjs(birthdate);
+    const age = dayjs().diff(birthDate, "year");
 
     const datePart = adate.startOf("day");
     const appointmentDate = datePart.toDate();
@@ -196,12 +204,14 @@ function BookAppointmentForm() {
       setModalCondition("schedexists");
       setModalMessage(message);
       showModal();
+      setButtonLoading(false); // Enable the submit button again
     } else {
       const userData = {
         createdDate: Timestamp.now(),
         patientName: patientname,
         contactNo: prefixedContactNo, // Save phone number with "+63" prefix
-        age: age,
+        birthdate: birthDate.toDate(), // Save birthdate
+        age: age, // Save calculated age
         patientAddress: patientaddress,
         reasonForAppointment: reasonforappointment,
         typeOfDoctor: typedoctor,
@@ -316,21 +326,28 @@ function BookAppointmentForm() {
               </Form.Item>
             </Col>
 
-            <Col span={3}>
+            <Col span={6}>
               <Form.Item
-                label="Age"
-                name="age"
+                label="Birthdate"
+                name="birthdate"
                 rules={[
                   {
                     required: true,
-                    message: "Please input your age!",
-                  },
-                  {
-                    validator: validateAge,
+                    message: "Please select your birthdate!",
                   },
                 ]}
               >
-                <Input type="number" />
+                <DatePicker
+                  style={{ width: "100%" }}
+                  disabledDate={(current) => {
+                    // Disable dates for which the user would be less than 18 years old
+                    return (
+                      current &&
+                      current >= dayjs().subtract(18, "year").endOf("day")
+                    );
+                  }}
+                  placeholder="Select Date"
+                />
               </Form.Item>
             </Col>
             <Col span={21}>
@@ -493,6 +510,7 @@ function BookAppointmentForm() {
                     type="primary"
                     className="bg-green-600 w-2/4 "
                     htmlType="submit"
+                    loading={buttonLoading} // Set loading state for the button
                   >
                     Submit
                   </Button>

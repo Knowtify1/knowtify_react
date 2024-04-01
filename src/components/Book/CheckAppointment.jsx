@@ -36,6 +36,11 @@ function DoctorAppointment() {
     setIsModalVisible(false);
   };
 
+  const formatDate = (date) => {
+    const options = { month: "long", day: "numeric", year: "numeric" };
+    return new Date(date).toLocaleDateString("en-US", options);
+  };
+
   const onFinish = async (values) => {
     const referenceID = values.referenceID;
     setLoading(true);
@@ -255,13 +260,11 @@ function DoctorAppointment() {
               </p>
               <p>
                 <strong>Appointment Date:</strong>{" "}
-                {appointmentData?.appointmentDate
-                  ?.toDate()
-                  .toLocaleDateString()}
+                {formatDate(appointmentData?.appointmentDate?.toDate())}
               </p>
               <p>
                 <strong>Appointment Time:</strong>{" "}
-                {appointmentData?.appointmentTime}
+                {appointmentData.appointmentTime.replace(/"/g, "")}{" "}
               </p>
               <p>
                 <strong>Patient Address:</strong>{" "}
@@ -294,9 +297,7 @@ function DoctorAppointment() {
               </p>
               <p>
                 <strong>Appointment Date:</strong>{" "}
-                {appointmentData?.appointmentDate
-                  ?.toDate()
-                  .toLocaleDateString()}
+                {formatDate(appointmentData?.appointmentDate?.toDate())}
               </p>
               <p>
                 <strong>Appointment Time:</strong>{" "}
@@ -304,8 +305,12 @@ function DoctorAppointment() {
               </p>
               <p>
                 <strong>Patient Address:</strong>{" "}
-                {appointmentData?.patientAddress}
+                {`${appointmentData?.patientAddress.province}, 
+                ${appointmentData?.patientAddress.city}, 
+                ${appointmentData?.patientAddress.barangay}, 
+                ${appointmentData?.patientAddress.street}`}
               </p>
+
               <p>
                 <strong>Reason for Appointment:</strong>{" "}
                 {appointmentData?.reasonForAppointment}

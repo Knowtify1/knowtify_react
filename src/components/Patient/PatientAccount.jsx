@@ -3,7 +3,7 @@ import { Button, Card, Avatar } from "antd";
 import { useNavigate } from "react-router-dom";
 import PatientAccountDetails from "./Components/PatientAccountDetails";
 import { auth, signOut } from "../../config/firebase";
-import josh from "../../assets/josh.jpg";
+import pat from "../../assets/pat.png";
 
 function PatientAccount() {
   const navigate = useNavigate();
@@ -23,10 +23,9 @@ function PatientAccount() {
       <div className="flex flex-col gap-4">
         <Card style={{ width: 400, height: 600 }}>
           <div className="flex items-center justify-center mb-2">
-            <Avatar size={120} src={josh} />
+            <Avatar size={120} src={pat} />
           </div>
-          <div className="mt-2 flex items-center justify-center">
-          </div>
+          <div className="mt-2 flex items-center justify-center"></div>
           <div className="mt-2 flex items-center justify-center">
             <PatientAccountDetails />
           </div>
@@ -35,7 +34,6 @@ function PatientAccount() {
             Logout
           </Button>
         </Card>
-        
       </div>
     </div>
   );

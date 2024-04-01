@@ -1,26 +1,44 @@
 import React, { useState, useEffect } from "react";
-import { Button, DatePicker, Form, Input, Select, Row, Col, Modal } from "antd";
-const { TextArea } = Input;
 import {
-  Timestamp,
-  getDoc,
-  doc,
+  Button,
+  DatePicker,
+  Form,
+  Input,
+  Select,
+  Space,
+  Row,
+  Col,
+  Modal,
+  message, // Added message from Ant Design
+} from "antd";
+const { TextArea } = Input;
+import { Timestamp, getDoc, doc } from "firebase/firestore";
+import {
+  auth,
+  db,
+  setDoc,
   collection,
+  addDoc,
   getDocs,
   query,
   where,
-} from "firebase/firestore";
-import { auth, db } from "../../../config/firebase";
+  fsTimeStamp,
+} from "../../../config/firebase";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import "dayjs/locale/en";
+
+const generateUniqueReference = () => {
+  const prefix = "AP";
+  const randomDigits = Math.floor(Math.random() * 10000000); // Generates a random 7-digit number
+  return `${prefix}${randomDigits}`;
+};
 
 const FollowUpForm = () => {
   const [componentDisabled, setComponentDisabled] = useState(false);
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [availableDays, setAvailableDays] = useState([]);
-  const [availableTimes, setAvailableTimes] = useState([]);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [modalClosable, setModalClosable] = useState(false);
@@ -28,11 +46,11 @@ const FollowUpForm = () => {
   const [modalCondition, setModalCondition] = useState("");
 
   const [doctorAvailability, setDoctorAvailability] = useState({});
-  const [doctorTimeOptions, setDoctorTimeOptions] = useState({});
+  const [doctorTimeOptions, setdoctorTimeOptions] = useState({});
   const [typesofDoc, settypesofDoc] = useState([]);
   const [patientDetails, setPatientDetails] = useState({});
-  const [selectedDoctor, setSelectedDoctor] = useState(null); // Track selected doctor
-  const [assignedDoctor, setAssignedDoctor] = useState(null); // Track assigned doctor
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false); // State to indicate if success message is shown
+
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
@@ -49,7 +67,6 @@ const FollowUpForm = () => {
             patientaddress: userDetails.patientAddress,
           });
           setPatientDetails(userDetails);
-
           // Fetch typeOfDoctor from other collections and set it in the form
           const appointmentsQuerySnapshot = await getDocs(
             query(
@@ -83,28 +100,6 @@ const FollowUpForm = () => {
     };
     fetchUserDetails();
   }, [form]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (selectedDoctor || assignedDoctor) {
-          const doctorId = selectedDoctor || assignedDoctor;
-          const doctorDoc = await getDoc(doc(db, "doctors", doctorId));
-          if (doctorDoc.exists()) {
-            const doctorData = doctorDoc.data();
-            const { availability, timeOptions } = doctorData;
-
-            setDoctorAvailability(availability || {});
-            setDoctorTimeOptions(timeOptions || {});
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchData();
-  }, [selectedDoctor, assignedDoctor]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -170,7 +165,7 @@ const FollowUpForm = () => {
 
         settypesofDoc(specialtiesData);
         setDoctorAvailability(availabilityData);
-        setDoctorTimeOptions(doctorTimeOptions);
+        setdoctorTimeOptions(doctorTimeOptions);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -182,12 +177,7 @@ const FollowUpForm = () => {
   useEffect(() => {
     const selectedType = form.getFieldValue("typedoctor");
     setAvailableDays(doctorAvailability[selectedType] || []);
-    const timeOptions = doctorTimeOptions[selectedType] || [];
-    form.setFieldsValue({
-      timepicker: timeOptions.length > 0 ? timeOptions[0].value : null,
-    });
-    setAvailableTimes(timeOptions);
-  }, [form, doctorAvailability, doctorTimeOptions]);
+  }, [form, doctorAvailability]);
 
   const handleTypeChange = (value) => {
     const selectedType = value;
@@ -196,7 +186,6 @@ const FollowUpForm = () => {
       timepicker: timeOptions.length > 0 ? timeOptions[0].value : null,
     });
     setAvailableDays(doctorAvailability[selectedType] || []);
-    setAvailableTimes(timeOptions);
   };
 
   const onFinish = async (values) => {
@@ -252,28 +241,45 @@ const FollowUpForm = () => {
         reference: uniqueReference,
       };
 
-      navigate("/appointmentsuccess", {
-        state: { appointmentData: userData, phone: contactno },
-      });
+      try {
+        // Save appointment data
+        await saveAppointment(userData);
+
+        // Show success message and close modal
+        message.success(
+          "Your appointment has been booked and is awaiting approval."
+        );
+        setModalVisible(false);
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
+
+  const saveAppointment = async (appointmentData) => {
+    const myDoc = collection(db, "appointments");
+    try {
+      const docref = await addDoc(myDoc, appointmentData);
+      return docref.id;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  useEffect(() => {
+    // Effect to close modal and refresh page when success message is shown
+    if (showSuccessMessage) {
+      // Close modal
+      setModalVisible(false);
+      // Reset showSuccessMessage
+      setShowSuccessMessage(false);
+      // Refresh the page
+      window.location.reload();
+    }
+  }, [showSuccessMessage]);
 
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
-  };
-
-  const showModal = () => {
-    setModalVisible(true);
-  };
-
-  const handleModalOk = () => {
-    if (modalCondition === "exists") {
-      navigate("/login");
-    } else if (modalCondition === "schedexists") {
-      setModalVisible(false);
-    } else {
-      setModalVisible(false);
-    }
   };
 
   const validateAge = (rule, value) => {
@@ -285,6 +291,19 @@ const FollowUpForm = () => {
     } else {
       return Promise.resolve();
     }
+  };
+
+  const handleModalOk = () => {
+    if (modalCondition === "exists") {
+      navigate("/login");
+    } else if (modalCondition === "schedexists") {
+      setModalVisible(false);
+    } else {
+      setModalVisible(false);
+    }
+    // Close modal and reload page
+    setModalVisible(false);
+    window.location.reload();
   };
 
   return (
@@ -454,14 +473,14 @@ const FollowUpForm = () => {
 
             <Col span={8}>
               <Form.Item
-                label="Previous Doctor"
-                name="previousDoctor"
-                rules={[{ required: true, message: "Select Previous Doctor" }]}
+                label="Type of Doctor to Consult"
+                rules={[{ required: true, message: "Select Type" }]}
+                name="typedoctor"
               >
                 <Select
                   options={typesofDoc}
                   style={{}}
-                  placeholder="Select previous doctor"
+                  placeholder="Select a type"
                   onChange={handleTypeChange}
                 />
               </Form.Item>
@@ -497,7 +516,9 @@ const FollowUpForm = () => {
                 rules={[{ required: true, message: "Select Time" }]}
               >
                 <Select
-                  options={availableTimes}
+                  options={
+                    doctorTimeOptions[form.getFieldValue("typedoctor")] || []
+                  }
                   style={{}}
                   placeholder="Select a time"
                 />

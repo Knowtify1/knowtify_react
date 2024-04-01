@@ -280,27 +280,35 @@ function TableApprovedAppointments() {
 
   return (
     <>
-      <div>
-        <Space direction="vertical" size={20} className="flex items-left">
-          <Space direction="horizontal" size={30}>
-            <Space direction="horizontal">
-              <h1>Select Appointment Date:</h1>
+      <div className="container mx-auto px-4">
+        <Space direction="vertical" size={4} className="md:flex md:flex-col">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center">
+              <h1 className="mr-2">Select Appointment Date:</h1>
               <DatePicker onChange={handleDateChange} />
-            </Space>
-            <h1>Approved Appointments: {data.length}</h1>
-            <h1>{getCurrentDateMessage()}</h1>
-          </Space>
+            </div>
+            <div className="flex items-center">
+              <h1 className="mr-2">Approved Appointments: {data.length}</h1>
+              <h1>{getCurrentDateMessage()}</h1>
+            </div>
+          </div>
 
           {loading ? (
-            <Spin size="small" className="block" />
+            <div className="flex justify-center">
+              <Spin size="large" />
+            </div>
           ) : (
-            <Table columns={columns} dataSource={data} />
+            <Table
+              columns={columns}
+              dataSource={data}
+              pagination={{ pageSize: 5 }}
+              scroll={{ x: true }} // Enable horizontal scrolling
+            />
           )}
 
-          {/* Modal for Doctor Type Selection */}
           <Modal
             title="Select Doctor"
-            visible={isModalVisible} // Corrected prop name
+            visible={isModalVisible}
             onOk={handleModalOk}
             onCancel={handleModalCancel}
             okButtonProps={{ className: "bg-green-500" }}

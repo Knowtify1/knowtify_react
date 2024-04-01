@@ -7,7 +7,15 @@ import {
   doc,
   getDoc,
 } from "firebase/firestore";
-import { Card, Space, Typography, Progress, Row, Col } from "antd";
+import {
+  Card,
+  Typography,
+  Progress,
+  Row,
+  Col,
+  notification,
+  Badge,
+} from "antd";
 import { db } from "../../../config/firebase.jsx";
 import { auth } from "../../../config/firebase.jsx";
 import {
@@ -15,6 +23,7 @@ import {
   ClockCircleTwoTone,
   ScheduleTwoTone,
 } from "@ant-design/icons";
+import { BellOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -23,6 +32,8 @@ function DoctorOverview() {
   const [followUpCount, setFollowUpCount] = useState(null);
   const [consultationCount, setConsultationCount] = useState(null);
   const [totalAppointmentsCount, setTotalAppointmentsCount] = useState(null);
+  const [newAppointmentNotification, setNewAppointmentNotification] =
+    useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -166,129 +177,171 @@ function DoctorOverview() {
     );
   };
 
+  const getCurrentDateMessage = () => {
+    const today = new Date();
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+    const formattedDate = today.toLocaleDateString(undefined, options);
+
+    return `Today is ${formattedDate}`;
+  };
+
+  const handleNotificationBellClick = () => {
+    setNewAppointmentNotification(false);
+  };
+
   return (
     <div>
       <div className="container mx-auto">
-        <div className="flex justify-center">
-          <Space direction="horizontal" size={30}>
-            <Card
-              title={<Title level={4}>Assigned Patients</Title>}
-              extra={
-                <a href="../doctordashboard/doctorappointment">View all</a>
-              }
+        <div
+          style={{
+            display: "flex",
+            marginBottom: "20px",
+          }}
+        >
+          <h1>{getCurrentDateMessage()}</h1>
+          <Badge dot={newAppointmentNotification}>
+            <BellOutlined
               style={{
-                width: 400,
-                backgroundColor: "#FFF5F5",
-                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                fontSize: "24px",
+                cursor: "pointer",
+                marginLeft: "400px",
               }}
-              hoverable
-            >
-              <Row justify="space-around" align="middle">
-                <Col span={20}>
-                  {renderProgress(assignedPatientsCount, "#FF4D4F", "#FAAD14")}
-                </Col>
-                <Col span={4}>
-                  <div className="text-6xl text-red-600">
-                    {assignedPatientsCount !== null
-                      ? assignedPatientsCount
-                      : "Loading..."}
-                  </div>
-                </Col>
-              </Row>
-            </Card>
-
-            <Card
-              title={<Title level={4}>Follow-up Patients</Title>}
-              extra={
-                <a href="../doctordashboard/doctorappointment">View all</a>
-              }
-              style={{
-                width: 400,
-                backgroundColor: "#BAFFC7",
-                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-              }}
-              hoverable
-            >
-              <Row justify="space-around" align="middle">
-                <Col span={20}>
-                  {renderProgress(followUpCount, "#297846", "#3AF27D")}
-                </Col>
-                <Col span={4}>
-                  <div className="text-6xl text-green-600">
-                    {followUpCount !== null ? followUpCount : "Loading..."}
-                  </div>
-                </Col>
-              </Row>
-            </Card>
-
-            <Card
-              title={<Title level={4}>Consultation Patients</Title>}
-              extra={
-                <a href="../doctordashboard/doctorappointment">View all</a>
-              }
-              style={{
-                width: 400,
-                backgroundColor: "#FCF4BD",
-                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-              }}
-              hoverable
-            >
-              <Row justify="space-around" align="middle">
-                <Col span={20}>
-                  {renderProgress(consultationCount, "#7C722C", "#F2DA3A")}
-                </Col>
-                <Col span={4}>
-                  <div className="text-6xl text-yellow-600">
-                    {consultationCount !== null
-                      ? consultationCount
-                      : "Loading..."}
-                  </div>
-                </Col>
-              </Row>
-            </Card>
-          </Space>
+              onClick={handleNotificationBellClick}
+            />
+          </Badge>
         </div>
-        <div className="mt-8">
-          <div className="flex">
-            {/* Pie Chart rendering */}
-            <div className="mr-8">{renderPieChart()}</div>
-            <div className="mt-10">
-              <div className="ml-4">
-                <div className="flex items-center mb-2">
-                  <div className="w-4 h-4 bg-red-500 rounded-full mr-2"></div>
-                  <span>
-                    Assigned Patients -{" "}
-                    {assignedPatientsCount !== null
-                      ? `${assignedPatientsCount} (${(
-                          (assignedPatientsCount / totalAppointmentsCount) *
-                          100
-                        ).toFixed(1)}%)`
-                      : "Loading..."}
-                  </span>
-                </div>
-                <div className="flex items-center mb-2">
-                  <div className="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
-                  <span>
-                    Follow-up Patients -{" "}
-                    {followUpCount !== null
-                      ? `${followUpCount} (${(
-                          (followUpCount / totalAppointmentsCount) *
-                          100
-                        ).toFixed(1)}%)`
-                      : "Loading..."}
-                  </span>
-                </div>
-                <div className="flex items-center mb-2">
-                  <div className="w-4 h-4 bg-yellow-500 rounded-full mr-2"></div>
-                  <span>
-                    Consultation Patients -{" "}
-                    {consultationCount !== null
-                      ? `${consultationCount} (${(
-                          (consultationCount / totalAppointmentsCount) *
-                          100
-                        ).toFixed(1)}%)`
-                      : "Loading..."}
-                  </span>
+        <div>
+          <div className="flex flex-wrap justify-center">
+            <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
+              <Card
+                title={<Title level={4}>Assigned Patients</Title>}
+                extra={
+                  <a href="../doctordashboard/doctorappointment">View all</a>
+                }
+                style={{
+                  backgroundColor: "#FFF5F5",
+                  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                }}
+                hoverable
+              >
+                <Row justify="space-around" align="middle">
+                  <Col span={20}>
+                    {renderProgress(
+                      assignedPatientsCount,
+                      "#FF4D4F",
+                      "#FAAD14"
+                    )}
+                  </Col>
+                  <Col span={4}>
+                    <div className="text-6xl text-red-600">
+                      {assignedPatientsCount !== null
+                        ? assignedPatientsCount
+                        : "Loading..."}
+                    </div>
+                  </Col>
+                </Row>
+              </Card>
+            </div>
+
+            <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
+              <Card
+                title={<Title level={4}>Follow-up Patients</Title>}
+                extra={
+                  <a href="../doctordashboard/doctorappointment">View all</a>
+                }
+                style={{
+                  backgroundColor: "#BAFFC7",
+                  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                }}
+                hoverable
+              >
+                <Row justify="space-around" align="middle">
+                  <Col span={20}>
+                    {renderProgress(followUpCount, "#297846", "#3AF27D")}
+                  </Col>
+                  <Col span={4}>
+                    <div className="text-6xl text-green-600">
+                      {followUpCount !== null ? followUpCount : "Loading..."}
+                    </div>
+                  </Col>
+                </Row>
+              </Card>
+            </div>
+
+            <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
+              <Card
+                title={<Title level={4}>Consultation Patients</Title>}
+                extra={
+                  <a href="../doctordashboard/doctorappointment">View all</a>
+                }
+                style={{
+                  backgroundColor: "#FCF4BD",
+                  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                }}
+                hoverable
+              >
+                <Row justify="space-around" align="middle">
+                  <Col span={20}>
+                    {renderProgress(consultationCount, "#7C722C", "#F2DA3A")}
+                  </Col>
+                  <Col span={4}>
+                    <div className="text-6xl text-yellow-600">
+                      {consultationCount !== null
+                        ? consultationCount
+                        : "Loading..."}
+                    </div>
+                  </Col>
+                </Row>
+              </Card>
+            </div>
+          </div>
+          <div className="mt-8">
+            <div className="flex">
+              {/* Pie Chart rendering */}
+              <div className="mr-8">{renderPieChart()}</div>
+              <div className="mt-10">
+                <div className="ml-4">
+                  <div className="flex items-center mb-2">
+                    <div className="w-4 h-4 bg-red-500 rounded-full mr-2"></div>
+                    <span>
+                      Assigned Patients -{" "}
+                      {assignedPatientsCount !== null
+                        ? `${assignedPatientsCount} (${(
+                            (assignedPatientsCount / totalAppointmentsCount) *
+                            100
+                          ).toFixed(1)}%)`
+                        : "Loading..."}
+                    </span>
+                  </div>
+                  <div className="flex items-center mb-2">
+                    <div className="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
+                    <span>
+                      Follow-up Patients -{" "}
+                      {followUpCount !== null
+                        ? `${followUpCount} (${(
+                            (followUpCount / totalAppointmentsCount) *
+                            100
+                          ).toFixed(1)}%)`
+                        : "Loading..."}
+                    </span>
+                  </div>
+                  <div className="flex items-center mb-2">
+                    <div className="w-4 h-4 bg-yellow-500 rounded-full mr-2"></div>
+                    <span>
+                      Consultation Patients -{" "}
+                      {consultationCount !== null
+                        ? `${consultationCount} (${(
+                            (consultationCount / totalAppointmentsCount) *
+                            100
+                          ).toFixed(1)}%)`
+                        : "Loading..."}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

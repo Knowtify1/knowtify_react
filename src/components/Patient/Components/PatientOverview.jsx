@@ -7,7 +7,15 @@ import {
   doc,
   getDoc,
 } from "firebase/firestore";
-import { Card, Space, Typography, Progress, Row, Col } from "antd";
+import {
+  Card,
+  Typography,
+  Progress,
+  Row,
+  Col,
+  notification,
+  Badge,
+} from "antd";
 import { db } from "../../../config/firebase.jsx";
 import { auth } from "../../../config/firebase.jsx";
 import {
@@ -15,6 +23,7 @@ import {
   ClockCircleTwoTone,
   ScheduleTwoTone,
 } from "@ant-design/icons";
+import { BellOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -26,6 +35,8 @@ function PatientOverview() {
   const [assignedAppointmentsCount, setAssignedAppointmentsCount] =
     useState(null);
   const [patientName, setPatientName] = useState(null);
+  const [newAppointmentNotification, setNewAppointmentNotification] =
+    useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -229,104 +240,140 @@ function PatientOverview() {
     );
   };
 
+  const getCurrentDateMessage = () => {
+    const today = new Date();
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+    const formattedDate = today.toLocaleDateString(undefined, options);
+
+    return `Today is ${formattedDate}`;
+  };
+
+  const handleNotificationBellClick = () => {
+    setNewAppointmentNotification(false);
+  };
+
   return (
     <div>
       <div className="container mx-auto">
-        <div className="flex justify-center">
-          <Space direction="horizontal" size={30}>
-            <Card
-              title={<Title level={4}>Approved Appointments</Title>}
-              extra={
-                <a href="../patientdashboard/patientappointment">View all</a>
-              }
+        <div
+          style={{
+            display: "flex",
+            marginBottom: "20px",
+          }}
+        >
+          <h1>{getCurrentDateMessage()}</h1>
+          <Badge dot={newAppointmentNotification}>
+            <BellOutlined
               style={{
-                width: 400,
-                backgroundColor: "#E3F4E1",
-                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                fontSize: "24px",
+                cursor: "pointer",
+                marginLeft: "400px",
               }}
-              hoverable
-            >
-              <Row justify="space-around" align="middle">
-                <Col span={20}>
-                  {renderProgress(
-                    approvedAppointmentsCount,
-                    "#52c41a",
-                    "#1890ff"
-                  )}
-                </Col>
-                <Col span={4}>
-                  <div className="text-6xl text-green-600">
-                    {approvedAppointmentsCount !== null
-                      ? approvedAppointmentsCount
-                      : "Loading..."}
-                  </div>
-                </Col>
-              </Row>
-            </Card>
-
-            <Card
-              title={<Title level={4}>Pending Appointments</Title>}
-              extra={
-                <a href="../patientdashboard/patientappointment">View all</a>
-              }
-              style={{
-                width: 400,
-                backgroundColor: "#E6F7FF",
-                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-              }}
-              hoverable
-            >
-              <Row justify="space-around" align="middle">
-                <Col span={20}>
-                  {renderProgress(
-                    pendingAppointmentsCount,
-                    "#1890FF",
-                    "#FAAD14"
-                  )}
-                </Col>
-                <Col span={4}>
-                  <div className="text-6xl text-blue-600">
-                    {pendingAppointmentsCount !== null
-                      ? pendingAppointmentsCount
-                      : "Loading..."}
-                  </div>
-                </Col>
-              </Row>
-            </Card>
-
-            <Card
-              title={<Title level={4}>Assigned Appointments</Title>}
-              extra={
-                <a href="../patientdashboard/patientappointment">View all</a>
-              }
-              style={{
-                width: 400,
-                backgroundColor: "#FFF5F5",
-                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-              }}
-              hoverable
-            >
-              <Row justify="space-around" align="middle">
-                <Col span={20}>
-                  {renderProgress(
-                    assignedAppointmentsCount,
-                    "#FF4D4F",
-                    "#FAAD14"
-                  )}
-                </Col>
-                <Col span={4}>
-                  <div className="text-6xl text-red-600">
-                    {assignedAppointmentsCount !== null
-                      ? assignedAppointmentsCount
-                      : "Loading..."}
-                  </div>
-                </Col>
-              </Row>
-            </Card>
-          </Space>
+              onClick={handleNotificationBellClick}
+            />
+          </Badge>
         </div>
-        <div className="mt-8">
-          <div className="flex">
+        <div>
+          <div className="flex flex-wrap justify-center">
+            <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
+              <Card
+                title={<Title level={4}>Approved Appointments</Title>}
+                extra={
+                  <a href="../patientdashboard/patientappointment">View all</a>
+                }
+                style={{
+                  backgroundColor: "#E3F4E1",
+                  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                }}
+                hoverable
+              >
+                <Row justify="space-around" align="middle">
+                  <Col span={20}>
+                    {renderProgress(
+                      approvedAppointmentsCount,
+                      "#52c41a",
+                      "#1890ff"
+                    )}
+                  </Col>
+                  <Col span={4}>
+                    <div className="text-6xl text-green-600">
+                      {approvedAppointmentsCount !== null
+                        ? approvedAppointmentsCount
+                        : "Loading..."}
+                    </div>
+                  </Col>
+                </Row>
+              </Card>
+            </div>
+
+            <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
+              <Card
+                title={<Title level={4}>Pending Appointments</Title>}
+                extra={
+                  <a href="../patientdashboard/patientappointment">View all</a>
+                }
+                style={{
+                  backgroundColor: "#E6F7FF",
+                  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                }}
+                hoverable
+              >
+                <Row justify="space-around" align="middle">
+                  <Col span={20}>
+                    {renderProgress(
+                      pendingAppointmentsCount,
+                      "#1890FF",
+                      "#FAAD14"
+                    )}
+                  </Col>
+                  <Col span={4}>
+                    <div className="text-6xl text-blue-600">
+                      {pendingAppointmentsCount !== null
+                        ? pendingAppointmentsCount
+                        : "Loading..."}
+                    </div>
+                  </Col>
+                </Row>
+              </Card>
+            </div>
+
+            <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
+              <Card
+                title={<Title level={4}>Assigned Appointments</Title>}
+                extra={
+                  <a href="../patientdashboard/patientappointment">View all</a>
+                }
+                style={{
+                  backgroundColor: "#FFF5F5",
+                  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                }}
+                hoverable
+              >
+                <Row justify="space-around" align="middle">
+                  <Col span={20}>
+                    {renderProgress(
+                      assignedAppointmentsCount,
+                      "#FF4D4F",
+                      "#FAAD14"
+                    )}
+                  </Col>
+                  <Col span={4}>
+                    <div className="text-6xl text-red-600">
+                      {assignedAppointmentsCount !== null
+                        ? assignedAppointmentsCount
+                        : "Loading..."}
+                    </div>
+                  </Col>
+                </Row>
+              </Card>
+            </div>
+          </div>
+          <div className="mt-8 flex justify-center">
             <div className="mr-8">
               <svg height="200" width="200">
                 {renderPieChart()}

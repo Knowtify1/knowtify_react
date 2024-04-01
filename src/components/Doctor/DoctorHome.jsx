@@ -14,6 +14,7 @@ import {
 } from "../../config/firebase.jsx";
 import moment from "moment";
 import { Link } from "react-router-dom";
+import DoctorSetSpecialty from "./Components/DoctorSetSpecialty";
 
 function DoctorHome() {
   const [userDetails, setUserDetails] = useState(null);
@@ -120,6 +121,8 @@ function DoctorHome() {
             Doctor Overview
           </h3>{" "}
         </div>
+        <DoctorSetSpecialty />
+
         <Card
           className="overflow-auto max-h-screen pl-5" // Set a maximum height and padding
           style={{

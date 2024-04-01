@@ -1,159 +1,186 @@
 import React, { useEffect, useState } from "react";
-import { Card, Table, Input, Button } from "antd";
+import { Input, Button, Table, Space, Modal } from "antd";
 import {
   auth,
   db,
   collection,
-  addDoc,
   updateDoc,
   query,
   where,
+  getDocs,
 } from "../../config/firebase.jsx";
+import { onAuthStateChanged } from "firebase/auth";
 import PatientsRecord from "./Components/PatientRecord";
 
 const { TextArea } = Input;
 
 function PatientRecords() {
+  const [userDetails, setUserDetails] = useState(null);
   const [patients, setPatients] = useState([]);
   const [name, setName] = useState("");
   const [patientHistory, setPatientHistory] = useState("");
   const [patientFamilyHistory, setPatientFamilyHistory] = useState("");
   const [patientAllergies, setPatientAllergies] = useState("");
+  const [savedPatientData, setSavedPatientData] = useState(null);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editedPatient, setEditedPatient] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const user = auth.currentUser;
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Fetch existing patient data for the user if it exists
-        const q = query(
-          collection(db, "patients"),
-          query(collection(db, "patients"), where("patientName", "==", name))
-        );
-        const querySnapshot = await getDoc(q);
-        if (querySnapshot.exists()) {
-          const patientData = querySnapshot.data();
-          setPatients([patientData]); // Set patients state with existing data
+        try {
+          const q = query(
+            collection(db, "users_accounts_records"),
+            where("uid", "==", user.uid)
+          );
+          const querySnapshot = await getDocs(q);
+
+          if (!querySnapshot.empty) {
+            const userData = querySnapshot.docs[0].data();
+            setUserDetails(userData);
+            setName(userData.name);
+            fetchPatientDetails(userData.name);
+          } else {
+            console.error("No user data found in patient collection.");
+          }
+        } catch (error) {
+          console.error("Error fetching user details:", error.message);
         }
-        setName(user.displayName); // Set name state with user's display name
+      } else {
+        setUserDetails(null);
+        setPatients([]);
       }
-    };
-    fetchData();
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const handleHistoryChange = (e, record) => {
-    const { value } = e.target;
-    setPatients(
-      patients.map((patient) =>
-        patient.patientName === record.patientName
-          ? { ...patient, patientHistory: value }
-          : patient
-      )
-    );
+  const fetchPatientDetails = async (name) => {
+    try {
+      const patientsQuery = query(
+        collection(db, "patients"),
+        where("patientName", "==", name)
+      );
+      const patientRecordsQuery = query(
+        collection(db, "patientRecords"),
+        where("patientName", "==", name)
+      );
+
+      const [patientsSnapshot, patientRecordsSnapshot] = await Promise.all([
+        getDocs(patientsQuery),
+        getDocs(patientRecordsQuery),
+      ]);
+
+      const fetchedPatients = [];
+      patientsSnapshot.forEach((doc) => {
+        fetchedPatients.push({ id: doc.id, ...doc.data() });
+      });
+      patientRecordsSnapshot.forEach((doc) => {
+        fetchedPatients.push({ id: doc.id, ...doc.data() });
+      });
+
+      setPatients(fetchedPatients);
+    } catch (error) {
+      console.error("Error fetching patient details:", error.message);
+    }
   };
 
-  const handleFamilyHistoryChange = (e, record) => {
+  const handleHistoryChange = (e) => {
     const { value } = e.target;
-    setPatients(
-      patients.map((patient) =>
-        patient.patientName === record.patientName
-          ? { ...patient, patientFamilyHistory: value }
-          : patient
-      )
-    );
+    setPatientHistory(value);
   };
 
-  const handleAllergiesChange = (e, record) => {
+  const handleFamilyHistoryChange = (e) => {
     const { value } = e.target;
-    setPatients(
-      patients.map((patient) =>
-        patient.patientName === record.patientName
-          ? { ...patient, patientAllergies: value }
-          : patient
-      )
-    );
+    setPatientFamilyHistory(value);
+  };
+
+  const handleAllergiesChange = (e) => {
+    const { value } = e.target;
+    setPatientAllergies(value);
   };
 
   const onFinish = async () => {
-    const user = auth.currentUser;
-    if (user) {
+    if (userDetails) {
       const patientData = {
-        patientName: name,
         patientHistory,
         patientFamilyHistory,
         patientAllergies,
-        userId: user.uid, // Include userId
+        userId: userDetails.uid,
       };
 
       try {
-        // Check if the user already has existing patient data
-        const existingPatient = patients.find(
-          (patient) => patient.patientName === name
+        // Update each document with the new patient data in the patients collection
+        const patientsQuery = query(
+          collection(db, "patients"),
+          where("patientName", "==", name)
         );
-        if (existingPatient) {
-          // Update existing document
-          await updateDoc(
-            collection(db, "patients"),
-            existingPatient.id,
-            patientData
-          );
-          setPatients([
-            ...patients.filter((patient) => patient.patientName !== name),
-            patientData,
-          ]);
-        } else {
-          // Add new document
-          const docRef = await addDoc(collection(db, "patients"), patientData);
-          setPatients([...patients, { id: docRef.id, ...patientData }]);
-        }
+        const patientsSnapshot = await getDocs(patientsQuery);
+        const patientsUpdatePromises = patientsSnapshot.docs.map(
+          async (doc) => {
+            await updateDoc(doc.ref, patientData);
+          }
+        );
+        await Promise.all(patientsUpdatePromises);
 
-        // Clear form fields after submission
+        // Update each document with the new patient data in the patientRecords collection
+        const patientRecordsQuery = query(
+          collection(db, "patientRecords"),
+          where("patientName", "==", name)
+        );
+        const patientRecordsSnapshot = await getDocs(patientRecordsQuery);
+        const patientRecordsUpdatePromises = patientRecordsSnapshot.docs.map(
+          async (doc) => {
+            await updateDoc(doc.ref, patientData);
+          }
+        );
+        await Promise.all(patientRecordsUpdatePromises);
+
+        // Fetch updated patient records to reflect changes
+        fetchPatientDetails(name);
+
+        // Set the saved patient data to display
+        setSavedPatientData(patientData);
+
+        // Clear input fields after saving
         setPatientHistory("");
         setPatientFamilyHistory("");
         setPatientAllergies("");
       } catch (error) {
-        console.error("Error adding document: ", error);
+        console.error("Error updating documents: ", error);
       }
     }
   };
 
+  const handleEdit = (patient) => {
+    setPatientHistory(patient.patientHistory);
+    setPatientFamilyHistory(patient.patientFamilyHistory);
+    setPatientAllergies(patient.patientAllergies);
+  };
+
   const columns = [
-    {
-      title: "Name",
-      dataIndex: "patientName",
-      key: "patientName",
-      render: (text) => <span>{text}</span>,
-    },
     {
       title: "Patient History",
       dataIndex: "patientHistory",
       key: "patientHistory",
-      render: (_, record) => (
-        <TextArea
-          value={record.patientHistory}
-          onChange={(e) => handleHistoryChange(e, record)}
-        />
-      ),
     },
     {
       title: "Patient Family History",
       dataIndex: "patientFamilyHistory",
       key: "patientFamilyHistory",
-      render: (_, record) => (
-        <TextArea
-          value={record.patientFamilyHistory}
-          onChange={(e) => handleFamilyHistoryChange(e, record)}
-        />
-      ),
     },
     {
       title: "Patient Allergies",
       dataIndex: "patientAllergies",
       key: "patientAllergies",
-      render: (_, record) => (
-        <TextArea
-          value={record.patientAllergies}
-          onChange={(e) => handleAllergiesChange(e, record)}
-        />
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (text, record) => (
+        <Space size="middle">
+          <Button onClick={() => handleEdit(record)}>Edit</Button>
+        </Space>
       ),
     },
   ];
@@ -170,20 +197,32 @@ function PatientRecords() {
               Patient Records
             </h3>{" "}
           </div>
-          <Card
-            title={<div className="w-full text-center"></div>}
-            className="overflow-auto max-h-screen p-4" // Set a maximum height and padding
-          >
-            <PatientsRecord />
-          </Card>
-          <Card className="overflow-auto max-h-screen p-4">
-            {" "}
-            {/* Set a maximum height and padding */}
+          <PatientsRecord patients={patients} handleEdit={handleEdit} />
+          <Table dataSource={patients.slice(0, 1)} columns={columns} />
+          <div className="overflow-auto max-h-screen p-4">
+            <div>
+              <h4>Patient Information</h4>
+              <Input placeholder="Name" value={name} disabled />
+              <TextArea
+                placeholder="Patient History"
+                value={patientHistory}
+                onChange={handleHistoryChange}
+              />
+              <TextArea
+                placeholder="Patient Family History"
+                value={patientFamilyHistory}
+                onChange={handleFamilyHistoryChange}
+              />
+              <TextArea
+                placeholder="Patient Allergies"
+                value={patientAllergies}
+                onChange={handleAllergiesChange}
+              />
+            </div>
             <Button type="primary" onClick={onFinish}>
               Save
             </Button>
-            <Table dataSource={patients} columns={columns} pagination={false} />
-          </Card>
+          </div>
         </div>
       </div>
     </>

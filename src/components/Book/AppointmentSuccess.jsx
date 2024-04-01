@@ -160,7 +160,7 @@ function AppointmentSuccess() {
                 <div className="rounded-md bg-dark-gray p-2 mt-1">
                   <p className="text-lg">
                     <strong>Appointment Time:</strong>{" "}
-                    {appointmentData.appointmentTime}{" "}
+                    {appointmentData.appointmentTime.replace(/"/g, "")}{" "}
                     {/* Display the appointment time with label */}
                   </p>
                 </div>

@@ -17,16 +17,19 @@ import moment from "moment";
 function PatientAppointment() {
   const [userDetails, setUserDetails] = useState(null);
   const [appointments, setAppointments] = useState([]);
+  const [doneAppointments, setDoneAppointments] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [followUpModalVisible, setFollowUpModalVisible] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [consultationCount, setConsultationCount] = useState(0);
+  const [followUpCount, setFollowUpCount] = useState(0);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
           const q = query(
-            collection(db, "patient_accounts"),
+            collection(db, "users_accounts_records"),
             where("uid", "==", user.uid)
           );
           const querySnapshot = await getDocs(q);
@@ -45,6 +48,7 @@ function PatientAppointment() {
       } else {
         setUserDetails(null);
         setAppointments([]);
+        setDoneAppointments([]);
       }
     });
 
@@ -85,16 +89,34 @@ function PatientAppointment() {
         const appointmentDate = new Date(appointment.appointmentDate.toDate());
         const today = new Date();
         const diffTime = appointmentDate.getTime() - today.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        const status = diffDays <= 0 ? "Done" : appointment.status;
+        const diffDays = Math.max(
+          Math.ceil(diffTime / (1000 * 60 * 60 * 24)),
+          0
+        ); // Ensure diffDays is not negative
+        const status = diffDays === 0 ? "Done" : appointment.status;
         return { ...appointment, daysRemaining: diffDays, status: status };
       });
 
-      const sortedAppointments = updatedAppointments.sort(
-        (a, b) => a.daysRemaining - b.daysRemaining
+      const pendingAppointments = updatedAppointments.filter(
+        (appointment) => appointment.daysRemaining > 0
       );
 
-      setAppointments(sortedAppointments);
+      const doneAppointments = updatedAppointments.filter(
+        (appointment) => appointment.daysRemaining === 0
+      );
+
+      setAppointments(pendingAppointments);
+      setDoneAppointments(doneAppointments);
+
+      // Calculate total counts
+      const consultationAppointments = pendingAppointments.filter(
+        (appointment) => appointment.reasonForAppointment === "consultation"
+      );
+      const followUpAppointments = pendingAppointments.filter(
+        (appointment) => appointment.reasonForAppointment === "follow-up"
+      );
+      setConsultationCount(consultationAppointments.length);
+      setFollowUpCount(followUpAppointments.length);
     } catch (error) {
       console.error("Error fetching patient details:", error.message);
     }
@@ -284,7 +306,7 @@ function PatientAppointment() {
   };
 
   return (
-    <div>
+    <div className="w-full px-0 sm:px-0 md:px-6 lg:px-16 xl:px-0">
       <div className="w-full text-center">
         <h3 className="text-3xl font-semibold pt-10" style={{ color: "#333" }}>
           Patient Appointment Details
@@ -304,29 +326,41 @@ function PatientAppointment() {
           <br />
           <div>
             <div>
-              <h2 className="text-xl font-semibold">Consultations</h2>
+              <h1>Pending Consultation Appointments: {consultationCount}</h1>
               <Table
                 columns={columns}
                 dataSource={appointments.filter(
                   (appointment) =>
                     appointment.reasonForAppointment === "consultation"
                 )}
+                pagination={{ pageSize: 2 }}
                 rowKey={(record, index) => index}
                 rowClassName={rowClassName}
               />
             </div>
             <div>
-              <h2 className="text-xl font-semibold">Follow-Ups</h2>
+              <h1>Pending Follow-Up Appointments: {followUpCount}</h1>
               <Table
                 columns={columns}
                 dataSource={appointments.filter(
                   (appointment) =>
                     appointment.reasonForAppointment === "follow-up"
                 )}
+                pagination={{ pageSize: 2 }}
                 rowKey={(record, index) => index}
                 rowClassName={rowClassName}
               />
             </div>
+          </div>
+          <div>
+            <h1>Past Appointments: {doneAppointments.length}</h1>
+            <Table
+              columns={columns}
+              dataSource={doneAppointments}
+              pagination={{ pageSize: 2 }}
+              rowKey={(record, index) => index}
+              rowClassName={rowClassName}
+            />
           </div>
           <div className="pl-8 pr-8 pb-5 pt-5">
             <Modal

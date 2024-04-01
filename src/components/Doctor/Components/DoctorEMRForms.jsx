@@ -69,6 +69,14 @@ function DoctorEMRForms() {
     navigate("../doctorpatientrecord");
   };
 
+  const formatDate = (date) => {
+    if (date && date.toDate) {
+      const options = { month: "long", day: "numeric", year: "numeric" };
+      return date.toDate().toLocaleDateString(undefined, options);
+    }
+    return "";
+  };
+
   return (
     <>
       <div>
@@ -88,9 +96,7 @@ function DoctorEMRForms() {
                   </p>
                   <p>
                     <strong>Appointment Date:</strong>{" "}
-                    {moment(patientEMRData.appointmentDate.toDate()).format(
-                      "MMMM D, YYYY"
-                    )}
+                    {formatDate(patientEMRData.appointmentDate)}
                   </p>
                   <p>
                     <strong>Appointment Time:</strong>{" "}
@@ -99,6 +105,17 @@ function DoctorEMRForms() {
                   <p>
                     <strong>Reason:</strong>{" "}
                     {patientEMRData.reasonForAppointment}
+                  </p>
+                  <p>
+                    <strong>Allergies:</strong>{" "}
+                    {patientEMRData.patientAllergies}
+                  </p>
+                  <p>
+                    <strong>Family History:</strong>{" "}
+                    {patientEMRData.patientFamilyHistory}
+                  </p>
+                  <p>
+                    <strong>History:</strong> {patientEMRData.patientHistory}
                   </p>
                 </div>
               ) : (
@@ -125,10 +142,7 @@ function DoctorEMRForms() {
                 <Form.Item name="treatmentPlan" label="Treatment plan">
                   <Input.TextArea />
                 </Form.Item>
-                <Form.Item
-                  name="medicationsPrescribed"
-                  label="Medications prescribed"
-                >
+                <Form.Item name="medicationsPrescribed" label="Prescriptions">
                   <Input.TextArea />
                 </Form.Item>
                 <Form.Item name="referrals" label="Referrals (if any)">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { Card, Space } from "antd";
+import { Card } from "antd";
 import {
   auth,
   db,
@@ -69,7 +69,11 @@ function PatientHome() {
         return { ...appointment, daysRemaining: diffDays };
       });
 
-      const sortedAppointments = updatedAppointments.sort(
+      const filteredAppointments = updatedAppointments.filter(
+        (appointment) => appointment.daysRemaining >= 1
+      );
+
+      const sortedAppointments = filteredAppointments.sort(
         (a, b) => a.daysRemaining - b.daysRemaining
       );
 

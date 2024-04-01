@@ -21,18 +21,6 @@ function AdminHome() {
           }}
         >
           <AdminOverview />
-          <h3
-            className="text-3xl font-semibold pt-10"
-            style={{ color: "#333" }}
-          >
-            Doctor Schedules
-          </h3>
-          <Card
-            className="pl-8 pr-4 pb-5 pt-2 custom-card"
-            style={{ width: "100%", height: "auto" }}
-          >
-            <SpecialtyMenu />
-          </Card>
         </Card>
       </div>
     </div>

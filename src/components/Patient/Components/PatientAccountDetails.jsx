@@ -1,8 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { auth, db } from "../../../config/firebase.jsx";
 import { EditOutlined } from "@ant-design/icons";
+import { message } from "antd";
 
 function PatientAccountDetails() {
   const [userDetails, setUserDetails] = useState(null);
@@ -14,7 +23,7 @@ function PatientAccountDetails() {
       const unsubscribe = onAuthStateChanged(auth, async (user) => {
         if (user) {
           const userId = user.uid;
-          const userRef = doc(db, "patient_accounts", userId);
+          const userRef = doc(db, "users_accounts_records", userId);
 
           try {
             const docSnapshot = await getDoc(userRef);
@@ -45,10 +54,49 @@ function PatientAccountDetails() {
   const handleSave = async () => {
     try {
       const userId = auth.currentUser.uid;
-      const userRef = doc(db, "patient_accounts", userId);
+      const userRef = doc(db, "users_accounts_records", userId);
       await updateDoc(userRef, updatedDetails);
+
+      // Update patient_accounts collection
+      const patientAccountRef = doc(db, "patient_accounts", userId);
+      await updateDoc(patientAccountRef, updatedDetails);
+
+      // Update patient's document in patients collection
+      const patientQuerySnapshot = await getDocs(
+        query(collection(db, "patients"), where("userId", "==", userId))
+      );
+
+      patientQuerySnapshot.forEach(async (doc) => {
+        const patientRef = doc.ref;
+        await updateDoc(patientRef, { contactNo: updatedDetails.phone });
+      });
+
+      // Update appointments collection
+      const appointmentsQuerySnapshot = await getDocs(
+        query(
+          collection(db, "appointments"),
+          where("patientName", "==", userDetails.name)
+        )
+      );
+
+      appointmentsQuerySnapshot.forEach(async (doc) => {
+        const appointmentRef = doc.ref;
+        await updateDoc(appointmentRef, { contactNo: updatedDetails.phone });
+      });
+
+      // Update patientRecords collection
+      const patientRecordsQuerySnapshot = await getDocs(
+        query(collection(db, "patientRecords"), where("userId", "==", userId))
+      );
+
+      patientRecordsQuerySnapshot.forEach(async (doc) => {
+        const patientRecordRef = doc.ref;
+        await updateDoc(patientRecordRef, { contactNo: updatedDetails.phone });
+      });
+
       setUserDetails(updatedDetails);
       setEditing(false);
+      message.success("Changes saved successfully.");
     } catch (error) {
       console.error("Error updating document:", error);
     }
@@ -59,10 +107,14 @@ function PatientAccountDetails() {
     setUpdatedDetails({ ...updatedDetails, [name]: value });
   };
 
-  // Function to format Firestore Timestamp to a readable string
+  // Function to format Firestore Timestamp to "Month Day, Year"
   const formatDate = (timestamp) => {
     const date = timestamp.toDate();
-    return date.toLocaleString();
+    return new Intl.DateTimeFormat("en-US", {
+      month: "long",
+      day: "2-digit",
+      year: "numeric",
+    }).format(date);
   };
 
   return (

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import { onAuthStateChanged } from "firebase/auth";
 import {
   auth,
@@ -21,18 +20,21 @@ import {
   Input,
   notification,
   Modal,
+  Collapse,
 } from "antd";
 import moment from "moment";
 import { SearchOutlined } from "@ant-design/icons";
 
 const { Search } = Input;
+const { Panel } = Collapse;
 
 function AdminPatients() {
   const [userDetails, setUserDetails] = useState(null);
-  const [doctorsMoreDetails, setDoctorsMoreDetails] = useState(null);
+  const [doctorsMoreDetails, setDoctorsMoreDetails] = useState([]);
   const [patients, setPatients] = useState([]);
   const [filteredPatients, setFilteredPatients] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [expandedPanels, setExpandedPanels] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -41,15 +43,20 @@ function AdminPatients() {
         if (user) {
           const userId = user.uid;
           const userRef = doc(db, "users_accounts_records", userId);
-          const docRef = doc(db, "doctors_accounts", userId);
+          const doctorsRef = collection(db, "doctors_accounts");
 
           try {
             const docSnapshot = await getDoc(userRef);
-            const doctorSnapshot = await getDoc(docRef);
+            const userSpecialtiesSnapshot = await getDocs(doctorsRef);
 
-            if (docSnapshot.exists() && doctorSnapshot.exists()) {
+            if (docSnapshot.exists() && !userSpecialtiesSnapshot.empty) {
               const userData = docSnapshot.data();
-              const specialty = doctorSnapshot.data();
+              const doctorSpecialties = userSpecialtiesSnapshot.docs.map(
+                (doc) => ({
+                  uid: doc.id,
+                  ...doc.data(),
+                })
+              );
 
               const dateOfRegistrationString = userData.dateofregistration
                 .toDate()
@@ -60,11 +67,15 @@ function AdminPatients() {
                 dateofregistration: dateOfRegistrationString,
               });
 
-              setDoctorsMoreDetails(specialty);
+              setDoctorsMoreDetails(doctorSpecialties);
 
               const patientsQuery = query(
                 collection(db, "patients"),
-                where("assignedDoctorID", "==", specialty.uid)
+                where(
+                  "assignedDoctorID",
+                  "in",
+                  doctorSpecialties.map((doc) => doc.uid)
+                )
               );
 
               const patientsSnapshot = await getDocs(patientsQuery);
@@ -90,6 +101,10 @@ function AdminPatients() {
 
     fetchUserDetails();
   }, []);
+
+  useEffect(() => {
+    setExpandedPanels(doctorsMoreDetails.map((doctor) => doctor.uid));
+  }, [doctorsMoreDetails]);
 
   const loadAllPatients = () => {
     try {
@@ -131,9 +146,9 @@ function AdminPatients() {
     }
   };
 
-  useEffect(() => {
-    loadAllPatients();
-  }, [doctorsMoreDetails]);
+  const onPanelChange = (key) => {
+    setExpandedPanels(key);
+  };
 
   const columns = [
     { title: "Patient Name", dataIndex: "patientName", key: "patientName" },
@@ -209,11 +224,26 @@ function AdminPatients() {
               <Button onClick={onClickToday}>Today</Button>
             </Space>
 
-            <Table
-              dataSource={filteredPatients}
-              columns={columns}
-              rowKey="patientID"
-            />
+            <Collapse
+              accordion
+              activeKey={expandedPanels}
+              onChange={onPanelChange}
+            >
+              {doctorsMoreDetails.map((doctor) => (
+                <Panel
+                  key={doctor.uid}
+                  header={doctor.name} // Assuming doctor object has a 'name' property
+                >
+                  <Table
+                    dataSource={filteredPatients.filter(
+                      (patient) => patient.assignedDoctorID === doctor.uid
+                    )}
+                    columns={columns}
+                    rowKey="patientID"
+                  />
+                </Panel>
+              ))}
+            </Collapse>
           </Card>
         </div>
       )}

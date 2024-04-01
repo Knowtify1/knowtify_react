@@ -1,6 +1,5 @@
 import React from "react";
-import PatientRecords from "./Components/PatientRecords";
-
+import PatientRecords from "../Admin/Components/PatientRecords.jsx";
 import { Card } from "antd";
 
 function AdminPatientrecord() {

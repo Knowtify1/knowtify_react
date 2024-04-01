@@ -8,16 +8,18 @@ import {
   where,
   getDocs,
 } from "../../../config/firebase.jsx";
-import { Table, Input, Card } from "antd";
+import { Table, Input, Card, Select } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 
-const { Search } = Input;
+const { Option } = Select;
 
 function PatientRecords() {
   const [authID, setAuthID] = useState(null);
   const [patientsRecords, setPatientsRecords] = useState([]);
   const [filteredPatients, setFilteredPatients] = useState([]);
   const [searchText, setSearchText] = useState("");
+  const [assignedDoctors, setAssignedDoctors] = useState([]);
+  const [selectedDoctor, setSelectedDoctor] = useState("");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -38,14 +40,43 @@ function PatientRecords() {
       const q = query(collection(db, "patientRecords"));
       const querySnapshot = await getDocs(q);
 
-      const records = querySnapshot.docs.map((doc) => ({
+      let records = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
 
+      // Sort records by patientName
+      records.sort((a, b) => a.patientName.localeCompare(b.patientName));
+
+      // Extract unique assigned doctors
+      const doctors = [
+        ...new Set(records.map((record) => record.assignedDoctor)),
+      ];
+      setAssignedDoctors(doctors);
+
       setPatientsRecords(records);
     } catch (error) {
       console.error("Error fetching patient records:", error.message);
+    }
+  };
+
+  useEffect(() => {
+    // Filter records based on search text
+    const filtered = patientsRecords.filter((record) =>
+      record.patientName.toLowerCase().includes(searchText.toLowerCase())
+    );
+    setFilteredPatients(filtered);
+  }, [searchText, patientsRecords]);
+
+  const handleDoctorChange = (value) => {
+    setSelectedDoctor(value);
+    if (value) {
+      const filtered = patientsRecords.filter(
+        (record) => record.assignedDoctor === value
+      );
+      setFilteredPatients(filtered);
+    } else {
+      setFilteredPatients([]);
     }
   };
 
@@ -59,11 +90,28 @@ function PatientRecords() {
       title: "Patient Name",
       dataIndex: "patientName",
       key: "patientName",
+      render: (text) => {
+        const index = text.toLowerCase().indexOf(searchText.toLowerCase());
+        if (index > -1) {
+          const beforeStr = text.substr(0, index);
+          const afterStr = text.substr(index + searchText.length);
+          return (
+            <span>
+              {beforeStr}
+              <span style={{ backgroundColor: "#ffc069" }}>
+                {text.substr(index, searchText.length)}
+              </span>
+              {afterStr}
+            </span>
+          );
+        }
+        return text;
+      },
     },
     {
-      title: "Assigned Doctor",
-      dataIndex: "assignedDoctor",
-      key: "assignedDoctor",
+      title: "Reason",
+      dataIndex: "reasonForAppointment",
+      key: "reasonForAppointment",
     },
   ];
 
@@ -72,25 +120,37 @@ function PatientRecords() {
       <div>
         <Card>
           <p>
-            <strong>Medical History:</strong> {record.medicalHistory}
+            <strong>Allergies:</strong> {record.patientAllergies}
           </p>
           <p>
-            <strong>Previous Diagnoses:</strong> {record.previousDiagnoses}
+            <strong>Family History:</strong> {record.patientFamilyHistory}
           </p>
           <p>
-            <strong>Medications Prescribed Previously:</strong>{" "}
+            <strong>History:</strong> {record.patientHistory}
+          </p>
+          <p>
+            <strong>Diagnosis:</strong> {record.previousDiagnoses}
+          </p>
+          <p>
+            <strong>Investigations ordered (labs, imaging, etc.):</strong>{" "}
+            {record.investigationsOrdered}
+          </p>
+          <p>
+            <strong>Treatment plan:</strong> {record.treatmentPlan}
+          </p>
+          <p>
+            <strong>Medications prescribed:</strong>{" "}
             {record.medicationsPrescribed}
           </p>
           <p>
-            <strong>Allergies:</strong> {record.allergies}
+            <strong>Referrals (if any):</strong> {record.referrals}
           </p>
           <p>
-            <strong>Previous Surgeries or Treatments:</strong>{" "}
-            {record.surgeriesTreatment}
+            <strong>Lifestyle recommendations:</strong>{" "}
+            {record.lifestyleRecommendations}
           </p>
           <p>
-            <strong>Family Medical History:</strong>{" "}
-            {record.familyMedicalHistory}
+            <strong>Follow-up plan:</strong> {record.followUpPlan}
           </p>
           {/* Add more fields if needed */}
         </Card>
@@ -112,14 +172,26 @@ function PatientRecords() {
     >
       <h2>Patients Records</h2>
 
-      <Table
-        dataSource={
-          filteredPatients.length > 0 ? filteredPatients : patientsRecords
-        }
-        columns={columns}
-        expandable={{ expandedRowRender }}
-        rowKey="id"
+      <Input.Search
+        placeholder="Search Patient Name"
+        enterButton={<SearchOutlined />}
+        onChange={(e) => setSearchText(e.target.value)}
+        style={{ width: 200, marginBottom: 16 }}
       />
+
+      {assignedDoctors.map((doctor, index) => (
+        <div key={index}>
+          <h3>{doctor}</h3>
+          <Table
+            dataSource={filteredPatients.filter(
+              (record) => record.assignedDoctor === doctor
+            )}
+            columns={columns}
+            expandable={{ expandedRowRender }}
+            rowKey="id"
+          />
+        </div>
+      ))}
     </div>
   );
 }

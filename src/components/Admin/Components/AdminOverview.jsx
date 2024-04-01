@@ -7,7 +7,15 @@ import {
   doc,
   getDoc,
 } from "firebase/firestore";
-import { Card, Space, Typography, Progress, Row, Col } from "antd";
+import {
+  Card,
+  Typography,
+  Progress,
+  Row,
+  Col,
+  notification,
+  Badge,
+} from "antd";
 import { db } from "../../../config/firebase.jsx";
 import { auth } from "../../../config/firebase.jsx";
 import {
@@ -15,6 +23,7 @@ import {
   ClockCircleTwoTone,
   ScheduleTwoTone,
 } from "@ant-design/icons";
+import { BellOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -25,12 +34,15 @@ function AdminOverview() {
     useState(null);
   const [assignedAppointmentsCount, setAssignedAppointmentsCount] =
     useState(null);
-  const [totalPatientsCount, setTotalPatientsCount] = useState(null); // New state for total patients count
+  const [totalPatientsCount, setTotalPatientsCount] = useState(null);
+  const [consultationCount, setConsultationCount] = useState(null);
+  const [followUpCount, setFollowUpCount] = useState(null);
+  const [newAppointmentNotification, setNewAppointmentNotification] =
+    useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Count approved appointments from appointments collection
         const approvedAppointmentsQuery = query(
           collection(db, "patients"),
           where("status", "==", "approved")
@@ -40,7 +52,6 @@ function AdminOverview() {
         );
         setApprovedAppointmentsCount(approvedAppointmentsSnapshot.size);
 
-        // Count pending appointments from appointments collection
         const pendingAppointmentsQuery = query(
           collection(db, "appointments"),
           where("status", "==", "pending")
@@ -50,7 +61,6 @@ function AdminOverview() {
         );
         setPendingAppointmentsCount(pendingAppointmentsSnapshot.size);
 
-        // Count assigned appointments from appointments collection
         const assignedAppointmentsQuery = query(
           collection(db, "patients"),
           where("status", "==", "assigned")
@@ -60,7 +70,6 @@ function AdminOverview() {
         );
         setAssignedAppointmentsCount(assignedAppointmentsSnapshot.size);
 
-        // Count total patients for the current date
         const today = new Date();
         const startOfDay = new Date(
           today.getFullYear(),
@@ -79,13 +88,65 @@ function AdminOverview() {
         );
         const patientsSnapshot = await getDocs(patientsQuery);
         setTotalPatientsCount(patientsSnapshot.size);
+
+        const consultationQuery = query(
+          collection(db, "appointments"),
+          where("reasonForAppointment", "==", "consultation")
+        );
+        const consultationSnapshot = await getDocs(consultationQuery);
+        setConsultationCount(consultationSnapshot.size);
+
+        const followUpQuery = query(
+          collection(db, "appointments"),
+          where("reasonForAppointment", "==", "follow-up")
+        );
+        const followUpSnapshot = await getDocs(followUpQuery);
+        setFollowUpCount(followUpSnapshot.size);
+
+        const newAppointmentsQuery = query(
+          collection(db, "appointments"),
+          where("status", "==", "pending")
+        );
+        const newAppointmentsSnapshot = await getDocs(newAppointmentsQuery);
+        if (!newAppointmentsSnapshot.empty) {
+          const newlyAddedPendingAppointments =
+            newAppointmentsSnapshot.docs.filter((doc) => {
+              const data = doc.data();
+              const createdAt = data.created_at.toDate();
+              return new Date() - createdAt < 60000; // 60,000 milliseconds = 1 minute
+            });
+          if (newlyAddedPendingAppointments.length > 0) {
+            setNewAppointmentNotification(true);
+            const notificationKey = "newAppointmentNotification";
+            const args = {
+              message: "New Appointment",
+              description: (
+                <div>
+                  <p>A new appointment has been added.</p>
+                  <p>
+                    <a href="../admindashboard/adminappointment">View All</a>
+                  </p>
+                </div>
+              ),
+              key: notificationKey,
+              onClose: () => {
+                setNewAppointmentNotification(false);
+                notification.close(notificationKey);
+              },
+            };
+            notification.open(args);
+          }
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
-
     fetchData();
   }, []);
+
+  const handleNotificationBellClick = () => {
+    setNewAppointmentNotification(false);
+  };
 
   const renderProgress = (count, color1, color2) => {
     const percent = (count / 10) * 100; // Assuming max count is 10 for simplicity
@@ -102,7 +163,7 @@ function AdminOverview() {
     );
   };
 
-  const renderPieChart = () => {
+  const renderAppointmentPieChart = () => {
     const totalAppointments =
       approvedAppointmentsCount +
       pendingAppointmentsCount +
@@ -180,8 +241,7 @@ function AdminOverview() {
       </svg>
     );
   };
-
-  const renderLegend = () => {
+  const renderAppointmentLegend = () => {
     const totalAppointments =
       approvedAppointmentsCount +
       pendingAppointmentsCount +
@@ -194,7 +254,7 @@ function AdminOverview() {
       (assignedAppointmentsCount / totalAppointments) * 100;
 
     return (
-      <div className="ml-4">
+      <div className="flex flex-col ml-8">
         <div className="flex items-center mb-2">
           <div className="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
           <span>
@@ -230,16 +290,129 @@ function AdminOverview() {
     );
   };
 
+  const renderReasonForAppointmentPieChart = () => {
+    const totalReasonForAppointments = consultationCount + followUpCount;
+    const consultationPercentage =
+      (consultationCount / totalReasonForAppointments) * 100;
+    const followUpPercentage =
+      (followUpCount / totalReasonForAppointments) * 100;
+
+    const totalAngle = 360; // Total angle for a full circle
+    const depth = 10; // Depth of the 3D effect
+    const radius = 45; // Radius of the pie chart
+    const centerX = 100; // X coordinate of the center of the circle
+    const centerY = 100; // Y coordinate of the center of the circle
+
+    return (
+      <svg height="200" width="200">
+        {/* Consultation Appointments */}
+        <circle
+          cx={centerX}
+          cy={centerY}
+          r={radius}
+          fill="transparent"
+          stroke="#FFC53D"
+          strokeWidth="90"
+          strokeDasharray={`${
+            consultationPercentage * (totalAngle / 100)
+          } ${totalAngle}`}
+          transform={`rotate(-90 ${centerX} ${centerY})`}
+        />
+        {/* Follow-up Appointments */}
+        <circle
+          cx={centerX}
+          cy={centerY}
+          r={radius}
+          fill="transparent"
+          stroke="#FF4D4F"
+          strokeWidth="90"
+          strokeDasharray={`${
+            followUpPercentage * (totalAngle / 100)
+          } ${totalAngle}`}
+          transform={`rotate(${
+            consultationPercentage * (totalAngle / 100) - 90
+          } ${centerX} ${centerY})`}
+        />
+        {/* Inner circle for depth effect */}
+        <circle cx={centerX} cy={centerY} r={radius - depth} fill="#fff" />
+        {/* Outer circle for depth effect */}
+        <circle
+          cx={centerX}
+          cy={centerY}
+          r={radius + depth}
+          fill="#000"
+          opacity="0.2"
+        />
+      </svg>
+    );
+  };
+
+  const renderReasonForAppointmentLegend = () => {
+    const totalReasonForAppointments = consultationCount + followUpCount;
+    const consultationPercentage =
+      (consultationCount / totalReasonForAppointments) * 100;
+    const followUpPercentage =
+      (followUpCount / totalReasonForAppointments) * 100;
+
+    return (
+      <div className="flex flex-col ml-8">
+        <div className="flex items-center mb-2">
+          <div className="w-4 h-4 bg-yellow-500 rounded-full mr-2"></div>
+          <span>
+            Consultation Appointments -{" "}
+            {consultationCount !== null
+              ? `${consultationCount} (${consultationPercentage.toFixed(1)}%)`
+              : "Loading..."}
+          </span>
+        </div>
+        <div className="flex items-center">
+          <div className="w-4 h-4 bg-red-500 rounded-full mr-2"></div>
+          <span>
+            Follow-up Appointments -{" "}
+            {followUpCount !== null
+              ? `${followUpCount} (${followUpPercentage.toFixed(1)}%)`
+              : "Loading..."}
+          </span>
+        </div>
+      </div>
+    );
+  };
+  const getCurrentDateMessage = () => {
+    const today = new Date();
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+    const formattedDate = today.toLocaleDateString(undefined, options);
+
+    return `Today is ${formattedDate}`;
+  };
+
   return (
-    <div>
-      <div className="container mx-auto">
-        <div className="flex justify-center">
-          <Space direction="horizontal" size={30}>
+    <div className="container mx-auto">
+      <div
+        style={{
+          display: "flex",
+          marginBottom: "20px",
+        }}
+      >
+        <h1>{getCurrentDateMessage()}</h1>
+        <Badge dot={newAppointmentNotification}>
+          <BellOutlined
+            style={{ fontSize: "24px", cursor: "pointer", marginLeft: "400px" }}
+            onClick={handleNotificationBellClick}
+          />
+        </Badge>
+      </div>
+      <div>
+        <div className="flex flex-wrap justify-center">
+          <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
             <Card
               title={<Title level={4}>Approved Appointments</Title>}
               extra={<a href="../admindashboard/adminappointment">View all</a>}
               style={{
-                width: 400,
                 backgroundColor: "#E3F4E1",
                 boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
               }}
@@ -262,12 +435,13 @@ function AdminOverview() {
                 </Col>
               </Row>
             </Card>
+          </div>
 
+          <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
             <Card
               title={<Title level={4}>Pending Appointments</Title>}
-              extra={<a href="../admindashboard/adminappointment">View all</a>}
+              extra={<a href=".../admindashboard/adminappointment">View all</a>}
               style={{
-                width: 400,
                 backgroundColor: "#E6F7FF",
                 boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
               }}
@@ -290,12 +464,13 @@ function AdminOverview() {
                 </Col>
               </Row>
             </Card>
+          </div>
 
+          <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
             <Card
               title={<Title level={4}>Assigned Appointments</Title>}
               extra={<a href="../admindashboard/adminappointment">View all</a>}
               style={{
-                width: 400,
                 backgroundColor: "#FFF5F5",
                 boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
               }}
@@ -318,16 +493,28 @@ function AdminOverview() {
                 </Col>
               </Row>
             </Card>
-          </Space>
+          </div>
         </div>
-        <div className="mt-8">
-          <div className="flex">
-            <div className="mr-8">
-              <svg height="200" width="200">
-                {renderPieChart()}
-              </svg>
+        <div className="mt-4 ml-20 flex justify-center">
+          <div>
+            <svg height="200" width="200">
+              {renderAppointmentPieChart()}
+            </svg>
+          </div>
+          <div>
+            <div className="flex justify-center">
+              {renderAppointmentLegend()}
             </div>
-            <div className="mt-10">{renderLegend()}</div>
+          </div>
+          <div>
+            <svg height="200" width="200">
+              {renderReasonForAppointmentPieChart()}
+            </svg>
+          </div>
+          <div>
+            <div className="flex justify-center">
+              {renderReasonForAppointmentLegend()}
+            </div>
           </div>
         </div>
       </div>
