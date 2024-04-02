@@ -1,16 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Button,
-  DatePicker,
-  Form,
-  Input,
-  Select,
-  Space,
-  Row,
-  Col,
-  Modal,
-} from "antd";
-const { TextArea } = Input;
+import { Button, DatePicker, Form, Input, Select, Row, Col, Modal } from "antd";
 import { Timestamp, getDoc, doc } from "firebase/firestore";
 import {
   auth,
@@ -27,6 +16,8 @@ import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import "dayjs/locale/en";
 
+const { TextArea } = Input;
+
 const generateUniqueReference = () => {
   const prefix = "AP";
   const randomDigits = Math.floor(Math.random() * 10000000); // Generates a random 7-digit number
@@ -34,20 +25,17 @@ const generateUniqueReference = () => {
 };
 
 const BookAppointmentForm = () => {
-  const [componentDisabled, setComponentDisabled] = useState(false);
-  const navigate = useNavigate();
   const [form] = Form.useForm();
+  const navigate = useNavigate();
   const [availableDays, setAvailableDays] = useState([]);
-
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalClosable, setModalClosable] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [modalCondition, setModalCondition] = useState("");
-
   const [doctorAvailability, setDoctorAvailability] = useState({});
-  const [doctorTimeOptions, setdoctorTimeOptions] = useState({});
-  const [typesofDoc, settypesofDoc] = useState([]);
-  const [patientDetails, setPatientDetails] = useState({});
+  const [doctorTimeOptions, setDoctorTimeOptions] = useState({});
+  const [typesofDoc, setTypesofDoc] = useState([]);
+  const [buttonLoading, setButtonLoading] = useState(false);
+  const [showForm, setShowForm] = useState(true); // New state to control form visibility
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -135,9 +123,9 @@ const BookAppointmentForm = () => {
           );
         });
 
-        settypesofDoc(specialtiesData);
+        setTypesofDoc(specialtiesData);
         setDoctorAvailability(availabilityData);
-        setdoctorTimeOptions(doctorTimeOptions);
+        setDoctorTimeOptions(doctorTimeOptions);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -172,66 +160,70 @@ const BookAppointmentForm = () => {
       timepicker,
     } = values;
 
+    setButtonLoading(true);
+
     const datePart = adate.startOf("day");
     const appointmentDate = datePart.toDate();
 
     const selectedTime = JSON.stringify(timepicker);
     const uniqueReference = generateUniqueReference();
 
-    const existingAppointmentsQuerySnapshot = await getDocs(
-      query(
-        collection(db, "appointments"),
-        where("appointmentDate", "==", appointmentDate),
-        where("typeOfDoctor", "==", typedoctor),
-        where("appointmentTime", "==", selectedTime)
-      )
-    );
+    try {
+      // Count pending appointments for the selected date, time, and type of doctor
+      const existingAppointmentsQuerySnapshot = await getDocs(
+        query(
+          collection(db, "appointments"),
+          where("appointmentDate", "==", appointmentDate),
+          where("typeOfDoctor", "==", typedoctor),
+          where("appointmentTime", "==", selectedTime),
+          where("status", "==", "pending")
+        )
+      );
 
-    const numExistingAppointments = existingAppointmentsQuerySnapshot.size;
+      const numExistingAppointments = existingAppointmentsQuerySnapshot.size;
 
-    if (numExistingAppointments >= 2 - 1) {
-      const message =
+      if (numExistingAppointments >= 2 - 1) {
+        const message =
+          "There are already 2 appointments booked for the selected date and time. Please choose a different Time.";
+        setModalClosable(false);
+        setModalCondition("schedexists");
+        setModalMessage(message);
+        showModal();
+      } else {
+        const userData = {
+          createdDate: Timestamp.now(),
+          patientName: patientname,
+          contactNo: contactno,
+          age: age,
+          patientAddress: patientaddress,
+          reasonForAppointment: reasonforappointment,
+          typeOfDoctor: typedoctor,
+          appointmentDate: appointmentDate,
+          appointmentTime: JSON.stringify(timepicker),
+          approved: false,
+          assignedDoctor: "",
+          status: "pending",
+          reference: uniqueReference,
+        };
+        await addDoc(collection(db, "appointments"), userData);
+        const successMessage = "Appointment booked successfully!";
+        setModalCondition("success");
+        setModalMessage(successMessage);
+        showModal();
+      }
+    } catch (error) {
+      console.error("Error saving appointment:", error);
+      const errorMessage =
         "There are already 2 appointments booked for the selected date and time. Please choose a different Time.";
-      setModalClosable(false);
-      setModalCondition("schedexists");
-      setModalMessage(message);
+      setModalCondition("error");
+      setModalMessage(errorMessage);
       showModal();
-    } else {
-      const userData = {
-        createdDate: Timestamp.now(),
-        patientName: patientname,
-        contactNo: contactno,
-        age: age,
-        patientAddress: patientaddress,
-        reasonForAppointment: reasonforappointment,
-        typeOfDoctor: typedoctor,
-        appointmentDate: appointmentDate,
-        appointmentTime: timepicker,
-        approved: false,
-        assignedDoctor: "",
-        status: "pending",
-        reference: uniqueReference,
-      };
-
-      navigate("/appointmentsuccess", {
-        state: { appointmentData: userData, phone: contactno },
-      });
+      setButtonLoading(false); // Enable the submit button again
     }
   };
 
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
-  };
-
-  const validateAge = (rule, value) => {
-    const age = parseInt(value);
-    if (isNaN(age) || age < 18 || age > 100) {
-      return Promise.reject(
-        "You must be between 18 and 100 years old to book an appointment."
-      );
-    } else {
-      return Promise.resolve();
-    }
   };
 
   const showModal = () => {
@@ -245,19 +237,35 @@ const BookAppointmentForm = () => {
       setModalVisible(false);
     } else {
       setModalVisible(false);
+      if (modalCondition === "error") {
+        setShowForm(true); // Show the form again if error modal is closed
+      } else {
+        window.location.reload(); // Refresh the page
+      }
+    }
+  };
+
+  const validateAge = (rule, value) => {
+    const age = parseInt(value);
+    if (isNaN(age) || age < 18 || age > 100) {
+      return Promise.reject(
+        "You must be between 18 and 100 years old to book an appointment."
+      );
+    } else {
+      return Promise.resolve();
     }
   };
 
   return (
     <>
       <Modal
-        title="Error:"
+        title="Appointment:"
         visible={modalVisible}
         onOk={handleModalOk}
         okText="OK"
         okButtonProps={{ className: "bg-green-600 w-2/4 " }}
         cancelButtonProps={{ style: { display: "none" } }}
-        closable={modalClosable}
+        closable
         className="mt-52"
       >
         <p>{modalMessage}</p>
@@ -271,7 +279,6 @@ const BookAppointmentForm = () => {
             span: 24,
           }}
           layout="horizontal"
-          disabled={componentDisabled}
           style={{
             maxWidth: 1100,
           }}
@@ -465,6 +472,11 @@ const BookAppointmentForm = () => {
                   }
                   style={{}}
                   placeholder="Select a time"
+                  disabled={
+                    doctorTimeOptions[form.getFieldValue("typedoctor")] &&
+                    doctorTimeOptions[form.getFieldValue("typedoctor")]
+                      .length === 0
+                  }
                 />
               </Form.Item>
             </Col>
@@ -484,6 +496,12 @@ const BookAppointmentForm = () => {
                   type="primary"
                   className="bg-green-600 w-2/4 "
                   htmlType="submit"
+                  loading={buttonLoading} // Set loading state for the button
+                  disabled={
+                    doctorTimeOptions[form.getFieldValue("typedoctor")] &&
+                    doctorTimeOptions[form.getFieldValue("typedoctor")]
+                      .length === 0
+                  }
                 >
                   {" "}
                   Book Appointment

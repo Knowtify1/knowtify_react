@@ -20,6 +20,11 @@ function AdminAppointment() {
     setApprovedAppointments([...approvedAppointments, appointment]);
   };
 
+  // Callback function to handle changes in approved appointments
+  const handleApprovedAppointmentChange = (updatedApprovedAppointments) => {
+    setApprovedAppointments(updatedApprovedAppointments);
+  };
+
   return (
     <div className="container mx-auto p-5">
       <div className="flex flex-col gap-0">
@@ -32,6 +37,7 @@ function AdminAppointment() {
           <TablePendingAppointments
             appointments={pendingAppointments}
             onApprove={approveAppointment}
+            onReschedule={handleApprovedAppointmentChange} // Pass the callback function
           />
         </Card>
         <div className="w-full text-center">

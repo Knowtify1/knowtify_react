@@ -39,17 +39,19 @@ const FollowUpForm = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [availableDays, setAvailableDays] = useState([]);
-
   const [modalVisible, setModalVisible] = useState(false);
   const [modalClosable, setModalClosable] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [modalCondition, setModalCondition] = useState("");
-
   const [doctorAvailability, setDoctorAvailability] = useState({});
   const [doctorTimeOptions, setdoctorTimeOptions] = useState({});
   const [typesofDoc, settypesofDoc] = useState([]);
   const [patientDetails, setPatientDetails] = useState({});
   const [showSuccessMessage, setShowSuccessMessage] = useState(false); // State to indicate if success message is shown
+  const [appointmentData, setAppointmentData] = useState({}); // State to hold appointment data
+
+  // Define the success message constant
+  const successMessage = "Appointment booked successfully!";
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -215,14 +217,18 @@ const FollowUpForm = () => {
       )
     );
 
+    const showModal = () => {
+      setModalVisible(true);
+    };
+
     const numExistingAppointments = existingAppointmentsQuerySnapshot.size;
 
     if (numExistingAppointments >= 2 - 1) {
-      const message =
+      const errorMessage =
         "There are already 2 appointments booked for the selected date and time. Please choose a different Time.";
       setModalClosable(false);
-      setModalCondition("schedexists");
-      setModalMessage(message);
+      setModalCondition("error");
+      setModalMessage(errorMessage);
       showModal();
     } else {
       const userData = {
@@ -243,13 +249,11 @@ const FollowUpForm = () => {
 
       try {
         // Save appointment data
-        await saveAppointment(userData);
+        const appointmentId = await saveAppointment(userData);
+        setAppointmentData({ id: appointmentId, ...userData });
 
         // Show success message and close modal
-        message.success(
-          "Your appointment has been booked and is awaiting approval."
-        );
-        setModalVisible(false);
+        setShowSuccessMessage(true);
       } catch (error) {
         console.log(error);
       }
@@ -269,12 +273,12 @@ const FollowUpForm = () => {
   useEffect(() => {
     // Effect to close modal and refresh page when success message is shown
     if (showSuccessMessage) {
-      // Close modal
-      setModalVisible(false);
-      // Reset showSuccessMessage
-      setShowSuccessMessage(false);
-      // Refresh the page
-      window.location.reload();
+      // Show success message
+      message.success(successMessage);
+      // Reload the page after a delay
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000); // Adjust the delay time if needed
     }
   }, [showSuccessMessage]);
 
@@ -301,9 +305,6 @@ const FollowUpForm = () => {
     } else {
       setModalVisible(false);
     }
-    // Close modal and reload page
-    setModalVisible(false);
-    window.location.reload();
   };
 
   return (

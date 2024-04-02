@@ -204,19 +204,17 @@ function BookAppointmentForm() {
       setModalCondition("schedexists");
       setModalMessage(message);
       showModal();
-      setButtonLoading(false); // Enable the submit button again
     } else {
       const userData = {
         createdDate: Timestamp.now(),
         patientName: patientname,
-        contactNo: prefixedContactNo, // Save phone number with "+63" prefix
-        birthdate: birthDate.toDate(), // Save birthdate
-        age: age, // Save calculated age
+        contactNo: contactno,
+        age: age,
         patientAddress: patientaddress,
         reasonForAppointment: reasonforappointment,
         typeOfDoctor: typedoctor,
         appointmentDate: appointmentDate,
-        appointmentTime: timepicker,
+        appointmentTime: JSON.stringify(timepicker),
         approved: false,
         assignedDoctor: "",
         status: "pending",
