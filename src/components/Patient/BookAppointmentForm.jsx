@@ -83,7 +83,7 @@ const BookAppointmentForm = () => {
           ];
           availabilityData[specialty] = days;
 
-          // Sort times into two ranges: 7:00 - 12:00 and 1:00 - 8:00
+          /// Sort time options ensuring 12 PM comes after AM
           times = times.sort((a, b) => {
             const hourA = parseInt(a.split(":")[0]);
             const hourB = parseInt(b.split(":")[0]);
@@ -94,6 +94,10 @@ const BookAppointmentForm = () => {
               return -1;
             } else if (hourB >= 7 && hourB < 12) {
               return 1;
+            } else if (hourA === 12 && hourB < 12) {
+              return -1; // Ensure 12 PM comes after AM
+            } else if (hourB === 12 && hourA < 12) {
+              return 1; // Ensure 12 PM comes after AM
             } else {
               return hourA - hourB;
             }
@@ -393,36 +397,19 @@ const BookAppointmentForm = () => {
           <hr />
           <br />
           <Row gutter={[10, 10]}>
-            <Col span={8}>
+            <Col span={0} style={{ display: "none" }}>
+              {" "}
+              {/* Hide the column */}
               <Form.Item
-                label="Reason for Appointment"
                 name="reasonforappointment"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select or input your reason!",
-                  },
-                ]}
+                initialValue="consultation" // Set default value to "Consultation"
+                hidden // Hide the Form.Item
               >
-                <Select
-                  showSearch
-                  placeholder="Select or Specify"
-                  optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    option.children
-                      .toLowerCase()
-                      .indexOf(input.toLowerCase()) >= 0
-                  }
-                  allowClear
-                >
-                  <Select.Option value="consultation">
-                    Consultation
-                  </Select.Option>
-                </Select>
+                <Input />
               </Form.Item>
             </Col>
 
-            <Col span={8}>
+            <Col span={16}>
               <Form.Item
                 label="Type of Doctor to Consult"
                 rules={[{ required: true, message: "Select Type" }]}
@@ -472,11 +459,15 @@ const BookAppointmentForm = () => {
                   }
                   style={{}}
                   placeholder="Select a time"
-                  disabled={
-                    doctorTimeOptions[form.getFieldValue("typedoctor")] &&
-                    doctorTimeOptions[form.getFieldValue("typedoctor")]
-                      .length === 0
-                  }
+                  disabledDate={(current) => {
+                    const currentTime = dayjs();
+                    const selectedDate = form.getFieldValue("adate");
+                    if (!selectedDate) return false; // If no date is selected, all times are enabled
+                    const selectedTime = dayjs(selectedDate)
+                      .set("hour", current.hour())
+                      .set("minute", current.minute());
+                    return currentTime.isAfter(selectedTime); // Disable times that have already passed
+                  }}
                 />
               </Form.Item>
             </Col>

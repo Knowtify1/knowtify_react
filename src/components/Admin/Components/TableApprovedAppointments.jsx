@@ -259,7 +259,7 @@ function TableApprovedAppointments() {
     // Set up interval to fetch approved appointments every 60 seconds
     const interval = setInterval(() => {
       fetchApprovedAppointments(selectedDate, setData, setLoading);
-    }, 60000);
+    }, 6);
 
     // Clean up the interval on component unmount
     return () => clearInterval(interval);

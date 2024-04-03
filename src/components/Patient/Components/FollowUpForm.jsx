@@ -123,7 +123,7 @@ const FollowUpForm = () => {
           ];
           availabilityData[specialty] = days;
 
-          // Sort times into two ranges: 7:00 - 12:00 and 1:00 - 8:00
+          /// Sort time options ensuring 12 PM comes after AM
           times = times.sort((a, b) => {
             const hourA = parseInt(a.split(":")[0]);
             const hourB = parseInt(b.split(":")[0]);
@@ -134,6 +134,10 @@ const FollowUpForm = () => {
               return -1;
             } else if (hourB >= 7 && hourB < 12) {
               return 1;
+            } else if (hourA === 12 && hourB < 12) {
+              return -1; // Ensure 12 PM comes after AM
+            } else if (hourB === 12 && hourA < 12) {
+              return 1; // Ensure 12 PM comes after AM
             } else {
               return hourA - hourB;
             }
@@ -278,7 +282,7 @@ const FollowUpForm = () => {
       // Reload the page after a delay
       setTimeout(() => {
         window.location.reload();
-      }, 3000); // Adjust the delay time if needed
+      }, 3); // Adjust the delay time if needed
     }
   }, [showSuccessMessage]);
 
@@ -330,7 +334,6 @@ const FollowUpForm = () => {
             span: 24,
           }}
           layout="horizontal"
-          disabled={componentDisabled}
           style={{
             maxWidth: 1100,
           }}
@@ -374,7 +377,7 @@ const FollowUpForm = () => {
               </Form.Item>
             </Col>
 
-            <Col span={3}>
+            <Col span={4}>
               <Form.Item
                 label="Age"
                 name="age"
@@ -445,34 +448,19 @@ const FollowUpForm = () => {
           <hr />
           <br />
           <Row gutter={[10, 10]}>
-            <Col span={8}>
+            <Col span={0} style={{ display: "none" }}>
+              {" "}
+              {/* Hide the column */}
               <Form.Item
-                label="Reason for Appointment"
                 name="reasonforappointment"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select or input your reason!",
-                  },
-                ]}
+                initialValue="follow-up" // Set default value to "Consultation"
+                hidden // Hide the Form.Item
               >
-                <Select
-                  showSearch
-                  placeholder="Select or Specify"
-                  optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    option.children
-                      .toLowerCase()
-                      .indexOf(input.toLowerCase()) >= 0
-                  }
-                  allowClear
-                >
-                  <Select.Option value="follow-up">Follow-up</Select.Option>
-                </Select>
+                <Input />
               </Form.Item>
             </Col>
 
-            <Col span={8}>
+            <Col span={16}>
               <Form.Item
                 label="Type of Doctor to Consult"
                 rules={[{ required: true, message: "Select Type" }]}

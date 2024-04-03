@@ -57,6 +57,8 @@ const DoctorsSchedule = () => {
   const [checkedTimes, setCheckedTimes] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const [isSubmitting, setIsSubmitting] = useState(false); // State to track form submission
+
   const handleOptionChange = (value) => {
     setSelectedOption(value);
   };
@@ -92,6 +94,7 @@ const DoctorsSchedule = () => {
   }, [selectedOption]);
 
   const onFinish = async (values) => {
+    setIsSubmitting(true); // Set isSubmitting to true when form is submitted
     console.log("Received values:", values);
     const { option, days, times } = values;
     const specialtytrim = option.replace(/\s/g, "");
@@ -114,6 +117,8 @@ const DoctorsSchedule = () => {
       setSelectedTimes(times);
     } catch (error) {
       console.error("Error storing data in Firestore: ", error);
+    } finally {
+      setIsSubmitting(false); // Set isSubmitting to false after submission is complete
     }
   };
 
@@ -175,12 +180,13 @@ const DoctorsSchedule = () => {
             </Checkbox.Group>
           </Form.Item>
           <Form.Item>
-            <Button
+          <Button
               type="primary"
               htmlType="submit"
-              className="bg-green-600 w-2/4 "
+              className="bg-green-600 w-2/4"
+              disabled={isSubmitting} // Disable button while submitting
             >
-              Submit
+              {isSubmitting ? "Submitting..." : "Submit"}
             </Button>
           </Form.Item>
         </Form>
