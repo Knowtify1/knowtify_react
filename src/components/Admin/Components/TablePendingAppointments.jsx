@@ -180,7 +180,7 @@ function TablePendingAppointments() {
         appointmentRef,
         {
           appointmentDate: dateOfAppointment.toDate(),
-          appointmentTime: appointmentTime.format("h:mm A"),
+          appointmentTime: appointmentTime.format("HH:mm"),
         },
         { merge: true }
       );
@@ -193,11 +193,10 @@ function TablePendingAppointments() {
       const message = `Good day, ${patientName}! Your booking with Mountain Studio Specialty Clinic has been rescheduled on Date: ${dateOfAppointment.format(
         "MM/DD/YYYY"
       )}, Time: ${appointmentTime.format(
-        "h:mm A"
+        "HH:mm"
       )}. Please be at the clinic 5 minutes before your appointment schedule. Thank you!`;
       sendSMS(contactNo, message); // Send SMS
       setVisible(false);
-      message.success("Appointment rescheduled successfully!");
     } catch (error) {
       console.error("Validation failed:", error);
     }
@@ -325,13 +324,31 @@ function TablePendingAppointments() {
             visible={visible}
             onOk={handleOk}
             onCancel={handleCancel}
-            cancelButtonProps={{ className: "text-green-500" }}
-            okButtonProps={{ className: "text-green-500" }}
+            cancelButtonProps={{ style: { color: "green" } }}
+            okButtonProps={{ style: { color: "green" } }}
           >
             <Form form={form} layout="vertical" initialValues={{}}>
-              {/* Form items */}
+              <Form.Item name="key" hidden>
+                <input type="hidden" />
+              </Form.Item>
+              <Form.Item
+                name="dateOfAppointment"
+                label="Appointment Date"
+                rules={[{ required: true, message: "Please select a date" }]}
+              >
+                <DatePicker />
+              </Form.Item>
+              <Form.Item
+                name="appointmentTime"
+                label="Appointment Time"
+                rules={[{ required: true, message: "Please select a time" }]}
+                style={{ marginBottom: 0 }}
+              >
+                <TimePicker format="HH:mm" />
+              </Form.Item>
             </Form>
           </Modal>
+
         </Space>
       </div>
     </>
