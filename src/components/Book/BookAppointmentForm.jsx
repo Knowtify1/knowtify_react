@@ -9,6 +9,7 @@ import {
   Row,
   Col,
   Modal,
+  Card,
 } from "antd";
 const { TextArea } = Input;
 import { Timestamp } from "firebase/firestore";
@@ -69,7 +70,7 @@ function BookAppointmentForm() {
           ];
           availabilityData[specialty] = days;
 
-          // Sort times into two ranges: 7:00 - 12:00 and 1:00 - 8:00
+          /// Sort time options ensuring 12 PM comes after AM
           times = times.sort((a, b) => {
             const hourA = parseInt(a.split(":")[0]);
             const hourB = parseInt(b.split(":")[0]);
@@ -80,6 +81,10 @@ function BookAppointmentForm() {
               return -1;
             } else if (hourB >= 7 && hourB < 12) {
               return 1;
+            } else if (hourA === 12 && hourB < 12) {
+              return -1; // Ensure 12 PM comes after AM
+            } else if (hourB === 12 && hourA < 12) {
+              return 1; // Ensure 12 PM comes after AM
             } else {
               return hourA - hourB;
             }
@@ -197,7 +202,7 @@ function BookAppointmentForm() {
 
     const numExistingAppointments = existingAppointmentsQuerySnapshot.size;
 
-    if (numExistingAppointments >= 2 - 1) {
+    if (numExistingAppointments >= 3 - 1) {
       const message =
         "There are already 2 appointments booked for the selected date and time. Please choose a different Time.";
       setModalClosable(false);
@@ -402,34 +407,18 @@ function BookAppointmentForm() {
           <hr />
           <br />
           <Row gutter={[10, 10]}>
-            <Col span={8}>
+            <Col span={0} style={{ display: "none" }}>
+              {" "}
+              {/* Hide the column */}
               <Form.Item
-                label="Reason for Appointment"
                 name="reasonforappointment"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select or input your reason!",
-                  },
-                ]}
+                initialValue="Consultation" // Set default value to "Consultation"
+                hidden // Hide the Form.Item
               >
-                <Select
-                  showSearch
-                  placeholder="Select or Specify"
-                  optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    option.children
-                      .toLowerCase()
-                      .indexOf(input.toLowerCase()) >= 0
-                  }
-                  allowClear
-                >
-                  <Option value="consultation">Consultation</Option>
-                </Select>
+                <Input />
               </Form.Item>
             </Col>
-
-            <Col span={8}>
+            <Col span={16}>
               <Form.Item
                 label="Type of Doctor to Consult"
                 rules={[{ required: true, message: "Select Type" }]}
