@@ -16,18 +16,14 @@ import {
   auth,
 } from "../../config/firebase.jsx";
 import { handleSendCode, handleVerifyCode } from "../../config/signinphone.jsx";
-
 function AppointmentSuccess() {
   const location = useLocation();
   const { appointmentData } = location.state;
   const { phone } = location.state;
-
   const [appointmentID, setAppointmentID] = useState("");
-
   const [appointmentDetails, setAppointmentDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAppointmentDetails, setShowAppointmentDetails] = useState(false);
-
   const [phoneNumber, setPhoneNumber] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [confirmationResult, setConfirmationResult] = useState(null);
@@ -35,14 +31,12 @@ function AppointmentSuccess() {
   const [codeSent, setCodeSent] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [register, setregister] = useState(false);
-
   const onSendCode = () => {
     handleSendCode(phoneNumber, setConfirmationResult, setCodeSent);
   };
   const onVerifyCode = async () => {
     setVerifying(true);
     handleVerifyCode(confirmationResult, verificationCode, setPatientAuthID);
-
     if (confirmationResult) {
       saveAppointment();
       setVerifying(false);
@@ -51,11 +45,9 @@ function AppointmentSuccess() {
       setShowAppointmentDetails(false);
     }
   };
-
   useEffect(() => {
     setPhoneNumber(phone);
   }, [phone]);
-
   const saveAppointment = async () => {
     const myDoc = collection(db, "appointments");
     try {
@@ -67,12 +59,10 @@ function AppointmentSuccess() {
       console.log(error);
     }
   };
-
   // const fetchAppointmentDetails = async () => {
   //   try {
   //     const appointmentDoc = doc(collection(db, "appointments"), appointmentID);
   //     const snapshot = await getDoc(appointmentDoc);
-
   //     if (snapshot.exists()) {
   //       setAppointmentDetails(snapshot.data());
   //       console.error("Appointment found");
@@ -85,11 +75,9 @@ function AppointmentSuccess() {
   //     setLoading(false);
   //   }
   // };
-
   const createPatientCollection = async () => {
     console.log("ID: " + PatientAuthID);
     const dateofregistration = fsTimeStamp.now();
-
     const patientData = {
       name: appointmentData.patientName,
       uid: PatientAuthID,
@@ -101,9 +89,7 @@ function AppointmentSuccess() {
       patientAddress: appointmentData.patientAddress,
       dateofregistration: dateofregistration,
     };
-
     console.log("patientData: " + patientData);
-
     const patientsCollection = collection(db, "patient_accounts");
     const patientsDocRef = doc(patientsCollection, `${PatientAuthID}`);
     try {
@@ -112,7 +98,6 @@ function AppointmentSuccess() {
     } catch (error) {
       console.error("Error creating patient collection:", error);
     }
-
     const users_accounts = collection(db, "users_accounts_records");
     const users_accountsDocRef = doc(users_accounts, `${PatientAuthID}`);
     try {
@@ -121,10 +106,8 @@ function AppointmentSuccess() {
     } catch (error) {
       console.log(error);
     }
-
     setShowAppointmentDetails(true);
   };
-
   return (
     <>
       {showAppointmentDetails ? (
@@ -165,7 +148,6 @@ function AppointmentSuccess() {
                   </p>
                 </div>
               </div>
-
               <div className="mt-6">
                 <p className="text-lg mb-2">
                   To check the status of your appointment, you can use the
@@ -181,7 +163,6 @@ function AppointmentSuccess() {
                   </Button>
                 </Link>
               </div>
-
               {/* <div className="mt-6">
             <p className="text-lg mb-2">
               Upon a successful appointment, you will receive a confirmation
@@ -200,7 +181,6 @@ function AppointmentSuccess() {
             </p>
           </div> */}
             </Card>
-
             <div className="mt-4 flex justify-center">
               <Link to="/patientdashboard">
                 <Button
@@ -283,5 +263,4 @@ function AppointmentSuccess() {
     </>
   );
 }
-
 export default AppointmentSuccess;
