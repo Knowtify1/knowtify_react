@@ -40,7 +40,6 @@ function Register() {
     email,
     password,
     role,
-    phone,
     dateofregistration
   ) => {
     const adminCollection = doc(db, "admin_accounts", `${userId}`);
@@ -51,7 +50,6 @@ function Register() {
         email: email,
         password: password,
         type: role,
-        phone: phone,
         dateofregistration: dateofregistration,
       };
 
@@ -68,7 +66,6 @@ function Register() {
     email,
     password,
     role,
-    phone,
     dateofregistration
   ) => {
     const doctorsCollection = doc(db, "doctors_accounts", `${userId}`);
@@ -81,7 +78,6 @@ function Register() {
         email: email,
         password: password,
         type: role,
-        phone: phone,
         dateofregistration: dateofregistration,
       };
 
@@ -141,7 +137,6 @@ function Register() {
             type: role,
             dateofregistration: dateofregistration,
             password: password,
-            phone: phone,
           };
 
           addNewDocument(userData, user.uid);
@@ -153,7 +148,6 @@ function Register() {
               email,
               password,
               role,
-              phone,
               dateofregistration
             );
           } else if (role === "patient") {
@@ -174,7 +168,6 @@ function Register() {
               email,
               password,
               role,
-              phone,
               dateofregistration
             );
           }
@@ -268,18 +261,6 @@ function Register() {
             ]}
           >
             <Input type="email" />
-          </Form.Item>
-          <Form.Item
-            label="Phone"
-            name="phone"
-            rules={[
-              {
-                required: true,
-                message: "Please input your phone!",
-              },
-            ]}
-          >
-            <Input type="text" />
           </Form.Item>
 
           <Form.Item
