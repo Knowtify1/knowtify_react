@@ -440,7 +440,7 @@ function AdminOverview() {
           <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
             <Card
               title={<Title level={4}>Pending Appointments</Title>}
-              extra={<a href=".../admindashboard/adminappointment">View all</a>}
+              extra={<a href="../admindashboard/adminappointment">View all</a>}
               style={{
                 backgroundColor: "#E6F7FF",
                 boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
