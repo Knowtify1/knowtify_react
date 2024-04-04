@@ -75,17 +75,21 @@ const SpecialtyMenu = () => {
             <tbody>
               {firstHalf.map((specialty, index) => (
                 <tr key={index} className="border-b border-green-800">
-                  <td className="w-1/4 p-2 border-r border-green-800">
+                  <td className="w-1/3 p-2 border-r border-green-800 text-center">
                     <img
                       src={specialty.images}
                       alt={specialty.label}
-                      style={{ width: "100px", height: "auto" }}
+                      style={{
+                        width: "130px",
+                        height: "auto",
+                        margin: "0 auto",
+                      }}
                     />
                   </td>
-                  <td className="w-1/2 p-2 border-r border-green-800">
-                    <p className="text-center">{specialty.label}</p>
+                  <td className="w-1/2 p-2 border-r border-green-800 text-center">
+                    <p style={{ fontSize: "16px" }}>{specialty.label}</p>
                   </td>
-                  <td className="w-1/3 p-2 border-r border-green-800">
+                  <td className="w-1/4 p-2 border-r border-green-800 text-center">
                     <Space>
                       <Tooltip title="View Schedule">
                         <Button
@@ -93,7 +97,11 @@ const SpecialtyMenu = () => {
                             handleButtonClick("schedule", specialty.value)
                           }
                           type="primary"
-                          icon={<CalendarOutlined style={{ color: "green" }} />}
+                          icon={
+                            <CalendarOutlined
+                              style={{ fontSize: "20px", color: "green" }}
+                            />
+                          }
                         />
                       </Tooltip>
                     </Space>
@@ -108,17 +116,21 @@ const SpecialtyMenu = () => {
             <tbody>
               {secondHalf.map((specialty, index) => (
                 <tr key={index} className="border-b border-green-800">
-                  <td className="w-1/4 p-2 border-r border-green-800">
+                  <td className="w-1/3 p-2 border-r border-green-800 text-center">
                     <img
                       src={specialty.images}
                       alt={specialty.label}
-                      style={{ width: "100px", height: "auto" }}
+                      style={{
+                        width: "130px",
+                        height: "auto",
+                        margin: "0 auto",
+                      }}
                     />
                   </td>
-                  <td className="w-1/2 p-2 border-r border-green-800">
-                    <p className="text-center">{specialty.label}</p>
+                  <td className="w-1/2 p-2 border-r border-green-800 text-center">
+                    <p style={{ fontSize: "16px" }}>{specialty.label}</p>
                   </td>
-                  <td className="w-1/3 p-2 border-r border-green-800 ">
+                  <td className="w-1/4 p-2 border-r border-green-800 text-center">
                     <Space>
                       <Tooltip title="View Schedule">
                         <Button
@@ -126,7 +138,11 @@ const SpecialtyMenu = () => {
                             handleButtonClick("schedule", specialty.value)
                           }
                           type="primary"
-                          icon={<CalendarOutlined style={{ color: "green" }} />}
+                          icon={
+                            <CalendarOutlined
+                              style={{ fontSize: "20px", color: "green" }}
+                            />
+                          }
                         />
                       </Tooltip>
                     </Space>

@@ -257,6 +257,7 @@ function AppointmentSuccess() {
               </Form.Item>
             </Form>
           </div>
+          <div id="recaptcha-container"></div>
         </Card>
       )}
     </>

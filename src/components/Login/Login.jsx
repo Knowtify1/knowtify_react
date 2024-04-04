@@ -194,9 +194,11 @@ const Login = () => {
 
           <div className="text-center mt-2">
             <Link to="/registerphone">
-              <Button type="primary" 
-                      style={{ marginBottom: '10px' }}
-                      className="bg-green-600 w-full">
+              <Button
+                type="primary"
+                style={{ marginBottom: "10px" }}
+                className="bg-green-600 w-full"
+              >
                 Patient Login
               </Button>
             </Link>

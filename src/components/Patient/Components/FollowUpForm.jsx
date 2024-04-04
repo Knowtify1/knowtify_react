@@ -227,7 +227,7 @@ const FollowUpForm = () => {
 
     const numExistingAppointments = existingAppointmentsQuerySnapshot.size;
 
-    if (numExistingAppointments >= 2 - 1) {
+    if (numExistingAppointments >= 3 - 1) {
       const errorMessage =
         "There are already 2 appointments booked for the selected date and time. Please choose a different Time.";
       setModalClosable(false);

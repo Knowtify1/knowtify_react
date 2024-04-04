@@ -8,7 +8,7 @@ import {
   Modal,
   Form,
   message,
-  TimePicker,
+  Select,
 } from "antd";
 import {
   setDoc,
@@ -28,12 +28,110 @@ import { sendSMS } from "../../../config/sendSMS.jsx";
 import dayjs from "dayjs"; // Import dayjs
 
 function TablePendingAppointments() {
+  const [componentDisabled, setComponentDisabled] = useState(false);
   const [data, setData] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
   const [visible, setVisible] = useState(false);
   const [form] = Form.useForm();
+  const [typesofDoc, settypesofDoc] = useState([]);
+  const [doctorAvailability, setDoctorAvailability] = useState({});
+  const [doctorTimeOptions, setdoctorTimeOptions] = useState({});
+  const [availableDays, setAvailableDays] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "settings"));
+        const availabilityData = {};
+        const timeOptionsData = {};
+        let specialtiesData = [];
+
+        querySnapshot.forEach((doc) => {
+          const specialty = doc.data().specialty;
+          const specialtyLabel = doc.data().specialtyLabel;
+          const days = doc.data().days || [];
+          let times = doc.data().times || [];
+
+          specialtiesData = [
+            ...specialtiesData,
+            { value: specialty, label: specialtyLabel },
+          ];
+          availabilityData[specialty] = days;
+
+          /// Sort time options ensuring 12 PM comes after AM
+          times = times.sort((a, b) => {
+            const hourA = parseInt(a.split(":")[0]);
+            const hourB = parseInt(b.split(":")[0]);
+
+            if (hourA >= 7 && hourA < 12 && hourB >= 7 && hourB < 12) {
+              return hourA - hourB;
+            } else if (hourA >= 7 && hourA < 12) {
+              return -1;
+            } else if (hourB >= 7 && hourB < 12) {
+              return 1;
+            } else if (hourA === 12 && hourB < 12) {
+              return -1; // Ensure 12 PM comes after AM
+            } else if (hourB === 12 && hourA < 12) {
+              return 1; // Ensure 12 PM comes after AM
+            } else {
+              return hourA - hourB;
+            }
+          });
+
+          const formattedTimes = times.map((time) => ({
+            value: time,
+            label: `${time} ${
+              parseInt(time.split(":")[0]) >= 7 &&
+              parseInt(time.split(":")[0]) < 12
+                ? "AM"
+                : parseInt(time.split(":")[0]) === 12
+                ? "PM"
+                : "PM"
+            }`,
+          }));
+
+          timeOptionsData[specialty] = formattedTimes;
+        });
+
+        // Convert timeOptionsData to the desired format
+        const doctorTimeOptions = {};
+        Object.keys(timeOptionsData).forEach((specialty) => {
+          doctorTimeOptions[specialty] = timeOptionsData[specialty].map(
+            (time) => ({
+              value: time.value,
+              label: time.label,
+            })
+          );
+        });
+
+        settypesofDoc(specialtiesData);
+        setDoctorAvailability(availabilityData);
+        setdoctorTimeOptions(doctorTimeOptions);
+
+        console.log(doctorTimeOptions);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const selectedType = form.getFieldValue("typedoctor");
+    setAvailableDays(doctorAvailability[selectedType] || []);
+  }, [form, doctorAvailability]);
+
+  const handleTypeChange = (value) => {
+    const selectedType = value;
+    const timeOptions = doctorTimeOptions[selectedType] || [];
+    form.setFieldsValue({
+      timepicker: timeOptions.length > 0 ? timeOptions[0].value : null,
+    });
+    setAvailableDays(doctorAvailability[selectedType] || []);
+  };
 
   const columns = [
     {
@@ -65,7 +163,6 @@ function TablePendingAppointments() {
         );
       },
     },
-
     {
       title: "Reason",
       dataIndex: "reasonForAppointment",
@@ -149,6 +246,10 @@ function TablePendingAppointments() {
   };
 
   const showModal = (record) => {
+    if (!record || !record.key) {
+      console.error("Record or record key is undefined.");
+      return;
+    }
     setVisible(true);
     form.setFieldsValue({
       key: record.key,
@@ -170,43 +271,10 @@ function TablePendingAppointments() {
     return `Today is ${formattedDate}`;
   };
 
-  const handleOk = async () => {
-    try {
-      const values = await form.validateFields();
-      updateAppointmentInTable(values);
-      const { key, dateOfAppointment, appointmentTime } = values;
-      const appointmentRef = doc(db, "appointments", key);
-      await setDoc(
-        appointmentRef,
-        {
-          appointmentDate: dateOfAppointment.toDate(),
-          appointmentTime: appointmentTime.format("HH:mm"),
-        },
-        { merge: true }
-      );
-      console.log("Appointment updated successfully.");
-      // Sending SMS to the patient
-      const appointmentSnapshot = await getDoc(appointmentRef);
-      const appointmentData = appointmentSnapshot.data();
-      const contactNo = appointmentData.contactNo; // Assuming contactNo is the field name for the contact number
-      const patientName = appointmentData.patientName; // Assuming patientName is the field name for the patient's name
-      const message = `Good day, ${patientName}! Your booking with Mountain Studio Specialty Clinic has been rescheduled on Date: ${dateOfAppointment.format(
-        "MM/DD/YYYY"
-      )}, Time: ${appointmentTime.format(
-        "HH:mm"
-      )}. Please be at the clinic 5 minutes before your appointment schedule. Thank you!`;
-      sendSMS(contactNo, message); // Send SMS
-      setVisible(false);
-    } catch (error) {
-      console.error("Validation failed:", error);
-    }
-  };
-
   const handleCancel = () => {
     form.resetFields();
     setVisible(false);
   };
-
   const fetchAppointments = async (selectedDate, setData, setLoading) => {
     try {
       let appointmentsQuery = collection(db, "appointments");
@@ -254,14 +322,76 @@ function TablePendingAppointments() {
     setSelectedRowKeys(newSelectedRowKeys);
   };
 
-  const updateAppointmentInTable = (values) => {
-    const { key, dateOfAppointment, appointmentTime } = values;
-    const newData = [...data];
-    const index = newData.findIndex((item) => key === item.key);
-    if (index > -1) {
-      newData[index].dateOfAppointment = dateOfAppointment;
-      newData[index].appointmentTime = appointmentTime.format("h:mm A");
-      setData(newData);
+  const updateAppointmentInTable = async (values) => {
+    try {
+      const { key, dateOfAppointment, appointmentTime } = values;
+      const newData = [...data];
+      const index = newData.findIndex((item) => key === item.key);
+      if (index > -1) {
+        newData[index].dateOfAppointment = dateOfAppointment;
+        newData[index].appointmentTime = appointmentTime.format("h:mm A");
+        setData(newData);
+
+        // Update appointment in Firestore collection
+        const appointmentRef = doc(db, "appointments", key);
+        await setDoc(
+          appointmentRef,
+          {
+            dateOfAppointment: fsTimeStamp.fromDate(dateOfAppointment.toDate()),
+            appointmentTime: appointmentTime.format("HH:mm"),
+          },
+          { merge: true }
+        );
+
+        console.log("Appointment updated successfully.");
+      }
+    } catch (error) {
+      console.error("Error updating appointment:", error);
+    }
+  };
+
+  const handleOk = async () => {
+    try {
+      // Validate form fields
+      const values = await form.validateFields();
+      const { key, adate, timepicker } = values;
+
+      // Update appointment in table and Firestore
+      await updateAppointmentInTable(values);
+
+      // Close modal
+      handleCancel();
+
+      // Retrieve appointment data
+      const appointmentRef = doc(db, "appointments", key);
+      const appointmentSnapshot = await getDoc(appointmentRef);
+      const appointmentData = appointmentSnapshot.data();
+
+      if (!appointmentData) {
+        // Handle case where appointment data is undefined
+        throw new Error("Appointment data is not available.");
+      }
+
+      const contactNo = appointmentData.contactNo;
+      const patientName = appointmentData.patientName;
+
+      // Compose SMS message content
+      const messageContent = `Good day, ${patientName}! Your appointment has been rescheduled to Date: ${moment(
+        adate
+      ).format("MM/DD/YYYY")}, Time: ${moment(timepicker, "HH:mm").format(
+        "hh:mm A"
+      )}. Please be at the clinic 5 minutes before your appointment schedule. Thank you!`;
+
+      // Send SMS
+      await sendSMS(contactNo, messageContent);
+
+      // Log success message
+      console.log("SMS sent successfully.");
+      message.success("Appointment rescheduled and SMS sent successfully.");
+    } catch (error) {
+      // Log and handle errors
+      console.error("Error rescheduling appointment:", error);
+      message.error("Failed to reschedule appointment. Please try again.");
     }
   };
 
@@ -289,22 +419,16 @@ function TablePendingAppointments() {
     <>
       <div className="container mx-auto px-4">
         <Space direction="vertical" size={4} className="md:flex md:flex-col">
-          {/* Date selection, pending appointments count, and current date */}
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <h1 className="mr-2">Select Appointment Date:</h1>
-              <DatePicker
-                onChange={handleDateChange}
-                disabledDate={disabledDate}
-              />
+              <DatePicker onChange={handleDateChange} />
             </div>
             <div className="flex items-center">
               <h1 className="mr-2">Pending Appointments: {data.length}</h1>
-              <h1>{getCurrentDateMessage()}</h1>
+              {/* Add getCurrentDateMessage() here */}
             </div>
           </div>
-
-          {/* Loading spinner or table */}
           {loading ? (
             <div className="flex justify-center">
               <Spin size="large" />
@@ -314,11 +438,9 @@ function TablePendingAppointments() {
               columns={columns}
               dataSource={data}
               pagination={{ pageSize: 5 }}
-              scroll={{ x: true }} // Enable horizontal scrolling
+              scroll={{ x: true }}
             />
           )}
-
-          {/* Modal for editing appointment */}
           <Modal
             title="Edit Appointment"
             visible={visible}
@@ -327,28 +449,50 @@ function TablePendingAppointments() {
             cancelButtonProps={{ style: { color: "green" } }}
             okButtonProps={{ style: { color: "green" } }}
           >
-            <Form form={form} layout="vertical" initialValues={{}}>
-              <Form.Item name="key" hidden>
-                <input type="hidden" />
+            <Form form={form} layout="vertical">
+              <Form.Item
+                label="Type of Doctor to Consult"
+                name="typedoctor"
+                rules={[{ required: true, message: "Select Type" }]}
+              >
+                <Select
+                  options={typesofDoc}
+                  placeholder="Select a type"
+                  onChange={handleTypeChange}
+                />
               </Form.Item>
               <Form.Item
-                name="dateOfAppointment"
                 label="Appointment Date"
-                rules={[{ required: true, message: "Please select a date" }]}
+                rules={[{ required: true, message: "Select Date" }]}
+                name="adate"
               >
-                <DatePicker />
+                <DatePicker
+                  disabledDate={(current) => {
+                    if (current && current < dayjs().startOf("day")) {
+                      return true;
+                    }
+                    const dayOfWeek = current.day();
+                    return !availableDays.includes(
+                      dayjs().day(dayOfWeek).format("dddd")
+                    );
+                  }}
+                  placeholder="Select Date"
+                />
               </Form.Item>
               <Form.Item
-                name="appointmentTime"
                 label="Appointment Time"
-                rules={[{ required: true, message: "Please select a time" }]}
-                style={{ marginBottom: 0 }}
+                name="timepicker"
+                rules={[{ required: true, message: "Select Time" }]}
               >
-                <TimePicker format="HH:mm" />
+                <Select
+                  disabled={!form.getFieldValue("typedoctor")}
+                  options={
+                    doctorTimeOptions[form.getFieldValue("typedoctor")] || []
+                  }
+                />
               </Form.Item>
             </Form>
           </Modal>
-
         </Space>
       </div>
     </>
