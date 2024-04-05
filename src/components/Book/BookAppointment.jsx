@@ -69,7 +69,7 @@ function BookAppointment() {
         </div>
       </header>
 
-      <div>
+      <div className="relative mt-16">
         <div className="relative">
           <img
             src={bk2}
@@ -77,9 +77,9 @@ function BookAppointment() {
             className="w-100 max-h-97 blur"
             style={{ filter: "blur(4px)" }} // Adjust the blur value as needed
           />
-          <div className="absolute bottom-40 p-20 ">
-            <div>
-              <h1 className="text-4xl font-bold text-green-900 ">
+          <div className="absolute bottom-40 lg:p-20 w-full lg:w-auto">
+            <div className="container mx-auto">
+              <h1 className="text-4xl lg:text-5xl font-bold text-green-900 ">
                 Elevate Your Health Journey: <br></br>
                 Seamless Booking, Exceptional Care at Mountain Top Specialty
                 Clinic.
@@ -115,7 +115,7 @@ function BookAppointment() {
             </div>
           </div>
         </div>
-        <div className="pl-8 pr-8 pb-5 pt-5">
+        <div className="container mx-auto lg:pl-8 lg:pr-8 lg:pb-5 lg:pt-5">
           <Modal
             title="Book Appointment"
             open={isModalVisible}

@@ -320,7 +320,7 @@ function BookAppointmentForm() {
                   { required: true, message: "Please input your phone number" },
                   {
                     pattern: /^(\+?63)?9\d{9}$/,
-                    message: "Please enter a valid phone number",
+                    message: "Please enter a valid phone number use +63",
                   },
                 ]}
                 initialValue="+63" // Add initial value for the prefix

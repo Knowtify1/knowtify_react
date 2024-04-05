@@ -3,12 +3,25 @@ import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../../../config/firebase.jsx";
 import { EditOutlined } from "@ant-design/icons";
-import { message } from "antd";
+import { message, Select } from "antd";
+const { Option } = Select;
 
 function DoctorAccountDetails() {
   const [userDetails, setUserDetails] = useState(null);
   const [editing, setEditing] = useState(false);
   const [updatedDetails, setUpdatedDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [specialtyOptions] = useState([
+    { value: "Internal Medicine", label: "Internal Medicine" },
+    { value: "Hematology", label: "Internal Medicine (Adult Hematology)" },
+    { value: "Infectious", label: "Internal Medicine (Infectious Diseases)" },
+    { value: "Pulmonology", label: "Internal Medicine (Pulmonology)" },
+    { value: "Ob", label: "Obstetrics and Gynecology" },
+    { value: "Orthopedics", label: "General Orthopaedic Surgery" },
+    { value: "Physical", label: "Physical Medicine and Rehabilitation" },
+    { value: "Pediatrics", label: "Pediatrics, Vaccines, and Immunizations" },
+  ]);
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -24,11 +37,14 @@ function DoctorAccountDetails() {
               const userData = docSnapshot.data();
               setUserDetails(userData);
               setUpdatedDetails(userData);
+              setLoading(false); // Set loading to false once data is fetched
             } else {
-              console.log("No such document!");
+              setError("No such document!"); // Set error if document doesn't exist
+              setLoading(false);
             }
           } catch (error) {
-            console.error("Error fetching document:", error);
+            setError("Error fetching document: " + error.message); // Set error if fetch fails
+            setLoading(false);
           }
         }
       });
@@ -50,20 +66,21 @@ function DoctorAccountDetails() {
       await updateDoc(userRef, updatedDetails);
       setUserDetails(updatedDetails);
 
-      // Save changes to users_accounts_records
-      const userRecordsRef = doc(db, "users_accounts_records", userId);
-      await updateDoc(userRecordsRef, updatedDetails);
-
       setEditing(false);
       message.success("Changes saved successfully.");
     } catch (error) {
       console.error("Error updating document:", error);
+      setError("Error updating document: " + error.message);
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUpdatedDetails({ ...updatedDetails, [name]: value });
+  };
+
+  const handleSpecialtyChange = (value) => {
+    setUpdatedDetails({ ...updatedDetails, specialty: value });
   };
 
   // Function to format Firestore Timestamp to a readable string
@@ -78,7 +95,11 @@ function DoctorAccountDetails() {
 
   return (
     <div>
-      {userDetails ? (
+      {loading ? (
+        <p>Loading...</p>
+      ) : error ? (
+        <p>{error}</p>
+      ) : (
         <div>
           {!editing ? (
             <div>
@@ -107,6 +128,10 @@ function DoctorAccountDetails() {
                 {formatDate(userDetails.dateofregistration)}
               </p>
               <p>User Type: {userDetails.type}</p>
+              <p>
+                Specialty:{" "}
+                {userDetails.specialty || "No specialty specified"}
+              </p>
             </div>
           ) : (
             <div>
@@ -134,6 +159,17 @@ function DoctorAccountDetails() {
                 value={updatedDetails.type}
                 onChange={handleChange}
               />
+              <Select
+                defaultValue={updatedDetails.specialty}
+                style={{ width: 350 }}
+                onChange={handleSpecialtyChange}
+              >
+                {specialtyOptions.map(option => (
+                  <Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Option>
+                ))}
+              </Select>
               <button
                 style={{
                   backgroundColor: "blue",
@@ -151,8 +187,6 @@ function DoctorAccountDetails() {
             </div>
           )}
         </div>
-      ) : (
-        <p>Loading...</p>
       )}
     </div>
   );
