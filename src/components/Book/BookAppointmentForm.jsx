@@ -168,10 +168,8 @@ function BookAppointmentForm() {
     const selectedTime = JSON.stringify(timepicker);
     const uniqueReference = generateUniqueReference();
 
-    // Ensure the phone number includes the "+63" prefix
-    const prefixedContactNo = contactno.startsWith("+63")
-      ? contactno
-      : "+63" + contactno;
+    // Concatenate the prefix and the contact number input
+    const prefixedContactNo = "+63" + contactno;
 
     const patientQuerySnapshot = await getDocs(
       query(
@@ -213,7 +211,7 @@ function BookAppointmentForm() {
       const userData = {
         createdDate: Timestamp.now(),
         patientName: patientname,
-        contactNo: contactno,
+        contactNo: prefixedContactNo, // Save the concatenated contact number
         age: age,
         patientAddress: patientaddress,
         reasonForAppointment: reasonforappointment,
@@ -227,7 +225,7 @@ function BookAppointmentForm() {
       };
 
       navigate("/appointmentsuccess", {
-        state: { appointmentData: userData, phone: contactno },
+        state: { appointmentData: userData, phone: prefixedContactNo },
       });
     }
   };
@@ -319,13 +317,30 @@ function BookAppointmentForm() {
                 rules={[
                   { required: true, message: "Please input your phone number" },
                   {
-                    pattern: /^(\+?63)?9\d{9}$/,
-                    message: "Please enter a valid phone number use +63",
+                    message:
+                      "Please enter a valid phone number starting with +63",
                   },
                 ]}
-                initialValue="+63" // Add initial value for the prefix
               >
-                <Input style={{ width: "100%" }} />
+                <Input.Group compact>
+                  <Input style={{ width: "25%" }} value="+63" readOnly />
+                  <Form.Item
+                    name={["contactno"]}
+                    noStyle
+                    rules={[
+                      { required: true, message: "Phone number is required" },
+                      {
+                        pattern: /^\d{10}$/, // Updated pattern to match exactly 9 digits
+                        message: "Please enter a valid 9-digit phone number",
+                      },
+                    ]}
+                  >
+                    <Input
+                      style={{ width: "75%" }}
+                      placeholder="Enter your phone number"
+                    />
+                  </Form.Item>
+                </Input.Group>
               </Form.Item>
             </Col>
 
@@ -412,7 +427,7 @@ function BookAppointmentForm() {
               {/* Hide the column */}
               <Form.Item
                 name="reasonforappointment"
-                initialValue="Consultation" // Set default value to "Consultation"
+                initialValue="consultation" // Set default value to "Consultation"
                 hidden // Hide the Form.Item
               >
                 <Input />
