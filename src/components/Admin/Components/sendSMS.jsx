@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const API_KEY =
-  "41c85054fb698fbfe289faa478220560-f290cc12-bb9a-4838-b389-b092e27cea09";
+  "91fd9aed329b6066cc5c66300d8d348e-b2bd4470-49aa-4a0f-93d6-83575ed31c6d";
 
 const sendSMS = async (phoneNumber, message) => {
   try {
