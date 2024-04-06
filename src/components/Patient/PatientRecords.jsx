@@ -219,7 +219,7 @@ function PatientRecords() {
                 onChange={handleAllergiesChange}
               />
             </div>
-            <Button type="primary" onClick={onFinish}>
+            <Button type="success" onClick={onFinish}>
               Save
             </Button>
           </div>
