@@ -7,6 +7,7 @@ import {
   DatePicker,
   Modal,
   Form,
+  TimePicker,
   message,
   Select,
 } from "antd";
@@ -25,7 +26,9 @@ import {
 } from "../../../config/firebase.jsx";
 import moment from "moment";
 import { sendSMS } from "../../../config/sendSMS.jsx";
-import dayjs from "dayjs"; // Import dayjs
+import dayjs from "dayjs";
+
+const { Option } = Select;
 
 function TablePendingAppointments() {
   const [componentDisabled, setComponentDisabled] = useState(false);
@@ -34,11 +37,12 @@ function TablePendingAppointments() {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
   const [visible, setVisible] = useState(false);
-  const [form] = Form.useForm();
+  const [form] = Form.useForm(); // Properly connected useForm instance
   const [typesofDoc, settypesofDoc] = useState([]);
   const [doctorAvailability, setDoctorAvailability] = useState({});
   const [doctorTimeOptions, setdoctorTimeOptions] = useState({});
   const [availableDays, setAvailableDays] = useState([]);
+  const [selectedRecordKey, setSelectedRecordKey] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,7 +64,6 @@ function TablePendingAppointments() {
           ];
           availabilityData[specialty] = days;
 
-          /// Sort time options ensuring 12 PM comes after AM
           times = times.sort((a, b) => {
             const hourA = parseInt(a.split(":")[0]);
             const hourB = parseInt(b.split(":")[0]);
@@ -72,9 +75,9 @@ function TablePendingAppointments() {
             } else if (hourB >= 7 && hourB < 12) {
               return 1;
             } else if (hourA === 12 && hourB < 12) {
-              return -1; // Ensure 12 PM comes after AM
+              return -1;
             } else if (hourB === 12 && hourA < 12) {
-              return 1; // Ensure 12 PM comes after AM
+              return 1;
             } else {
               return hourA - hourB;
             }
@@ -95,7 +98,6 @@ function TablePendingAppointments() {
           timeOptionsData[specialty] = formattedTimes;
         });
 
-        // Convert timeOptionsData to the desired format
         const doctorTimeOptions = {};
         Object.keys(timeOptionsData).forEach((specialty) => {
           doctorTimeOptions[specialty] = timeOptionsData[specialty].map(
@@ -109,8 +111,6 @@ function TablePendingAppointments() {
         settypesofDoc(specialtiesData);
         setDoctorAvailability(availabilityData);
         setdoctorTimeOptions(doctorTimeOptions);
-
-        console.log(doctorTimeOptions);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -251,6 +251,7 @@ function TablePendingAppointments() {
       return;
     }
     setVisible(true);
+    setSelectedRecordKey(record.key); // Store the key of the selected record
     form.setFieldsValue({
       key: record.key,
       dateOfAppointment: moment(record.dateOfAppointment),
@@ -305,8 +306,6 @@ function TablePendingAppointments() {
         setData(appointmentsData);
         setLoading(false);
       }
-
-      console.error("firebase data", appointmentsData);
     } catch (error) {
       console.error("Error fetching appointments:", error);
       setLoading(false);
@@ -322,85 +321,76 @@ function TablePendingAppointments() {
     setSelectedRowKeys(newSelectedRowKeys);
   };
 
-  const updateAppointmentInTable = async (values) => {
-    try {
-      const { key, dateOfAppointment, appointmentTime } = values;
-      const newData = [...data];
-      const index = newData.findIndex((item) => key === item.key);
-      if (index > -1) {
-        newData[index].dateOfAppointment = dateOfAppointment;
-        newData[index].appointmentTime = appointmentTime.format("h:mm A");
-        setData(newData);
-
-        // Update appointment in Firestore collection
-        const appointmentRef = doc(db, "appointments", key);
-        await setDoc(
-          appointmentRef,
-          {
-            dateOfAppointment: fsTimeStamp.fromDate(dateOfAppointment.toDate()),
-            appointmentTime: appointmentTime.format("HH:mm"),
-          },
-          { merge: true }
-        );
-
-        console.log("Appointment updated successfully.");
-      }
-    } catch (error) {
-      console.error("Error updating appointment:", error);
+  const updateAppointmentInTable = (values) => {
+    const { key, dateOfAppointment, appointmentTime } = values;
+    const newData = [...data];
+    const index = newData.findIndex((item) => key === item.key);
+    if (index > -1) {
+      newData[index].dateOfAppointment = dateOfAppointment;
+      // Ensure appointmentTime is a moment object before calling format
+      newData[index].appointmentTime = moment(appointmentTime).format("HH:mm");
+      setData(newData);
     }
   };
-
-  const handleOk = async () => {
-    try {
-      // Validate form fields
-      const values = await form.validateFields();
-      const { key, adate, timepicker } = values;
-
-      // Update appointment in table and Firestore
-      await updateAppointmentInTable(values);
-
-      // Close modal
-      handleCancel();
-
-      // Retrieve appointment data
-      const appointmentRef = doc(db, "appointments", key);
-      const appointmentSnapshot = await getDoc(appointmentRef);
-      const appointmentData = appointmentSnapshot.data();
-
-      if (!appointmentData) {
-        // Handle case where appointment data is undefined
-        throw new Error("Appointment data is not available.");
-      }
-
-      const contactNo = appointmentData.contactNo;
-      const patientName = appointmentData.patientName;
-
-      // Compose SMS message content
-      const messageContent = `Good day, ${patientName}! Your appointment has been rescheduled to Date: ${moment(
-        adate
-      ).format("MM/DD/YYYY")}, Time: ${moment(timepicker, "HH:mm").format(
-        "hh:mm A"
-      )}. Please be at the clinic 5 minutes before your appointment schedule. Thank you!`;
-
-      // Send SMS
-      await sendSMS(contactNo, messageContent);
-
-      // Log success message
-      console.log("SMS sent successfully.");
-      message.success("Appointment rescheduled and SMS sent successfully.");
-    } catch (error) {
-      // Log and handle errors
-      console.error("Error rescheduling appointment:", error);
-      message.error("Failed to reschedule appointment. Please try again.");
-    }
-  };
-
   const handleDateChange = (date) => {
     const selectedDate = date ? date.toDate() : null;
     setSelectedDate(selectedDate);
 
     fetchAppointments(selectedDate, setData, setLoading);
   };
+
+  const handleOk = async () => {
+    try {
+      const values = await form.validateFields();
+      updateAppointmentInTable(values);
+      const { key, dateOfAppointment, appointmentTime } = values;
+      const appointmentRef = doc(db, "appointments", key);
+      await setDoc(
+        appointmentRef,
+        {
+          appointmentDate: dateOfAppointment.toDate(),
+          appointmentTime: moment(appointmentTime, "HH:mm").format("h:mm A"),
+        },
+        { merge: true }
+      );
+
+      // Generate message with selected date
+      const appointmentSnapshot = await getDoc(appointmentRef);
+      const appointmentData = appointmentSnapshot.data();
+      const contactNo = appointmentData.contactNo;
+      const patientName = appointmentData.patientName;
+      const message = `Good day, ${patientName}! Your booking with Mountain Studio Specialty Clinic has been rescheduled on Date: ${moment(
+        dateOfAppointment
+      ).format("MMMM D, YYYY")}, Time: ${moment(
+        appointmentTime,
+        "HH:mm"
+      ).format(
+        "h:mm A"
+      )}. Please be at the clinic 5 minutes before your appointment schedule. Thank you!`;
+
+      // Send SMS
+      sendSMS(contactNo, message);
+
+      setVisible(false);
+      message.success("Appointment rescheduled successfully!");
+    } catch (error) {
+      console.error("Validation failed:", error);
+    }
+  };
+
+  const timeSlots = [
+    "7:00",
+    "8:00",
+    "9:00",
+    "10:00",
+    "11:00",
+    "12:00",
+    "13:00",
+    "14:00",
+    "15:00",
+    "16:00",
+    "17:00",
+  ];
 
   const formatDate = (date) => {
     if (date && date.toDate) {
@@ -410,37 +400,28 @@ function TablePendingAppointments() {
     return "";
   };
 
-  const disabledDate = (current) => {
-    // Disable past dates
-    return current && current < dayjs().startOf("day");
-  };
-
   return (
     <>
-      <div className="container mx-auto px-4">
-        <Space direction="vertical" size={4} className="md:flex md:flex-col">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <h1 className="mr-2">Select Appointment Date:</h1>
+      <div>
+        <Space direction="vertical" size={20} className="flex">
+          <Space direction="horizontal" size={40}>
+            <Space direction="horizontal">
+              <h1>Select Appointment Date:</h1>
               <DatePicker onChange={handleDateChange} />
-            </div>
-            <div className="flex items-center">
-              <h1 className="mr-2">Pending Appointments: {data.length}</h1>
-              {/* Add getCurrentDateMessage() here */}
-            </div>
-          </div>
+            </Space>
+            <h1>Pending Appointments: {data.length}</h1>
+            <h1>{getCurrentDateMessage()}</h1>
+          </Space>
           {loading ? (
-            <div className="flex justify-center">
-              <Spin size="large" />
-            </div>
+            <Spin size="small" className="block" />
           ) : (
-            <Table
-              columns={columns}
-              dataSource={data}
-              pagination={{ pageSize: 5 }}
-              scroll={{ x: true }}
-            />
+            <Form form={form} component={false}>
+              {" "}
+              {/* Set component={false} to prevent automatic form wrapping */}
+              <Table columns={columns} dataSource={data} />
+            </Form>
           )}
+
           <Modal
             title="Edit Appointment"
             visible={visible}
@@ -449,47 +430,31 @@ function TablePendingAppointments() {
             cancelButtonProps={{ style: { color: "green" } }}
             okButtonProps={{ style: { color: "green" } }}
           >
-            <Form form={form} layout="vertical">
-              <Form.Item
-                label="Type of Doctor to Consult"
-                name="typedoctor"
-                rules={[{ required: true, message: "Select Type" }]}
-              >
-                <Select
-                  options={typesofDoc}
-                  placeholder="Select a type"
-                  onChange={handleTypeChange}
-                />
+            <Form form={form} layout="vertical" initialValues={{}}>
+              <Form.Item name="key" hidden>
+                <input type="hidden" />
               </Form.Item>
               <Form.Item
+                name="dateOfAppointment"
                 label="Appointment Date"
-                rules={[{ required: true, message: "Select Date" }]}
-                name="adate"
+                rules={[{ required: true, message: "Please select a date" }]}
               >
-                <DatePicker
-                  disabledDate={(current) => {
-                    if (current && current < dayjs().startOf("day")) {
-                      return true;
-                    }
-                    const dayOfWeek = current.day();
-                    return !availableDays.includes(
-                      dayjs().day(dayOfWeek).format("dddd")
-                    );
-                  }}
-                  placeholder="Select Date"
-                />
+                <DatePicker defaultValue={moment()} />
               </Form.Item>
+
               <Form.Item
+                name="appointmentTime"
                 label="Appointment Time"
-                name="timepicker"
-                rules={[{ required: true, message: "Select Time" }]}
+                rules={[{ required: true, message: "Please select a time" }]}
+                style={{ marginBottom: 0 }}
               >
-                <Select
-                  disabled={!form.getFieldValue("typedoctor")}
-                  options={
-                    doctorTimeOptions[form.getFieldValue("typedoctor")] || []
-                  }
-                />
+                <Select>
+                  {timeSlots.map((slot) => (
+                    <Option key={slot} value={slot}>
+                      {moment(slot, "HH:mm").format("h:mm A")}
+                    </Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Form>
           </Modal>

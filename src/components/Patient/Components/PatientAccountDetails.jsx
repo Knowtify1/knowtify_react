@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { onAuthStateChanged, signInWithPhoneNumber, RecaptchaVerifier, reauthenticateWithPhoneNumber} from "firebase/auth";
+import {
+  onAuthStateChanged,
+  signInWithPhoneNumber,
+  RecaptchaVerifier,
+  reauthenticateWithPhoneNumber,
+} from "firebase/auth";
 import {
   doc,
   getDoc,
@@ -12,7 +17,10 @@ import {
 import { auth, db } from "../../../config/firebase.jsx";
 import { EditOutlined } from "@ant-design/icons";
 import { Button, Input, Typography, Spin, message } from "antd";
-import { handleSendCode,handleVerifyCode } from "../../../config/signinphone.jsx";
+import {
+  handleSendCode,
+  handleVerifyCode,
+} from "../../../config/signinphone.jsx";
 
 function PatientAccountDetails() {
   const { Title, Text } = Typography;
@@ -68,9 +76,13 @@ function PatientAccountDetails() {
 
       // Reauthenticate to update phone number
       const user = auth.currentUser;
-      const credential = signInWithPhoneNumber(auth, phoneNumber, RecaptchaVerifier);
+      const credential = signInWithPhoneNumber(
+        auth,
+        phoneNumber,
+        RecaptchaVerifier
+      );
       await reauthenticateWithPhoneNumber(user, credential);
-      
+
       const userId = auth.currentUser.uid;
       const userRef = doc(db, "users_accounts_records", userId);
       await updateDoc(userRef, updatedDetails);
@@ -125,7 +137,7 @@ function PatientAccountDetails() {
     const { name, value } = e.target;
     setUpdatedDetails({ ...updatedDetails, [name]: value });
   };
- 
+
   const onSendCode = () => {
     handleSendCode(phoneNumber, setConfirmationResult, setCodeSent);
   };
@@ -149,7 +161,7 @@ function PatientAccountDetails() {
     }).format(date);
   };
 
- return (
+  return (
     <div style={{ padding: "20px" }}>
       {userDetails ? (
         <div>
@@ -227,6 +239,7 @@ function PatientAccountDetails() {
       ) : (
         <Spin />
       )}
+      <div id="recaptcha-container"></div>
     </div>
   );
 }
