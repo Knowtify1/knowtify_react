@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  onAuthStateChanged,
-  signInWithPhoneNumber,
-  RecaptchaVerifier,
-  reauthenticateWithPhoneNumber,
-} from "firebase/auth";
+import { onAuthStateChanged, signInWithPhoneNumber, RecaptchaVerifier, reauthenticateWithPhoneNumber} from "firebase/auth";
 import {
   doc,
   getDoc,
@@ -17,10 +12,7 @@ import {
 import { auth, db } from "../../../config/firebase.jsx";
 import { EditOutlined } from "@ant-design/icons";
 import { Button, Input, Typography, Spin, message } from "antd";
-import {
-  handleSendCode,
-  handleVerifyCode,
-} from "../../../config/signinphone.jsx";
+import { handleSendCode,handleVerifyCode } from "../../../config/signinphone.jsx";
 
 function PatientAccountDetails() {
   const { Title, Text } = Typography;
@@ -76,13 +68,9 @@ function PatientAccountDetails() {
 
       // Reauthenticate to update phone number
       const user = auth.currentUser;
-      const credential = signInWithPhoneNumber(
-        auth,
-        phoneNumber,
-        RecaptchaVerifier
-      );
+      const credential = signInWithPhoneNumber(auth, phoneNumber, RecaptchaVerifier);
       await reauthenticateWithPhoneNumber(user, credential);
-
+      
       const userId = auth.currentUser.uid;
       const userRef = doc(db, "users_accounts_records", userId);
       await updateDoc(userRef, updatedDetails);
@@ -137,7 +125,7 @@ function PatientAccountDetails() {
     const { name, value } = e.target;
     setUpdatedDetails({ ...updatedDetails, [name]: value });
   };
-
+ 
   const onSendCode = () => {
     handleSendCode(phoneNumber, setConfirmationResult, setCodeSent);
   };
@@ -161,7 +149,7 @@ function PatientAccountDetails() {
     }).format(date);
   };
 
-  return (
+ return (
     <div style={{ padding: "20px" }}>
       {userDetails ? (
         <div>
@@ -181,43 +169,56 @@ function PatientAccountDetails() {
               <Text strong>User Type:</Text> {userDetails.type}
             </div>
           ) : (
-            <div style={{ textAlign: "center" }}>
-              <Input
-                style={{ marginBottom: "10px" }}
-                placeholder="Name"
-                name="name"
-                value={updatedDetails.name}
-                onChange={handleChange}
-              />
-              <Input
-                style={{ marginBottom: "10px" }}
-                placeholder="Phone"
-                name="phone"
-                value={updatedDetails.phone}
-                onChange={handleChange}
-              />
-              <Input
-                style={{ marginBottom: "10px" }}
-                placeholder="Type"
-                name="type"
-                value={updatedDetails.type}
-                onChange={handleChange}
-              />
-              <Input
-                style={{ marginBottom: "10px" }}
-                placeholder="Phone Number"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-              />
+            <div className="text-center">
+                <div className="flex flex-col md:flex-row items-center mb-4">
+                  <span className="md:w-1/4 md:mr-2">Name:</span>
+                  <Input
+                    className="w-full"
+                    placeholder="Enter name"
+                    name="name"
+                    value={updatedDetails.name}
+                    onChange={handleChange}
+                  />
+                </div>
+              <div className="flex flex-col md:flex-row items-center mb-4">
+                <span className="md:w-1/4 md:mr-2">Current Phone Number:</span>
+                <Input
+                  className="w-full"
+                  placeholder="Phone"
+                  name="phone"
+                  value={updatedDetails.phone}
+                  onChange={handleChange}
+                  disabled
+                />
+              </div>
+              <div className="flex flex-col md:flex-row items-center mb-4">
+                <span className="md:w-1/4 md:mr-2">User Type:</span>
+                <Input
+                  className="w-full"
+                  placeholder="Type"
+                  name="type"
+                  value={updatedDetails.type}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="flex flex-col md:flex-row items-center mb-4">
+                <span className="md:w-1/4 md:mr-2">Enter New Phone Number:</span>
+                <Input
+                  className="w-full"
+                  placeholder="Phone Number"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                />
+              </div>
               <Button
                 onClick={onSendCode}
                 disabled={!updatedDetails.phone || codeSent}
-                style={{ marginRight: "10px", marginBottom: "10px" }}
+                className="mr-2 mb-4"
               >
                 Send Verification Code
               </Button>
               <Input
-                style={{ marginBottom: "10px" }}
+                className="mb-4"
                 placeholder="Verification Code"
                 value={verificationCode}
                 onChange={(e) => setVerificationCode(e.target.value)}
@@ -225,11 +226,11 @@ function PatientAccountDetails() {
               <Button
                 onClick={onVerifyCode}
                 disabled={!verificationCode || !codeSent}
-                style={{ marginRight: "10px" }}
+                className="mr-2"
               >
                 Verify Code
               </Button>
-              <Button onClick={handleSave} style={{ marginRight: "10px" }}>
+              <Button onClick={handleSave} className="mr-2">
                 Save
               </Button>
               <Button onClick={() => setEditing(false)}>Cancel</Button>
@@ -239,9 +240,8 @@ function PatientAccountDetails() {
       ) : (
         <Spin />
       )}
-      <div id="recaptcha-container"></div>
     </div>
   );
-}
+};
 
 export default PatientAccountDetails;

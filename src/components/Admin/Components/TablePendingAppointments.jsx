@@ -327,11 +327,12 @@ function TablePendingAppointments() {
     const index = newData.findIndex((item) => key === item.key);
     if (index > -1) {
       newData[index].dateOfAppointment = dateOfAppointment;
-      // Ensure appointmentTime is a moment object before calling format
+      newData[index].dateOfAppointment = dateOfAppointment.toDate();
       newData[index].appointmentTime = moment(appointmentTime).format("HH:mm");
       setData(newData);
     }
   };
+
   const handleDateChange = (date) => {
     const selectedDate = date ? date.toDate() : null;
     setSelectedDate(selectedDate);
@@ -354,23 +355,16 @@ function TablePendingAppointments() {
         { merge: true }
       );
 
-      // Generate message with selected date
+      // Generate message with selected date and time from the modal
       const appointmentSnapshot = await getDoc(appointmentRef);
       const appointmentData = appointmentSnapshot.data();
-      const contactNo = appointmentData.contactNo;
-      const patientName = appointmentData.patientName;
-      const message = `Good day, ${patientName}! Your booking with Mountain Studio Specialty Clinic has been rescheduled on Date: ${moment(
-        dateOfAppointment
-      ).format("MMMM D, YYYY")}, Time: ${moment(
-        appointmentTime,
-        "HH:mm"
-      ).format(
-        "h:mm A"
-      )}. Please be at the clinic 5 minutes before your appointment schedule. Thank you!`;
-
-      // Send SMS
-      sendSMS(contactNo, message);
-
+      const contactNo = appointmentData.contactNo; // Assuming contactNo is the field name for the contact number
+      const patientName = appointmentData.patientName; // Assuming patientName is the field name for the patient's name
+      const formattedTime = moment(appointmentTime, "HH:mm").format("h:mm A"); // Format time as "7:00 PM"
+      const message = `Good day, ${patientName}! Your booking with Mountain Studio Specialty Clinic has been rescheduled on Date: ${dateOfAppointment.format(
+        "MM/DD/YYYY"
+      )}, Time: ${formattedTime}. Please be at the clinic 5 minutes before your appointment schedule. Thank you!`;
+      sendSMS(contactNo, message); // Send SMS
       setVisible(false);
       message.success("Appointment rescheduled successfully!");
     } catch (error) {
@@ -439,7 +433,7 @@ function TablePendingAppointments() {
                 label="Appointment Date"
                 rules={[{ required: true, message: "Please select a date" }]}
               >
-                <DatePicker defaultValue={moment()} />
+                <DatePicker />
               </Form.Item>
 
               <Form.Item
