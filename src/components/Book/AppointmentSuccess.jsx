@@ -163,6 +163,19 @@ function AppointmentSuccess() {
                   </Button>
                 </Link>
               </div>
+              <div className="mt-4">
+                <p className="text-lg mb-2">
+                  You can now login to your account.
+                </p>
+              <Link to="/patientdashboard">
+                <Button
+                  type="primary"
+                  className="bg-blue-500 hover:bg-blue-700"
+                >
+                  Login
+                </Button>
+              </Link>
+            </div>
               {/* <div className="mt-6">
             <p className="text-lg mb-2">
               Upon a successful appointment, you will receive a confirmation
@@ -181,16 +194,7 @@ function AppointmentSuccess() {
             </p>
           </div> */}
             </Card>
-            <div className="mt-4 flex justify-center">
-              <Link to="/patientdashboard">
-                <Button
-                  type="primary"
-                  className="bg-blue-500 hover:bg-blue-700"
-                >
-                  Login
-                </Button>
-              </Link>
-            </div>
+           
           </div>
         </div>
       ) : (
@@ -235,6 +239,11 @@ function AppointmentSuccess() {
                 >
                   Send Code
                 </Button>
+                {!codeSent && (
+                  <div id="recaptcha-container">
+                    {/* Your reCAPTCHA component */}
+                  </div>
+                )}
                 <Spin spinning={verifying}>
                   <Button
                     type="primary"
@@ -257,7 +266,6 @@ function AppointmentSuccess() {
               </Form.Item>
             </Form>
           </div>
-          <div id="recaptcha-container"> </div>
         </Card>
       )}
     </>
