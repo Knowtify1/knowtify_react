@@ -76,10 +76,27 @@ function RegisterPhone() {
               />
             </Form.Item>
             <Form.Item>
-              <Button onClick={onSendCode} disabled={!phoneNumber || codeSent}>
-                Send Code
-              </Button>
-              <Button onClick={onVerifyCode} disabled={!verificationCode}>
+            <Button
+              type="primary"
+              className="bg-green-600 w-full"
+              style={{ marginBottom: "10px" }}
+              onClick={onSendCode}
+              disabled={!phoneNumber || codeSent}
+            >
+              Send Code
+            </Button>
+            {!codeSent && (
+              <div id="recaptcha-container">
+                {/* Your reCAPTCHA component */}
+              </div>
+            )}
+              
+              <Button
+                type="primary"
+                className="bg-green-600 w-full"
+                style={{ marginBottom: "10px" }} 
+                onClick={onVerifyCode} disabled={!verificationCode}
+                >
                 Verify Code
               </Button>
             </Form.Item>
