@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { onAuthStateChanged, signInWithPhoneNumber, RecaptchaVerifier, reauthenticateWithPhoneNumber} from "firebase/auth";
+import {
+  onAuthStateChanged,
+  signInWithPhoneNumber,
+  RecaptchaVerifier,
+  reauthenticateWithPhoneNumber,
+} from "firebase/auth";
 import {
   doc,
   getDoc,
@@ -11,11 +16,13 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "../../../config/firebase.jsx";
 import { EditOutlined } from "@ant-design/icons";
-import { Button, Input, Typography, Spin, message } from "antd";
-import { handleSendCode,handleVerifyCode } from "../../../config/signinphone.jsx";
+import { message, Input, Button, Spin } from "antd";
+import {
+  handleSendCode,
+  handleVerifyCode,
+} from "../../../config/signinphone.jsx";
 
 function PatientAccountDetails() {
-  const { Title, Text } = Typography;
   const [userDetails, setUserDetails] = useState(null);
   const [editing, setEditing] = useState(false);
   const [updatedDetails, setUpdatedDetails] = useState(null);
@@ -57,21 +64,30 @@ function PatientAccountDetails() {
     setEditing(true);
   };
 
+  const onSendCode = () => {
+    handleSendCode(phoneNumber, setConfirmationResult, setCodeSent);
+  };
+
+  const onVerifyCode = () => {
+    handleVerifyCode(confirmationResult, verificationCode);
+    if (confirmationResult) {
+      message.success("Phone number verified successfully.");
+    } else {
+      message.error("Failed to verify phone number.");
+    }
+  };
+
   const handleSave = async () => {
     try {
-      if (codeSent && confirmationResult) {
-        await confirmationResult.confirm(verificationCode);
-      } else {
-        message.error("Please verify your phone number before saving.");
-        return;
-      }
-
-      // Reauthenticate to update phone number
       const user = auth.currentUser;
-      const credential = signInWithPhoneNumber(auth, phoneNumber, RecaptchaVerifier);
+      const credential = signInWithPhoneNumber(
+        auth,
+        phoneNumber,
+        RecaptchaVerifier
+      );
       await reauthenticateWithPhoneNumber(user, credential);
-      
-      const userId = auth.currentUser.uid;
+
+      const userId = user.uid;
       const userRef = doc(db, "users_accounts_records", userId);
       await updateDoc(userRef, updatedDetails);
 
@@ -112,31 +128,20 @@ function PatientAccountDetails() {
         await updateDoc(patientRecordRef, { contactNo: updatedDetails.phone });
       });
 
+      // Display success message
+      message.success("Changes saved successfully.");
+
+      // Update local state
       setUserDetails(updatedDetails);
       setEditing(false);
-      message.success("Changes saved successfully.");
     } catch (error) {
       console.error("Error updating document:", error);
-      message.error("Failed to save changes.");
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUpdatedDetails({ ...updatedDetails, [name]: value });
-  };
- 
-  const onSendCode = () => {
-    handleSendCode(phoneNumber, setConfirmationResult, setCodeSent);
-  };
-
-  const onVerifyCode = () => {
-    handleVerifyCode(confirmationResult, verificationCode);
-    if (confirmationResult) {
-      message.success("Phone number verified successfully.");
-    } else {
-      message.error("Failed to verify phone number.");
-    }
   };
 
   // Function to format Firestore Timestamp to "Month Day, Year"
@@ -149,26 +154,39 @@ function PatientAccountDetails() {
     }).format(date);
   };
 
- return (
-    <div style={{ padding: "20px" }}>
+  return (
+    <div>
       {userDetails ? (
         <div>
           {!editing ? (
-            <div style={{ textAlign: "center" }}>
-              <Title level={2}>{userDetails.name}</Title>
+            <div>
+              <h1
+                style={{
+                  fontSize: "24px",
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+              >
+                {userDetails.name}
+              </h1>
               <EditOutlined
-                style={{ fontSize: "16px", color: "blue", cursor: "pointer" }}
+                style={{
+                  fontSize: "16px",
+                  color: "blue",
+                  cursor: "pointer",
+                }}
                 onClick={handleEdit}
               />
               <br />
-              <Text strong>Phone:</Text> {userDetails.phone}
-              <br />
-              <Text strong>Date of Registration:</Text>{" "}
-              {formatDate(userDetails.dateofregistration)}
-              <br />
-              <Text strong>User Type:</Text> {userDetails.type}
+              <p>Phone: {userDetails.phone}</p>
+              <p>
+                Date of Registration:{" "}
+                {formatDate(userDetails.dateofregistration)}
+              </p>
+              <p>User Type: {userDetails.type}</p>
             </div>
           ) : (
+<<<<<<< Updated upstream
             <div className="text-center">
                 <div className="flex flex-col md:flex-col items-center mb-4">
                   <span className="md:mr-2">Name:</span>
@@ -210,15 +228,33 @@ function PatientAccountDetails() {
                   onChange={(e) => setPhoneNumber(e.target.value)}
                 />
               </div>
+=======
+            <div>
+              <Input
+                style={{ marginBottom: "10px" }}
+                placeholder="Name"
+                name="name"
+                value={updatedDetails.name}
+                onChange={handleChange}
+              />
+              <Input
+                style={{ marginBottom: "10px" }}
+                placeholder="Phone"
+                name="phone"
+                value={updatedDetails.phone}
+                onChange={handleChange}
+              />
+
+>>>>>>> Stashed changes
               <Button
                 onClick={onSendCode}
                 disabled={!updatedDetails.phone || codeSent}
-                className="mr-2 mb-4"
+                style={{ marginRight: "10px", marginBottom: "10px" }}
               >
                 Send Verification Code
               </Button>
               <Input
-                className="mb-4"
+                style={{ marginBottom: "10px" }}
                 placeholder="Verification Code"
                 value={verificationCode}
                 onChange={(e) => setVerificationCode(e.target.value)}
@@ -226,11 +262,11 @@ function PatientAccountDetails() {
               <Button
                 onClick={onVerifyCode}
                 disabled={!verificationCode || !codeSent}
-                className="mr-2"
+                style={{ marginRight: "10px" }}
               >
                 Verify Code
               </Button>
-              <Button onClick={handleSave} className="mr-2">
+              <Button onClick={handleSave} style={{ marginRight: "10px" }}>
                 Save
               </Button>
               <Button onClick={() => setEditing(false)}>Cancel</Button>
@@ -240,8 +276,9 @@ function PatientAccountDetails() {
       ) : (
         <Spin />
       )}
+      <div id="recaptcha-container"></div>
     </div>
   );
-};
+}
 
 export default PatientAccountDetails;

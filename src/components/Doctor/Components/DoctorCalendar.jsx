@@ -103,8 +103,20 @@ function DoctorCalendar() {
                   className="clickable-badge"
                   onClick={() => handleDateSelect(current, appointment)}
                 >
-                  {moment(appointment.appointmentTime, "HH:mm").format("HH:mm")}{" "}
-                  - {appointment.patientName}
+                  {(() => {
+                    const appointmentTime = moment(
+                      appointment.appointmentTime,
+                      "HH:mm"
+                    );
+                    const hour = appointmentTime.hour();
+                    const formattedTime = appointmentTime.format("hh:mm");
+
+                    if (hour >= 7 && hour < 12) {
+                      return `${formattedTime} am - ${appointment.patientName}`;
+                    } else {
+                      return `${formattedTime} pm - ${appointment.patientName}`;
+                    }
+                  })()}
                 </span>
               }
             />
@@ -163,7 +175,22 @@ function DoctorCalendar() {
                 </p>
                 <p>
                   Appointment Time:{" "}
-                  {selectedPatient.appointmentTime.replace(/"/g, "")}
+                  <span>
+                    {moment(
+                      selectedPatient.appointmentTime.replace(/"/g, ""),
+                      "h:mm A"
+                    ).format("h:mm")}{" "}
+                    {moment(
+                      selectedPatient.appointmentTime.replace(/"/g, ""),
+                      "h:mm A"
+                    ).format("HH:mm") >= "07:00" &&
+                    moment(
+                      selectedPatient.appointmentTime.replace(/"/g, ""),
+                      "h:mm A"
+                    ).format("HH:mm") < "12:00"
+                      ? "AM"
+                      : "PM"}
+                  </span>
                 </p>
                 <p>Reason: {selectedPatient.reasonForAppointment}</p>
                 <p>Doctor: {selectedPatient.assignedDoctor}</p>

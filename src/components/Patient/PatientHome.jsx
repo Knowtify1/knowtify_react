@@ -114,15 +114,18 @@ function PatientHome() {
           </Card>
         </div>
       </div>
-      <div className="overflow-auto max-h-screen p-4">
+      <div className="overflow-auto max-h-screen pt-0">
         <br />
         <div className="w-full text-center">
+          <h3 className="text-2xl font-semibold pt-0" style={{ color: "#333" }}>
+            Upcoming Appointment
+          </h3>{" "}
           {closestAppointment && (
             <table
               title="Upcoming Appointment"
               style={{
                 width: "100%",
-                backgroundColor: "#D0F2C8",
+                backgroundColor: "#16a34a",
                 boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
               }}
             >

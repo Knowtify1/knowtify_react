@@ -50,6 +50,5 @@ export const handleVerifyCode = async (
     }
   } catch (error) {
     console.error(error);
-    message.error("Failed to verify code");
   }
 };

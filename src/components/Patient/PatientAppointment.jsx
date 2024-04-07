@@ -55,6 +55,7 @@ function PatientAppointment() {
     return () => unsubscribe();
   }, []);
 
+  // Modify the fetchPatientDetails function to sort appointments
   const fetchPatientDetails = async (name) => {
     try {
       const appointmentsQuerySnapshot = await getDocs(
@@ -83,6 +84,11 @@ function PatientAppointment() {
         ...patientRecordsData,
         ...patientsData,
       ];
+
+      // Sort appointments by appointment date
+      allAppointments.sort((a, b) => {
+        return a.appointmentDate.toDate() - b.appointmentDate.toDate();
+      });
 
       // Update appointments status and remaining days
       const updatedAppointments = allAppointments.map((appointment) => {
@@ -163,21 +169,26 @@ function PatientAppointment() {
 
       // Check if it's time to send the reminder
       const today = new Date();
-      if (
-        today.getDate() === reminderDate.getDate() &&
-        today.getMonth() === reminderDate.getMonth() &&
-        today.getFullYear() === reminderDate.getFullYear()
-      ) {
+      const oneDayBeforeAppointment = new Date(
+        reminderDate.getFullYear(),
+        reminderDate.getMonth(),
+        reminderDate.getDate(),
+        0,
+        0,
+        0
+      );
+      if (today.getTime() === oneDayBeforeAppointment.getTime()) {
         // Sending SMS to the patient
         sendSMS(contactNo, message); // Send SMS
         console.log("SMS reminder sent successfully.");
+
+        notification.success({
+          message: "Reminder Set",
+          description: "A reminder has been set for this appointment.",
+        });
       } else {
         console.log("Reminder SMS not sent. It's not time yet.");
       }
-      notification.success({
-        message: "Reminder Set",
-        description: "A reminder has been set for this appointment.",
-      });
     } catch (error) {
       console.error("Failed to send SMS reminder:", error);
     }
@@ -238,7 +249,7 @@ function PatientAppointment() {
       render: (text, record) => {
         const appointmentTime = moment(text, "h:mm A");
         const timeLabel = appointmentTime.isBetween(
-          moment("7:00 AM", "h:mm A"),
+          moment("6:00 AM", "h:mm A"),
           moment("11:59 AM", "h:mm A")
         )
           ? "AM"
@@ -300,7 +311,7 @@ function PatientAppointment() {
 
     // Highlight the row if it corresponds to the appointment with the least remaining days
     if (record === minRemainingDaysAppointment) {
-      return "bg-blue-100"; // Highlight the appointment with the least remaining days
+      return "bg-blue-200"; // Highlight the appointment with the least remaining days
     }
     return "";
   };

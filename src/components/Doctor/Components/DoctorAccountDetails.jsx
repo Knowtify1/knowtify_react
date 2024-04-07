@@ -125,12 +125,21 @@ function DoctorAccountDetails() {
               <Text strong>Email:</Text> {userDetails.email}
               <br />
               <Text strong>Date of Registration:</Text>{" "}
+<<<<<<< Updated upstream
                 {formatDate(userDetails.dateofregistration)}
                 <br />
               <Text strong>User Type:</Text> {userDetails.type}
               <br />
               <Text strong>Specialty:</Text> {" "}
                 {userDetails.specialty || "No specialty specified"}
+=======
+              {formatDate(userDetails.dateofregistration)}
+              <br />
+              <Text strong>User Type:</Text> {userDetails.type}
+              <br />
+              <Text strong>Specialty:</Text>{" "}
+              {userDetails.specialty || "No specialty specified"}
+>>>>>>> Stashed changes
             </div>
           ) : (
             <div className="text-center">
@@ -156,6 +165,7 @@ function DoctorAccountDetails() {
               </div>
               <div className="flex flex-col md:flex-col items-center mb-4">
                 <div>User Type:</div>
+<<<<<<< Updated upstream
                   <Input
                     className="w-full"
                     placeholder="Type"
@@ -177,6 +187,29 @@ function DoctorAccountDetails() {
                   </Option>
                 ))}
               </Select>
+=======
+                <Input
+                  className="w-full"
+                  placeholder="Type"
+                  name="type"
+                  value={updatedDetails.type}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="flex flex-col md:flex-col items-center mb-4">
+                <div>Specialty:</div>
+                <Select
+                  defaultValue={updatedDetails.specialty}
+                  style={{ width: 350 }}
+                  onChange={handleSpecialtyChange}
+                >
+                  {specialtyOptions.map((option) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+>>>>>>> Stashed changes
               </div>
               <button
                 style={{

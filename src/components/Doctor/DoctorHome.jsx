@@ -93,11 +93,22 @@ function DoctorHome() {
         moment(record.appointmentDate.toDate()).format("MMMM D, YYYY"),
     },
     {
-      title: "Time",
+      title: "Appointment Time",
       dataIndex: "appointmentTime",
-      key: "appointmentTime",
-      render: (text, record) =>
-        moment(record.appointmentTime, "HH:mm").format("HH:mm"),
+      render: (text, record) => {
+        const appointmentTime = moment(text, "h:mm A");
+        const timeLabel = appointmentTime.isBetween(
+          moment("7:00 AM", "h:mm A"),
+          moment("11:59 AM", "h:mm A")
+        )
+          ? "AM"
+          : "PM";
+        return (
+          <span>
+            {appointmentTime.format("h:mm")} {timeLabel}
+          </span>
+        );
+      },
     },
     {
       title: "Reason",
@@ -122,7 +133,6 @@ function DoctorHome() {
           </h3>{" "}
         </div>
         <DoctorSetSpecialty />
-
         <Card
           className="overflow-auto max-h-screen pl-5" // Set a maximum height and padding
           style={{
@@ -134,6 +144,9 @@ function DoctorHome() {
         >
           <DoctorOverview />
         </Card>
+        <h3 className="text-2xl font-semibold pt-0" style={{ color: "#333" }}>
+          Upcoming Appointment
+        </h3>{" "}
         <Card
           className="overflow-auto max-h-screen pl-5" // Set a maximum height and padding
           style={{
