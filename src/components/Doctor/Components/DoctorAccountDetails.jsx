@@ -23,17 +23,14 @@ function DoctorAccountDetails() {
     { value: "Physical", label: "Physical Medicine and Rehabilitation" },
     { value: "Pediatrics", label: "Pediatrics, Vaccines, and Immunizations" },
   ]);
-
   useEffect(() => {
     const fetchUserDetails = async () => {
       const unsubscribe = onAuthStateChanged(auth, async (user) => {
         if (user) {
           const userId = user.uid;
           const userRef = doc(db, "doctors_accounts", userId);
-
           try {
             const docSnapshot = await getDoc(userRef);
-
             if (docSnapshot.exists()) {
               const userData = docSnapshot.data();
               setUserDetails(userData);
@@ -49,24 +46,19 @@ function DoctorAccountDetails() {
           }
         }
       });
-
       return () => unsubscribe();
     };
-
     fetchUserDetails();
   }, []);
-
   const handleEdit = () => {
     setEditing(true);
   };
-
   const handleSave = async () => {
     try {
       const userId = auth.currentUser.uid;
       const userRef = doc(db, "doctors_accounts", userId);
       await updateDoc(userRef, updatedDetails);
       setUserDetails(updatedDetails);
-
       setEditing(false);
       message.success("Changes saved successfully.");
     } catch (error) {
@@ -74,16 +66,13 @@ function DoctorAccountDetails() {
       setError("Error updating document: " + error.message);
     }
   };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUpdatedDetails({ ...updatedDetails, [name]: value });
   };
-
   const handleSpecialtyChange = (value) => {
     setUpdatedDetails({ ...updatedDetails, specialty: value });
   };
-
   // Function to format Firestore Timestamp to a readable string
   const formatDate = (timestamp) => {
     const date = timestamp.toDate();
@@ -93,7 +82,6 @@ function DoctorAccountDetails() {
       year: "numeric",
     }).format(date);
   };
-
   return (
     <div>
       {loading ? (
@@ -125,21 +113,12 @@ function DoctorAccountDetails() {
               <Text strong>Email:</Text> {userDetails.email}
               <br />
               <Text strong>Date of Registration:</Text>{" "}
-<<<<<<< Updated upstream
-                {formatDate(userDetails.dateofregistration)}
-                <br />
-              <Text strong>User Type:</Text> {userDetails.type}
-              <br />
-              <Text strong>Specialty:</Text> {" "}
-                {userDetails.specialty || "No specialty specified"}
-=======
               {formatDate(userDetails.dateofregistration)}
               <br />
               <Text strong>User Type:</Text> {userDetails.type}
               <br />
               <Text strong>Specialty:</Text>{" "}
               {userDetails.specialty || "No specialty specified"}
->>>>>>> Stashed changes
             </div>
           ) : (
             <div className="text-center">
@@ -165,29 +144,6 @@ function DoctorAccountDetails() {
               </div>
               <div className="flex flex-col md:flex-col items-center mb-4">
                 <div>User Type:</div>
-<<<<<<< Updated upstream
-                  <Input
-                    className="w-full"
-                    placeholder="Type"
-                    name="type"
-                    value={updatedDetails.type}
-                    onChange={handleChange}
-                  />
-              </div>
-              <div className="flex flex-col md:flex-col items-center mb-4">
-                <div>Specialty:</div>
-              <Select
-                defaultValue={updatedDetails.specialty}
-                style={{ width: 350 }}
-                onChange={handleSpecialtyChange}
-              >
-                {specialtyOptions.map(option => (
-                  <Option key={option.value} value={option.value}>
-                    {option.label}
-                  </Option>
-                ))}
-              </Select>
-=======
                 <Input
                   className="w-full"
                   placeholder="Type"
@@ -209,7 +165,6 @@ function DoctorAccountDetails() {
                     </Option>
                   ))}
                 </Select>
->>>>>>> Stashed changes
               </div>
               <button
                 style={{
@@ -232,5 +187,4 @@ function DoctorAccountDetails() {
     </div>
   );
 }
-
 export default DoctorAccountDetails;
