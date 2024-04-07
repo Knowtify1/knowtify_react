@@ -3,10 +3,11 @@ import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../../../config/firebase.jsx";
 import { EditOutlined } from "@ant-design/icons";
-import { message, Select } from "antd";
+import { message, Select, Typography, Spin, Button, Input } from "antd";
 const { Option } = Select;
 
 function DoctorAccountDetails() {
+  const { Title, Text } = Typography;
   const [userDetails, setUserDetails] = useState(null);
   const [editing, setEditing] = useState(false);
   const [updatedDetails, setUpdatedDetails] = useState(null);
@@ -100,7 +101,7 @@ function DoctorAccountDetails() {
       ) : error ? (
         <p>{error}</p>
       ) : (
-        <div>
+        <div style={{ padding: "20px" }}>
           {!editing ? (
             <div>
               <h1
@@ -121,44 +122,50 @@ function DoctorAccountDetails() {
                 onClick={handleEdit}
               />
               <br />
-              <p>Email: {userDetails.email}</p>
-              <p>Phone: {userDetails.phone}</p>
-              <p>
-                Date of Registration:{" "}
+              <Text strong>Email:</Text> {userDetails.email}
+              <br />
+              <Text strong>Date of Registration:</Text>{" "}
                 {formatDate(userDetails.dateofregistration)}
-              </p>
-              <p>User Type: {userDetails.type}</p>
-              <p>
-                Specialty:{" "}
+                <br />
+              <Text strong>User Type:</Text> {userDetails.type}
+              <br />
+              <Text strong>Specialty:</Text> {" "}
                 {userDetails.specialty || "No specialty specified"}
-              </p>
             </div>
           ) : (
-            <div>
-              <input
-                type="text"
-                name="name"
-                value={updatedDetails.name}
-                onChange={handleChange}
-              />
-              <input
-                type="email"
-                name="email"
-                value={updatedDetails.email}
-                onChange={handleChange}
-              />
-              <input
-                type="tel"
-                name="phone"
-                value={updatedDetails.phone}
-                onChange={handleChange}
-              />
-              <input
-                type="text"
-                name="type"
-                value={updatedDetails.type}
-                onChange={handleChange}
-              />
+            <div className="text-center">
+              <div className="flex flex-col md:flex-col items-center mb-4">
+                <div>Name:</div>
+                <Input
+                  className="w-full"
+                  placeholder="Enter name"
+                  name="name"
+                  value={updatedDetails.name}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="flex flex-col md:flex-col items-center mb-4">
+                <div>Email:</div>
+                <Input
+                  className="w-full"
+                  placeholder="Email"
+                  name="email"
+                  value={updatedDetails.email}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="flex flex-col md:flex-col items-center mb-4">
+                <div>User Type:</div>
+                  <Input
+                    className="w-full"
+                    placeholder="Type"
+                    name="type"
+                    value={updatedDetails.type}
+                    onChange={handleChange}
+                  />
+              </div>
+              <div className="flex flex-col md:flex-col items-center mb-4">
+                <div>Specialty:</div>
               <Select
                 defaultValue={updatedDetails.specialty}
                 style={{ width: 350 }}
@@ -170,6 +177,7 @@ function DoctorAccountDetails() {
                   </Option>
                 ))}
               </Select>
+              </div>
               <button
                 style={{
                   backgroundColor: "blue",

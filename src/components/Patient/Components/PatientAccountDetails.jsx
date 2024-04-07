@@ -170,8 +170,8 @@ function PatientAccountDetails() {
             </div>
           ) : (
             <div className="text-center">
-                <div className="flex flex-col md:flex-row items-center mb-4">
-                  <span className="md:w-1/4 md:mr-2">Name:</span>
+                <div className="flex flex-col md:flex-col items-center mb-4">
+                  <span className="md:mr-2">Name:</span>
                   <Input
                     className="w-full"
                     placeholder="Enter name"
@@ -180,8 +180,8 @@ function PatientAccountDetails() {
                     onChange={handleChange}
                   />
                 </div>
-              <div className="flex flex-col md:flex-row items-center mb-4">
-                <span className="md:w-1/4 md:mr-2">Current Phone Number:</span>
+              <div className="flex flex-col md:flex-col items-center mb-4">
+                <span className="md:mr-2">Current Phone Number:</span>
                 <Input
                   className="w-full"
                   placeholder="Phone"
@@ -191,8 +191,8 @@ function PatientAccountDetails() {
                   disabled
                 />
               </div>
-              <div className="flex flex-col md:flex-row items-center mb-4">
-                <span className="md:w-1/4 md:mr-2">User Type:</span>
+              <div className="flex flex-col md:flex-col items-center mb-4">
+                <span className="md:mr-2">User Type:</span>
                 <Input
                   className="w-full"
                   placeholder="Type"
@@ -201,8 +201,8 @@ function PatientAccountDetails() {
                   onChange={handleChange}
                 />
               </div>
-              <div className="flex flex-col md:flex-row items-center mb-4">
-                <span className="md:w-1/4 md:mr-2">Enter New Phone Number:</span>
+              <div className="flex flex-col md:flex-col items-center mb-4">
+                <span className="md:mr-2">Enter New Phone Number:</span>
                 <Input
                   className="w-full"
                   placeholder="Phone Number"
