@@ -1,28 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { Form, Select, Checkbox, Button, Row, Col, Spin } from "antd";
+import { Form, Select, Checkbox, Button, Row, Col, Spin, message } from "antd";
+import { onAuthStateChanged } from "firebase/auth";
 import {
-  setDoc,
-  doc,
+  auth,
   db,
+  doc,
+  getDoc,
   collection,
-  addDoc,
-  getDocs,
   query,
   where,
-} from "../../config/firebase";
+  getDocs,
+  setDoc,
+} from "../../config/firebase.jsx";
 
 const { Option } = Select;
-
-const typesofDoc = [
-  { value: "Orthopedics", label: "General Orthopaedic Surgery" },
-  { value: "Internal Medicine", label: "Internal Medicine" },
-  { value: "Hematology", label: "Internal Medicine (Adult Hematology)" },
-  { value: "Infectious", label: "Internal Medicine (Infectious Diseases)" },
-  { value: "Pulmonology", label: "Internal Medicine (Pulmonology)" },
-  { value: "Ob", label: "Obstetrics and Gynecology" },
-  { value: "Physical", label: "Physical Medicine and Rehabilitation" },
-  { value: "Pediatrics", label: "Pediatrics, Vaccines, and Immunizations" },
-];
 
 const timeSlots = [
   "7:00",
@@ -48,6 +39,17 @@ const daysSlots = [
   "Sunday",
 ];
 
+const typesofDoc = [
+  { value: "Orthopedics", label: "General Orthopaedic Surgery" },
+  { value: "Internal Medicine", label: "Internal Medicine" },
+  { value: "Hematology", label: "Internal Medicine (Adult Hematology)" },
+  { value: "Infectious", label: "Internal Medicine (Infectious Diseases)" },
+  { value: "Pulmonology", label: "Internal Medicine (Pulmonology)" },
+  { value: "Ob", label: "Obstetrics and Gynecology" },
+  { value: "Physical", label: "Physical Medicine and Rehabilitation" },
+  { value: "Pediatrics", label: "Pediatrics, Vaccines, and Immunizations" },
+];
+
 const DoctorsSchedule = () => {
   const [form] = Form.useForm();
   const [selectedOption, setSelectedOption] = useState(undefined);
@@ -55,16 +57,46 @@ const DoctorsSchedule = () => {
   const [selectedTimes, setSelectedTimes] = useState([]);
   const [checkedDays, setCheckedDays] = useState([]);
   const [checkedTimes, setCheckedTimes] = useState([]);
-  const [loading, setLoading] = useState(false);
-
+  const [loading, setLoading] = useState(true); // Initially set loading to true
   const [isSubmitting, setIsSubmitting] = useState(false); // State to track form submission
+  const [isDoctor, setIsDoctor] = useState(false); // State to track if the user is a doctor
 
-  const handleOptionChange = (value) => {
-    setSelectedOption(value);
-  };
+  useEffect(() => {
+    const fetchUserSpecialty = async () => {
+      const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          const userId = user.uid;
+          const docRef = doc(db, "doctors_accounts", userId);
+
+          try {
+            const doctorSnapshot = await getDoc(docRef);
+
+            if (doctorSnapshot.exists()) {
+              const specialty = doctorSnapshot.data()?.specialty;
+
+              setSelectedOption(specialty);
+              fetchScheduleData(specialty);
+              setIsDoctor(true); // Set isDoctor to true if user is a doctor
+            } else {
+              console.log("No such document!");
+              setIsDoctor(false); // Set isDoctor to false if user is not a doctor
+            }
+          } catch (error) {
+            console.error("Error fetching document:", error);
+          } finally {
+            setLoading(false);
+          }
+        }
+      });
+
+      return () => unsubscribe();
+    };
+
+    fetchUserSpecialty();
+  }, []);
 
   const fetchScheduleData = async (selectedOption) => {
-    setLoading(true); // Set loading to true while fetching data
+    setLoading(true);
     const q = query(
       collection(db, "settings"),
       where("specialty", "==", selectedOption)
@@ -73,7 +105,6 @@ const DoctorsSchedule = () => {
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
       const data = doc.data();
-      setSelectedOption(data.specialty);
       setSelectedDays(data.days);
       setSelectedTimes(data.times);
       form.setFieldsValue({
@@ -84,17 +115,11 @@ const DoctorsSchedule = () => {
       setCheckedDays(data.days);
       setCheckedTimes(data.times);
     });
-    setLoading(false); // Set loading to false after data is fetched
+    setLoading(false);
   };
 
-  useEffect(() => {
-    if (selectedOption) {
-      fetchScheduleData(selectedOption);
-    }
-  }, [selectedOption]);
-
   const onFinish = async (values) => {
-    setIsSubmitting(true); // Set isSubmitting to true when form is submitted
+    setIsSubmitting(true);
     console.log("Received values:", values);
     const { option, days, times } = values;
     const specialtytrim = option.replace(/\s/g, "");
@@ -115,10 +140,15 @@ const DoctorsSchedule = () => {
       // Update selected days and times based on the submitted form values
       setSelectedDays(days);
       setSelectedTimes(times);
+
+      // Show success message
+      message.success("Form submitted successfully!");
+      // Reset form fields after successful submission
+      form.resetFields();
     } catch (error) {
       console.error("Error storing data in Firestore: ", error);
     } finally {
-      setIsSubmitting(false); // Set isSubmitting to false after submission is complete
+      setIsSubmitting(false);
     }
   };
 
@@ -149,7 +179,9 @@ const DoctorsSchedule = () => {
             label="Select Specialties"
             rules={[{ required: true, message: "Please select an option" }]}
           >
-            <Select onChange={handleOptionChange}>
+            <Select disabled={isDoctor}>
+              {" "}
+              {/* Disable the select if user is a doctor */}
               {typesofDoc.map((doc) => (
                 <Option key={doc.value} value={doc.value}>
                   {doc.label}
@@ -180,7 +212,7 @@ const DoctorsSchedule = () => {
             </Checkbox.Group>
           </Form.Item>
           <Form.Item>
-          <Button
+            <Button
               type="primary"
               htmlType="submit"
               className="bg-green-600 w-2/4"

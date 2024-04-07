@@ -104,7 +104,7 @@ function DoctorAccountDetails() {
               <EditOutlined
                 style={{
                   fontSize: "16px",
-                  color: "blue",
+                  color: "#38a169",
                   cursor: "pointer",
                 }}
                 onClick={handleEdit}
@@ -168,7 +168,7 @@ function DoctorAccountDetails() {
               </div>
               <button
                 style={{
-                  backgroundColor: "blue",
+                  backgroundColor: "#38a169",
                   color: "white",
                   padding: "10px 20px",
                   border: "none",
@@ -180,6 +180,7 @@ function DoctorAccountDetails() {
               >
                 Save
               </button>
+              <Button onClick={() => setEditing(false)}>Cancel</Button>
             </div>
           )}
         </div>

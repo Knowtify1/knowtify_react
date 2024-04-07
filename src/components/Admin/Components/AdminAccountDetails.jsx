@@ -85,43 +85,57 @@ function AdminAccountDetails() {
             <div>
               <Title level={2}>{userDetails.name}</Title>
               <EditOutlined
-                style={{ fontSize: "16px", color: "blue", cursor: "pointer" }}
+                style={{
+                  fontSize: "16px",
+                  color: "#38a169",
+                  cursor: "pointer",
+                }}
                 onClick={handleEdit}
               />
               <br />
-              <Text>Email:</Text> {userDetails.email}
+              <Text strong>Email:</Text> {userDetails.email}
               <br />
-              <Text>Date of Registration:</Text>{" "}
+              <Text strong>Date of Registration:</Text>{" "}
               {formatDate(userDetails.dateofregistration)}
               <br />
-              <Text>User Type:</Text> {userDetails.type}
+              <Text strong>User Type:</Text> {userDetails.type}
+              <br />
             </div>
           ) : (
-            <div>
-              <Input
-                style={{ marginBottom: "10px" }}
-                placeholder="Name"
-                name="name"
-                value={updatedDetails.name}
-                onChange={handleChange}
-              />
-              <Input
-                style={{ marginBottom: "10px" }}
-                placeholder="Email"
-                name="email"
-                value={updatedDetails.email}
-                onChange={handleChange}
-              />
-              <Input
-                style={{ marginBottom: "10px" }}
-                placeholder="Type"
-                name="type"
-                value={updatedDetails.type}
-                onChange={handleChange}
-              />
+            <div className="text-center">
+              <div className="flex flex-col md:flex-col items-center mb-4">
+                <div>Name:</div>
+                <Input
+                  className="w-full"
+                  placeholder="Enter name"
+                  name="name"
+                  value={updatedDetails.name}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="flex flex-col md:flex-col items-center mb-4">
+                <div>Email:</div>
+                <Input
+                  className="w-full"
+                  placeholder="Email"
+                  name="email"
+                  value={updatedDetails.email}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="flex flex-col md:flex-col items-center mb-4">
+                <div>User Type:</div>
+                <Input
+                  className="w-full"
+                  placeholder="Type"
+                  name="type"
+                  value={updatedDetails.type}
+                  onChange={handleChange}
+                />
+              </div>
               <Button
                 style={{
-                  backgroundColor: "blue",
+                  backgroundColor: "#38a169",
                   color: "white",
                   padding: "10px 20px",
                   border: "none",
@@ -133,6 +147,7 @@ function AdminAccountDetails() {
               >
                 Save
               </Button>
+              <Button onClick={() => setEditing(false)}>Cancel</Button>
             </div>
           )}
         </div>
