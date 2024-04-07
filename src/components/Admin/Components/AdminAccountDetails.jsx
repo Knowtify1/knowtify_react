@@ -3,12 +3,13 @@ import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../../../config/firebase.jsx";
 import { EditOutlined } from "@ant-design/icons";
-import { message } from "antd";
+import { message, Typography, Input, Button } from "antd";
 
 function AdminAccountDetails() {
   const [userDetails, setUserDetails] = useState(null);
   const [editing, setEditing] = useState(false);
   const [updatedDetails, setUpdatedDetails] = useState(null);
+  const { Title, Text } = Typography;
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -82,59 +83,43 @@ function AdminAccountDetails() {
         <div>
           {!editing ? (
             <div>
-              <h1
-                style={{
-                  fontSize: "24px",
-                  fontWeight: "bold",
-                  textAlign: "center",
-                }}
-              >
-                {userDetails.name}
-              </h1>
+              <Title level={2}>{userDetails.name}</Title>
               <EditOutlined
-                style={{
-                  fontSize: "16px",
-                  color: "blue",
-                  cursor: "pointer",
-                }}
+                style={{ fontSize: "16px", color: "blue", cursor: "pointer" }}
                 onClick={handleEdit}
               />
               <br />
-              <p>Email: {userDetails.email}</p>
-              <p>Phone: {userDetails.phone}</p>
-              <p>
-                Date of Registration:{" "}
-                {formatDate(userDetails.dateofregistration)}
-              </p>
-              <p>User Type: {userDetails.type}</p>
+              <Text>Email:</Text> {userDetails.email}
+              <br />
+              <Text>Date of Registration:</Text>{" "}
+              {formatDate(userDetails.dateofregistration)}
+              <br />
+              <Text>User Type:</Text> {userDetails.type}
             </div>
           ) : (
             <div>
-              <input
-                type="text"
+              <Input
+                style={{ marginBottom: "10px" }}
+                placeholder="Name"
                 name="name"
                 value={updatedDetails.name}
                 onChange={handleChange}
               />
-              <input
-                type="email"
+              <Input
+                style={{ marginBottom: "10px" }}
+                placeholder="Email"
                 name="email"
                 value={updatedDetails.email}
                 onChange={handleChange}
               />
-              <input
-                type="tel"
-                name="phone"
-                value={updatedDetails.phone}
-                onChange={handleChange}
-              />
-              <input
-                type="text"
+              <Input
+                style={{ marginBottom: "10px" }}
+                placeholder="Type"
                 name="type"
                 value={updatedDetails.type}
                 onChange={handleChange}
               />
-              <button
+              <Button
                 style={{
                   backgroundColor: "blue",
                   color: "white",
@@ -147,7 +132,7 @@ function AdminAccountDetails() {
                 onClick={handleSave}
               >
                 Save
-              </button>
+              </Button>
             </div>
           )}
         </div>
