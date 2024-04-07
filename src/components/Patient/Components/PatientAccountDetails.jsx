@@ -186,49 +186,6 @@ function PatientAccountDetails() {
               <p>User Type: {userDetails.type}</p>
             </div>
           ) : (
-<<<<<<< Updated upstream
-            <div className="text-center">
-                <div className="flex flex-col md:flex-col items-center mb-4">
-                  <span className="md:mr-2">Name:</span>
-                  <Input
-                    className="w-full"
-                    placeholder="Enter name"
-                    name="name"
-                    value={updatedDetails.name}
-                    onChange={handleChange}
-                  />
-                </div>
-              <div className="flex flex-col md:flex-col items-center mb-4">
-                <span className="md:mr-2">Current Phone Number:</span>
-                <Input
-                  className="w-full"
-                  placeholder="Phone"
-                  name="phone"
-                  value={updatedDetails.phone}
-                  onChange={handleChange}
-                  disabled
-                />
-              </div>
-              <div className="flex flex-col md:flex-col items-center mb-4">
-                <span className="md:mr-2">User Type:</span>
-                <Input
-                  className="w-full"
-                  placeholder="Type"
-                  name="type"
-                  value={updatedDetails.type}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="flex flex-col md:flex-col items-center mb-4">
-                <span className="md:mr-2">Enter New Phone Number:</span>
-                <Input
-                  className="w-full"
-                  placeholder="Phone Number"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                />
-              </div>
-=======
             <div>
               <Input
                 style={{ marginBottom: "10px" }}
@@ -245,7 +202,6 @@ function PatientAccountDetails() {
                 onChange={handleChange}
               />
 
->>>>>>> Stashed changes
               <Button
                 onClick={onSendCode}
                 disabled={!updatedDetails.phone || codeSent}
