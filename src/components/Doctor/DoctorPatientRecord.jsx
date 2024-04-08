@@ -10,17 +10,6 @@ function DoctorPatientRecord() {
         <div className="flex flex-col gap-0">
           <div className="w-full text-center">
             <h3
-              className="text-3xl font-semibold pt-0"
-              style={{ color: "#333" }}
-            >
-              Doctor Patients
-            </h3>{" "}
-          </div>
-          <Card>
-            <DoctorPatients />
-          </Card>
-          <div className="w-full text-center">
-            <h3
               className="text-3xl font-semibold pt-5"
               style={{ color: "#333" }}
             >

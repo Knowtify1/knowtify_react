@@ -72,9 +72,9 @@ function PatientCalendar() {
                     const formattedTime = appointmentTime.format("hh:mm");
 
                     if (hour >= 7 && hour < 12) {
-                      return `${formattedTime} am - ${appointment.patientName}`;
+                      return `${formattedTime} am - ${appointment.assignedDoctor}`;
                     } else {
-                      return `${formattedTime} pm - ${appointment.patientName}`;
+                      return `${formattedTime} pm - ${appointment.assignedDoctor}`;
                     }
                   })()}
                 </span>

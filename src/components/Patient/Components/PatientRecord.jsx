@@ -7,17 +7,29 @@ import {
   query,
   where,
   getDocs,
-  updateDoc,
-  doc,
 } from "../../../config/firebase.jsx";
-import { Table, Typography, Button, Input, message, Space } from "antd";
-import { EditOutlined, CloseOutlined } from "@ant-design/icons";
+import moment from "moment";
+import { Table, Typography, Collapse } from "antd";
 
 const { Title, Text } = Typography;
+const { Panel } = Collapse;
+
+// Define the typesofDoc array
+const typesofDoc = [
+  { value: "Orthopedics", label: "General Orthopaedic Surgery" },
+  { value: "Internal Medicine", label: "Internal Medicine" },
+  { value: "Hematology", label: "Internal Medicine (Adult Hematology)" },
+  { value: "Infectious", label: "Internal Medicine (Infectious Diseases)" },
+  { value: "Pulmonology", label: "Internal Medicine (Pulmonology)" },
+  { value: "Ob", label: "Obstetrics and Gynecology" },
+  { value: "Physical", label: "Physical Medicine and Rehabilitation" },
+  { value: "Pediatrics", label: "Pediatrics, Vaccines, and Immunizations" },
+];
 
 function PatientsRecord() {
   const [userDetails, setUserDetails] = useState(null);
   const [patientDetails, setPatientDetails] = useState(null);
+  const [collapseHeight, setCollapseHeight] = useState("auto");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -64,14 +76,6 @@ function PatientsRecord() {
           id: doc.id,
         }));
         setPatientDetails(patientData);
-        const initialEditableRows = {};
-        const initialEditedData = {};
-        patientData.forEach((_, index) => {
-          initialEditableRows[index] = false; // Set all rows as not editable initially
-          initialEditedData[index] = { ...patientData[index] };
-        });
-        setEditableRows(initialEditableRows);
-        setEditedData(initialEditedData);
       } else {
         console.error("No patient data found for the given name.");
       }
@@ -80,11 +84,47 @@ function PatientsRecord() {
     }
   };
 
+  const groupByDoctor = (data) => {
+    const grouped = {};
+    data.forEach((record) => {
+      const doctorKey = record.typeOfDoctor;
+      if (!grouped[doctorKey]) {
+        grouped[doctorKey] = [];
+      }
+      grouped[doctorKey].push(record);
+    });
+    return grouped;
+  };
+
+  const renderPanel = (doctor, records) => (
+    <Panel header={getDoctorLabel(doctor)} key={doctor}>
+      <Table
+        columns={columns}
+        dataSource={records}
+        rowKey={(record) => record.id}
+        className="bg-white"
+      />
+    </Panel>
+  );
+
+  // Function to get doctor label from typesofDoc array
+  const getDoctorLabel = (doctorValue) => {
+    const doctor = typesofDoc.find((doc) => doc.value === doctorValue);
+    return doctor ? doctor.label : doctorValue;
+  };
+
   const columns = [
     {
-      title: "Specialty Doctor",
-      dataIndex: "typeOfDoctor",
-      key: "typeOfDoctor",
+      title: "Appointment Date",
+      dataIndex: "appointmentDate",
+      key: "appointmentDate",
+      render: (text, record) =>
+        moment(record.appointmentDate.toDate()).format("MMMM D, YYYY"),
+    },
+    {
+      title: "Reason",
+      dataIndex: "reasonForAppointment",
+      key: "reasonForAppointment",
     },
     {
       title: "Diagnosis",
@@ -119,32 +159,18 @@ function PatientsRecord() {
   ];
 
   return (
-    <div className="overflow-auto max-h-screen p-4">
-      {userDetails && (
-        <div>
-          <p>
-            <strong>Patient Name:</strong> {userDetails.name}
-          </p>
-          <p>
-            <strong>Age:</strong> {userDetails.age}
-          </p>
-          <p>
-            <strong>Contact No.:</strong> {userDetails.phone}
-          </p>
-          <p>
-            <strong>Address:</strong>{" "}
-            {`${userDetails.patientAddress.street}, ${userDetails.patientAddress.barangay}, ${userDetails.patientAddress.city}, ${userDetails.patientAddress.province}`}
-          </p>
-        </div>
+    <div className="overflow-x-auto top-0 left-0 right-0 bottom-0 p-4 bg-white">
+      {patientDetails && (
+        <Collapse
+          accordion
+          style={{ height: "100%", overflow: "auto" }}
+          className="bg-white"
+        >
+          {Object.entries(groupByDoctor(patientDetails)).map(
+            ([doctor, records]) => renderPanel(doctor, records)
+          )}
+        </Collapse>
       )}
-      <Table
-        columns={columns}
-        dataSource={patientDetails}
-        pagination={false}
-        rowKey={(record, index) => index}
-        title={() => "Patients Records"}
-        bordered
-      />
     </div>
   );
 }

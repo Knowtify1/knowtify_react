@@ -412,7 +412,12 @@ function TablePendingAppointments() {
             <Form form={form} component={false}>
               {" "}
               {/* Set component={false} to prevent automatic form wrapping */}
-              <Table columns={columns} dataSource={data} />
+              <Table
+                columns={columns}
+                dataSource={data}
+                pagination={{ pageSize: 5 }}
+                scroll={{ x: true }} // Enable horizontal scrolling
+              />
             </Form>
           )}
 

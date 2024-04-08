@@ -66,9 +66,6 @@ function DoctorPatientsRecords() {
         ...doc.data(),
       }));
 
-      // Sort the records by patient name
-      records.sort((a, b) => a.patientName.localeCompare(b.patientName));
-
       setPatientsRecords(records);
     } catch (error) {
       console.error("Error fetching patient records:", error.message);
@@ -103,7 +100,20 @@ function DoctorPatientsRecords() {
     }
   };
 
+  const handleCancel = () => {
+    setEditingKey("");
+  };
+
   const isEditing = (recordID) => recordID === editingKey;
+
+  // Grouping patient records by patient name
+  const groupedRecords = filteredRecords.reduce((acc, record) => {
+    if (!acc[record.patientName]) {
+      acc[record.patientName] = { ...record, records: [] };
+    }
+    acc[record.patientName].records.push(record);
+    return acc;
+  }, {});
 
   return (
     <div className="overflow-auto max-h-screen p-2">
@@ -117,104 +127,145 @@ function DoctorPatientsRecords() {
         style={{ marginBottom: "1rem" }}
       />
 
-      {/* Rendering Filtered and Sorted Patient Records */}
-      <Collapse
-        accordion
-        activeKey={highlightedPanelKey}
-        onChange={setHighlightedPanelKey}
-      >
-        {filteredRecords.map((record) => (
-          <Panel key={record.id} header={<strong>{record.patientName}</strong>}>
-            {/* Display patient details */}
+      {/* Rendering Grouped Patient Records */}
+      <Collapse defaultActiveKey={[]} accordion={false}>
+        {Object.keys(groupedRecords).map((patientName) => (
+          <Panel
+            key={groupedRecords[patientName].id}
+            header={<strong>{patientName}</strong>}
+          >
             <div>
               <p>
-                <strong>Patient Name:</strong> {record.patientName}
+                <strong>Patient Name:</strong>{" "}
+                {groupedRecords[patientName].patientName}
               </p>
               <p>
-                <strong>Age:</strong> {record.age}
+                <strong>Age:</strong> {groupedRecords[patientName].age}
               </p>
               <p>
-                <strong>Contact Number:</strong> {record.contactNo}
+                <strong>Contact Number:</strong>{" "}
+                {groupedRecords[patientName].contactNo}
               </p>
               <p>
-                <strong>Appointment Date:</strong>{" "}
-                {moment(record.appointmentDate.toDate()).format("MMMM D, YYYY")}
+                <strong>Reason:</strong>{" "}
+                {groupedRecords[patientName].reasonForAppointment}
               </p>
               <p>
-                <strong>Appointment Time:</strong>{" "}
-                {record.appointmentTime.replace(/"/g, "")}
+                <strong>Family History:</strong>{" "}
+                {groupedRecords[patientName].patientFamilyHistory}
               </p>
               <p>
-                <strong>Reason:</strong> {record.reasonForAppointment}
+                <strong>History:</strong>{" "}
+                {groupedRecords[patientName].patientHistory}
               </p>
               <p>
-                <strong>Family History:</strong> {record.patientFamilyHistory}
-              </p>
-              <p>
-                <strong>History:</strong> {record.patientHistory}
-              </p>
-              <p>
-                <strong>Allergies:</strong> {record.patientAllergies}
+                <strong>Allergies:</strong>{" "}
+                {groupedRecords[patientName].patientAllergies}
               </p>
             </div>
-            <Input
-              addonBefore={<strong>Reference ID</strong>}
-              value={record.reference}
-              onChange={(e) => handleInputChange(e, record.id, "reference")}
-              disabled={!isEditing(record.id)}
-            />
-            <Input
-              addonBefore={<strong>Diagnosis</strong>}
-              value={record.previousDiagnoses}
-              onChange={(e) =>
-                handleInputChange(e, record.id, "previousDiagnoses")
-              }
-              disabled={!isEditing(record.id)}
-            />
-            <Input
-              addonBefore={<strong>Treatment plan</strong>}
-              value={record.treatmentPlan}
-              onChange={(e) => handleInputChange(e, record.id, "treatmentPlan")}
-              disabled={!isEditing(record.id)}
-            />
-            <Input
-              addonBefore={<strong>Medications Prescribed </strong>}
-              value={record.medicationsPrescribed}
-              onChange={(e) =>
-                handleInputChange(e, record.id, "medicationsPrescribed")
-              }
-              disabled={!isEditing(record.id)}
-            />
-            <Input
-              addonBefore={<strong>Referrals (if any)</strong>}
-              value={record.referrals}
-              onChange={(e) => handleInputChange(e, record.id, "referrals")}
-              disabled={!isEditing(record.id)}
-            />
-            <Input
-              addonBefore={<strong>Follow-up plan</strong>}
-              value={record.followUpPlan}
-              onChange={(e) => handleInputChange(e, record.id, "followUpPlan")}
-              disabled={!isEditing(record.id)}
-            />
+            {groupedRecords[patientName].records.map((record) => (
+              <div key={record.id}>
+                <p>
+                  <strong>Appointment Date:</strong>{" "}
+                  {moment(record.appointmentDate.toDate()).format(
+                    "MMMM D, YYYY"
+                  )}
+                </p>
+                <p>
+                  <strong>Appointment Time:</strong>{" "}
+                  <span>
+                    {moment(
+                      record.appointmentTime.replace(/"/g, ""),
+                      "h:mm A"
+                    ).format("h:mm")}{" "}
+                    {moment(
+                      record.appointmentTime.replace(/"/g, ""),
+                      "h:mm A"
+                    ).format("HH:mm") >= "07:00" &&
+                    moment(
+                      record.appointmentTime.replace(/"/g, ""),
+                      "h:mm A"
+                    ).format("HH:mm") < "12:00"
+                      ? "AM"
+                      : "PM"}
+                  </span>
+                </p>
+                <Input
+                  addonBefore={<strong>Reference ID</strong>}
+                  value={record.reference}
+                  onChange={(e) => handleInputChange(e, record.id, "reference")}
+                  disabled={!isEditing(record.id)}
+                />
+                <Input
+                  addonBefore={<strong>Diagnosis</strong>}
+                  value={record.previousDiagnoses}
+                  onChange={(e) =>
+                    handleInputChange(e, record.id, "previousDiagnoses")
+                  }
+                  disabled={!isEditing(record.id)}
+                />
+                <Input
+                  addonBefore={<strong>Treatment plan</strong>}
+                  value={record.treatmentPlan}
+                  onChange={(e) =>
+                    handleInputChange(e, record.id, "treatmentPlan")
+                  }
+                  disabled={!isEditing(record.id)}
+                />
+                <Input
+                  addonBefore={<strong>Medications Prescribed </strong>}
+                  value={record.medicationsPrescribed}
+                  onChange={(e) =>
+                    handleInputChange(e, record.id, "medicationsPrescribed")
+                  }
+                  disabled={!isEditing(record.id)}
+                />
+                <Input
+                  addonBefore={<strong>Referrals (if any)</strong>}
+                  value={record.referrals}
+                  onChange={(e) => handleInputChange(e, record.id, "referrals")}
+                  disabled={!isEditing(record.id)}
+                />
+                <Input
+                  addonBefore={<strong>Follow-up plan</strong>}
+                  value={record.followUpPlan}
+                  onChange={(e) =>
+                    handleInputChange(e, record.id, "followUpPlan")
+                  }
+                  disabled={!isEditing(record.id)}
+                />
 
-            <Space>
-              <Button
-                type="success"
-                onClick={() => handleSave(record.id)}
-                icon={<SaveOutlined />}
-                style={{ display: isEditing(record.id) ? "block" : "none" }}
-              >
-                Save
-              </Button>
-            </Space>
-            <Button
-              onClick={() => handleEdit(record.id)}
-              icon={<EditOutlined />}
-              style={{ display: isEditing(record.id) ? "none" : "block" }}
-            >
-              Edit
-            </Button>
+                <Space>
+                  <Button
+                    type="success"
+                    onClick={() => handleSave(record.id)}
+                    icon={<SaveOutlined />}
+                    style={{
+                      display: isEditing(record.id) ? "block" : "none",
+                    }}
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    onClick={handleCancel}
+                    style={{
+                      display: isEditing(record.id) ? "block" : "none",
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </Space>
+                <Button
+                  onClick={() => handleEdit(record.id)}
+                  icon={<EditOutlined />}
+                  style={{
+                    display: isEditing(record.id) ? "none" : "block",
+                  }}
+                >
+                  Edit
+                </Button>
+              </div>
+            ))}
           </Panel>
         ))}
       </Collapse>

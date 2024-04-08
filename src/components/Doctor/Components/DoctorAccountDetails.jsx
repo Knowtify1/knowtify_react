@@ -166,20 +166,13 @@ function DoctorAccountDetails() {
                   ))}
                 </Select>
               </div>
-              <button
-                style={{
-                  backgroundColor: "#38a169",
-                  color: "white",
-                  padding: "10px 20px",
-                  border: "none",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                  fontSize: "12px",
-                }}
-                onClick={handleSave}
+              <Button
+                type="primary"
+                htmlType="submit"
+                className="bg-green-600 "
               >
                 Save
-              </button>
+              </Button>
               <Button onClick={() => setEditing(false)}>Cancel</Button>
             </div>
           )}

@@ -134,16 +134,9 @@ function AdminAccountDetails() {
                 />
               </div>
               <Button
-                style={{
-                  backgroundColor: "#38a169",
-                  color: "white",
-                  padding: "10px 20px",
-                  border: "none",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                  fontSize: "12px",
-                }}
-                onClick={handleSave}
+                type="primary"
+                htmlType="submit"
+                className="bg-green-600 "
               >
                 Save
               </Button>

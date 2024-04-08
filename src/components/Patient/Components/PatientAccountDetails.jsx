@@ -157,7 +157,7 @@ function PatientAccountDetails() {
   return (
     <div>
       {userDetails ? (
-        <div>
+        <div style={{ padding: "20px" }}>
           {!editing ? (
             <div>
               <h1
@@ -172,7 +172,7 @@ function PatientAccountDetails() {
               <EditOutlined
                 style={{
                   fontSize: "16px",
-                  color: "blue",
+                  color: "#38a169",
                   cursor: "pointer",
                 }}
                 onClick={handleEdit}
@@ -222,7 +222,11 @@ function PatientAccountDetails() {
               >
                 Verify Code
               </Button>
-              <Button onClick={handleSave} style={{ marginRight: "10px" }}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                className="bg-green-600 "
+              >
                 Save
               </Button>
               <Button onClick={() => setEditing(false)}>Cancel</Button>

@@ -155,6 +155,7 @@ function PatientAppointment() {
       const appointmentDateTime = appointmentDate.toDate();
       const reminderDate = new Date(appointmentDateTime);
       reminderDate.setDate(reminderDate.getDate() - 1);
+      const formattedTime = moment(appointmentTime, "HH:mm").format("h:mm A"); // Format time as "7:00 PM"
 
       // Remove quotation marks if appointmentTime is defined
       const cleanedAppointmentTime = appointmentTime
@@ -165,30 +166,25 @@ function PatientAppointment() {
       const doctor = assignedDoctor || "Doctor"; // If assignedDoctor is undefined, use "Doctor" as default
 
       // Construct SMS message
-      const message = `Hello ${patientName}, this is to remind you of your upcoming appointment with Mountain Top Specialty Clinic on ${appointmentDateTime.toLocaleDateString()} at ${cleanedAppointmentTime} with Dr. ${doctor}. Please be on time. Thank you!`;
+      const message = `Hello ${patientName}, this is to remind you of your upcoming appointment with Mountain Top Specialty Clinic on ${appointmentDateTime.toLocaleDateString()} at Time: ${formattedTime} with Dr. ${doctor}. Please be at the clinic 5 minutes before your appointment schedule. Thank you!`;
 
       // Check if it's time to send the reminder
       const today = new Date();
-      const oneDayBeforeAppointment = new Date(
-        reminderDate.getFullYear(),
-        reminderDate.getMonth(),
-        reminderDate.getDate(),
-        0,
-        0,
-        0
-      );
-      if (today.getTime() === oneDayBeforeAppointment.getTime()) {
+      if (
+        today.getDate() === reminderDate.getDate() &&
+        today.getMonth() === reminderDate.getMonth() &&
+        today.getFullYear() === reminderDate.getFullYear()
+      ) {
         // Sending SMS to the patient
         sendSMS(contactNo, message); // Send SMS
         console.log("SMS reminder sent successfully.");
-
-        notification.success({
-          message: "Reminder Set",
-          description: "A reminder has been set for this appointment.",
-        });
       } else {
         console.log("Reminder SMS not sent. It's not time yet.");
       }
+      notification.success({
+        message: "Reminder Set",
+        description: "A reminder has been set for this appointment.",
+      });
     } catch (error) {
       console.error("Failed to send SMS reminder:", error);
     }

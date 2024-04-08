@@ -11,6 +11,7 @@ import {
 } from "../../config/firebase.jsx";
 import { onAuthStateChanged } from "firebase/auth";
 import PatientsRecord from "./Components/PatientRecord";
+import { MinusOutlined, PlusOutlined } from "@ant-design/icons"; // Importing icons
 
 const { TextArea } = Input;
 
@@ -24,6 +25,7 @@ function PatientRecords() {
   const [savedPatientData, setSavedPatientData] = useState(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editedPatient, setEditedPatient] = useState(null);
+  const [showPatientInfo, setShowPatientInfo] = useState(false); // State for controlling the visibility of patient information
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -197,32 +199,67 @@ function PatientRecords() {
               Patient Records
             </h3>{" "}
           </div>
-          <PatientsRecord patients={patients} handleEdit={handleEdit} />
-          <Table dataSource={patients.slice(0, 1)} columns={columns} />
-          <div className="overflow-auto max-h-screen p-4">
-            <div>
-              <h4>Patient Information</h4>
-              <Input placeholder="Name" value={name} disabled />
-              <TextArea
-                placeholder="Patient History"
-                value={patientHistory}
-                onChange={handleHistoryChange}
-              />
-              <TextArea
-                placeholder="Patient Family History"
-                value={patientFamilyHistory}
-                onChange={handleFamilyHistoryChange}
-              />
-              <TextArea
-                placeholder="Patient Allergies"
-                value={patientAllergies}
-                onChange={handleAllergiesChange}
-              />
-            </div>
-            <Button type="success" onClick={onFinish}>
-              Save
-            </Button>
+          <br></br>
+          <div className="container mx-auto p-4">
+            {userDetails && (
+              <div>
+                <p>
+                  <strong>Patient Name:</strong> {userDetails.name}
+                </p>
+                <p>
+                  <strong>Age:</strong> {userDetails.age}
+                </p>
+                <p>
+                  <strong>Contact No.:</strong> {userDetails.phone}
+                </p>
+                <p>
+                  <strong>Address:</strong>{" "}
+                  {`${userDetails.patientAddress.street}, ${userDetails.patientAddress.barangay}, ${userDetails.patientAddress.city}, ${userDetails.patientAddress.province}`}
+                </p>
+              </div>
+            )}
           </div>
+
+          <div className="container mx-auto p-2">
+            <h4>
+              <Button
+                type="link"
+                icon={showPatientInfo ? <MinusOutlined /> : <PlusOutlined />} // Changing icon based on showPatientInfo state
+                onClick={() => setShowPatientInfo(!showPatientInfo)}
+              >
+                {showPatientInfo ? "Hide" : "Add"} Your Medical History
+              </Button>
+            </h4>
+            {showPatientInfo && (
+              <div className="table-container" style={{ overflowX: "auto" }}>
+                <Input placeholder="Name" value={name} disabled />
+                <TextArea
+                  placeholder="Patient History"
+                  value={patientHistory}
+                  onChange={handleHistoryChange}
+                />
+                <TextArea
+                  placeholder="Patient Family History"
+                  value={patientFamilyHistory}
+                  onChange={handleFamilyHistoryChange}
+                />
+                <TextArea
+                  placeholder="Patient Allergies"
+                  value={patientAllergies}
+                  onChange={handleAllergiesChange}
+                />
+                <Button type="success" onClick={onFinish}>
+                  Save
+                </Button>
+                <Table
+                  dataSource={patients.slice(0, 1)}
+                  columns={columns}
+                  scroll={{ x: true }}
+                />
+              </div>
+            )}
+          </div>
+          <PatientsRecord patients={patients} handleEdit={handleEdit} />
         </div>
       </div>
     </>

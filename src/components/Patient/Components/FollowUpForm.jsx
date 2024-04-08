@@ -227,7 +227,7 @@ const FollowUpForm = () => {
 
     const numExistingAppointments = existingAppointmentsQuerySnapshot.size;
 
-    if (numExistingAppointments >= 3 - 1) {
+    if (numExistingAppointments >= 2 - 1) {
       const errorMessage =
         "There are already 2 appointments booked for the selected date and time. Please choose a different Time.";
       setModalClosable(false);
@@ -357,7 +357,7 @@ const FollowUpForm = () => {
                   },
                 ]}
               >
-                <Input type="text" disabled/>
+                <Input type="text" disabled />
               </Form.Item>
             </Col>
 
@@ -391,7 +391,7 @@ const FollowUpForm = () => {
                   },
                 ]}
               >
-                <Input type="number" disabled/>
+                <Input type="number" disabled />
               </Form.Item>
             </Col>
             <Col span={21}>
@@ -424,14 +424,22 @@ const FollowUpForm = () => {
                       { required: true, message: "Barangay is required" },
                     ]}
                   >
-                    <Input style={{ width: "50%" }} placeholder="Barangay" disabled/>
+                    <Input
+                      style={{ width: "50%" }}
+                      placeholder="Barangay"
+                      disabled
+                    />
                   </Form.Item>
                   <Form.Item
                     name={["patientaddress", "city"]}
                     noStyle
                     rules={[{ required: true, message: "City is required" }]}
                   >
-                    <Input style={{ width: "50%" }} placeholder="City" disabled/>
+                    <Input
+                      style={{ width: "50%" }}
+                      placeholder="City"
+                      disabled
+                    />
                   </Form.Item>
                   <Form.Item
                     name={["patientaddress", "province"]}
@@ -440,7 +448,11 @@ const FollowUpForm = () => {
                       { required: true, message: "Province is required" },
                     ]}
                   >
-                    <Input style={{ width: "50%" }} placeholder="Province" disabled/>
+                    <Input
+                      style={{ width: "50%" }}
+                      placeholder="Province"
+                      disabled
+                    />
                   </Form.Item>
                 </Input.Group>
               </Form.Item>
