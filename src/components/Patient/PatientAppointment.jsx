@@ -170,21 +170,26 @@ function PatientAppointment() {
 
       // Check if it's time to send the reminder
       const today = new Date();
-      if (
-        today.getDate() === reminderDate.getDate() &&
-        today.getMonth() === reminderDate.getMonth() &&
-        today.getFullYear() === reminderDate.getFullYear()
-      ) {
+      const oneDayBeforeAppointment = new Date(
+        reminderDate.getFullYear(),
+        reminderDate.getMonth(),
+        reminderDate.getDate(),
+        0,
+        0,
+        0
+      );
+      if (today.getTime() === oneDayBeforeAppointment.getTime()) {
         // Sending SMS to the patient
         sendSMS(contactNo, message); // Send SMS
         console.log("SMS reminder sent successfully.");
+
+        notification.success({
+          message: "Reminder Set",
+          description: "A reminder has been set for this appointment.",
+        });
       } else {
         console.log("Reminder SMS not sent. It's not time yet.");
       }
-      notification.success({
-        message: "Reminder Set",
-        description: "A reminder has been set for this appointment.",
-      });
     } catch (error) {
       console.error("Failed to send SMS reminder:", error);
     }
