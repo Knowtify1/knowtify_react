@@ -23,115 +23,115 @@ function DoctorHome() {
   const [filteredPatients, setFilteredPatients] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUserDetails = async () => {
-      const unsubscribe = onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          const userId = user.uid;
-          const userRef = doc(db, "users_accounts_records", userId);
-          const docRef = doc(db, "doctors_accounts", userId);
+  // useEffect(() => {
+  //   const fetchUserDetails = async () => {
+  //     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+  //       if (user) {
+  //         const userId = user.uid;
+  //         const userRef = doc(db, "users_accounts_records", userId);
+  //         const docRef = doc(db, "doctors_accounts", userId);
 
-          try {
-            const docSnapshot = await getDoc(userRef);
-            const doctorSnapshot = await getDoc(docRef);
+  //         try {
+  //           const docSnapshot = await getDoc(userRef);
+  //           const doctorSnapshot = await getDoc(docRef);
 
-            if (docSnapshot.exists() && doctorSnapshot.exists()) {
-              const userData = docSnapshot.data();
-              const specialty = doctorSnapshot.data();
+  //           if (docSnapshot.exists() && doctorSnapshot.exists()) {
+  //             const userData = docSnapshot.data();
+  //             const specialty = doctorSnapshot.data();
 
-              const dateOfRegistrationString = userData.dateofregistration
-                .toDate()
-                .toString();
+  //             const dateOfRegistrationString = userData.dateofregistration
+  //               .toDate()
+  //               .toString();
 
-              setUserDetails({
-                ...userData,
-                dateofregistration: dateOfRegistrationString,
-              });
+  //             setUserDetails({
+  //               ...userData,
+  //               dateofregistration: dateOfRegistrationString,
+  //             });
 
-              setDoctorsMoreDetails(specialty);
+  //             setDoctorsMoreDetails(specialty);
 
-              const patientsQuery = query(
-                collection(db, "patients"),
-                where("assignedDoctorID", "==", specialty.uid)
-              );
+  //             const patientsQuery = query(
+  //               collection(db, "patients"),
+  //               where("assignedDoctorID", "==", specialty.uid)
+  //             );
 
-              const patientsSnapshot = await getDocs(patientsQuery);
-              const patientsData = patientsSnapshot.docs.map((doc) => ({
-                patientID: doc.id,
-                ...doc.data(),
-              }));
-              setPatients(patientsData);
-              setFilteredPatients(patientsData);
-            } else {
-              console.log("No such document!");
-            }
-          } catch (error) {
-            console.error("Error fetching document:", error);
-          } finally {
-            setLoading(false);
-          }
-        }
-      });
+  //             const patientsSnapshot = await getDocs(patientsQuery);
+  //             const patientsData = patientsSnapshot.docs.map((doc) => ({
+  //               patientID: doc.id,
+  //               ...doc.data(),
+  //             }));
+  //             setPatients(patientsData);
+  //             setFilteredPatients(patientsData);
+  //           } else {
+  //             console.log("No such document!");
+  //           }
+  //         } catch (error) {
+  //           console.error("Error fetching document:", error);
+  //         } finally {
+  //           setLoading(false);
+  //         }
+  //       }
+  //     });
 
-      return () => unsubscribe();
-    };
+  //     return () => unsubscribe();
+  //   };
 
-    fetchUserDetails();
-  }, []);
+  //   fetchUserDetails();
+  // }, []); // Empty dependency array as this effect should only run once
 
-  useEffect(() => {
-    // Sort filteredPatients based on appointmentDate
-    setFilteredPatients(
-      [...filteredPatients].sort(
-        (a, b) => a.appointmentDate - b.appointmentDate
-      )
-    );
-  }, [filteredPatients]);
+  // useEffect(() => {
+  //   // Sort filteredPatients based on appointmentDate
+  //   setFilteredPatients((prevFilteredPatients) =>
+  //     [...prevFilteredPatients].sort(
+  //       (a, b) => a.appointmentDate - b.appointmentDate
+  //     )
+  //   );
+  // }, [filteredPatients]); // Only run the effect when filteredPatients changes
 
-  const columns = [
-    {
-      title: "Patient Name",
-      dataIndex: "patientName",
-      key: "patientName",
-    },
-    {
-      title: "Appointment Date",
-      dataIndex: "appointmentDate",
-      key: "appointmentDate",
-      render: (text, record) =>
-        moment(record.appointmentDate.toDate()).format("MMMM D, YYYY"),
-    },
-    {
-      title: "Appointment Time",
-      dataIndex: "appointmentTime",
-      render: (text, record) => {
-        const appointmentTime = moment(text, "h:mm A");
-        const timeLabel = appointmentTime.isBetween(
-          moment("6:00 AM", "h:mm A"),
-          moment("11:59 AM", "h:mm A")
-        )
-          ? "AM"
-          : "PM";
-        return (
-          <span>
-            {appointmentTime.format("h:mm")} {timeLabel}
-          </span>
-        );
-      },
-    },
-    {
-      title: "Reason",
-      dataIndex: "reasonForAppointment",
-      key: "reasonForAppointment",
-    },
-    {
-      title: "Action",
-      key: "view",
-      render: (text, record) => (
-        <Link to="/doctordashboard/doctorappointment">View </Link>
-      ),
-    },
-  ];
+  // const columns = [
+  //   {
+  //     title: "Patient Name",
+  //     dataIndex: "patientName",
+  //     key: "patientName",
+  //   },
+  //   {
+  //     title: "Appointment Date",
+  //     dataIndex: "appointmentDate",
+  //     key: "appointmentDate",
+  //     render: (text, record) =>
+  //       moment(record.appointmentDate.toDate()).format("MMMM D, YYYY"),
+  //   },
+  //   {
+  //     title: "Appointment Time",
+  //     dataIndex: "appointmentTime",
+  //     render: (text, record) => {
+  //       const appointmentTime = moment(text, "h:mm A");
+  //       const timeLabel = appointmentTime.isBetween(
+  //         moment("6:00 AM", "h:mm A"),
+  //         moment("11:59 AM", "h:mm A")
+  //       )
+  //         ? "AM"
+  //         : "PM";
+  //       return (
+  //         <span>
+  //           {appointmentTime.format("h:mm")} {timeLabel}
+  //         </span>
+  //       );
+  //     },
+  //   },
+  //   {
+  //     title: "Reason",
+  //     dataIndex: "reasonForAppointment",
+  //     key: "reasonForAppointment",
+  //   },
+  //   {
+  //     title: "Action",
+  //     key: "view",
+  //     render: (text, record) => (
+  //       <Link to="/doctordashboard/doctorappointment">View </Link>
+  //     ),
+  //   },
+  // ];
 
   return (
     <>
@@ -153,7 +153,7 @@ function DoctorHome() {
         >
           <DoctorOverview />
         </Card>
-        <h3 className="text-2xl font-semibold pt-0" style={{ color: "#333" }}>
+        {/* <h3 className="text-2xl font-semibold pt-0" style={{ color: "#333" }}>
           Upcoming Appointment
         </h3>{" "}
         <Card
@@ -170,7 +170,7 @@ function DoctorHome() {
           ) : (
             <Table columns={columns} dataSource={filteredPatients} />
           )}
-        </Card>
+        </Card> */}
       </div>
     </>
   );
