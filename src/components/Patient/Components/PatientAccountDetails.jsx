@@ -240,5 +240,5 @@ function PatientAccountDetails() {
     </div>
   );
 }
-
+////cell
 export default PatientAccountDetails;

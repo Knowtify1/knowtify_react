@@ -43,7 +43,7 @@ function PatientCalendar() {
 
     return () => unsubscribe();
   }, []);
-
+  ////cell
   const cellRender = (current) => {
     const formattedDate = current.format("YYYY-MM-DD");
     const filteredAppointments = patientsData.filter(

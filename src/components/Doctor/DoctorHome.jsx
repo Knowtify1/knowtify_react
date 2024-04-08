@@ -79,15 +79,6 @@ function DoctorHome() {
   //   fetchUserDetails();
   // }, []); // Empty dependency array as this effect should only run once
 
-  // useEffect(() => {
-  //   // Sort filteredPatients based on appointmentDate
-  //   setFilteredPatients((prevFilteredPatients) =>
-  //     [...prevFilteredPatients].sort(
-  //       (a, b) => a.appointmentDate - b.appointmentDate
-  //     )
-  //   );
-  // }, [filteredPatients]); // Only run the effect when filteredPatients changes
-
   // const columns = [
   //   {
   //     title: "Patient Name",
@@ -102,22 +93,11 @@ function DoctorHome() {
   //       moment(record.appointmentDate.toDate()).format("MMMM D, YYYY"),
   //   },
   //   {
-  //     title: "Appointment Time",
+  //     title: "Time",
   //     dataIndex: "appointmentTime",
-  //     render: (text, record) => {
-  //       const appointmentTime = moment(text, "h:mm A");
-  //       const timeLabel = appointmentTime.isBetween(
-  //         moment("6:00 AM", "h:mm A"),
-  //         moment("11:59 AM", "h:mm A")
-  //       )
-  //         ? "AM"
-  //         : "PM";
-  //       return (
-  //         <span>
-  //           {appointmentTime.format("h:mm")} {timeLabel}
-  //         </span>
-  //       );
-  //     },
+  //     key: "appointmentTime",
+  //     render: (text, record) =>
+  //       moment(record.appointmentTime, "HH:mm").format("HH:mm"),
   //   },
   //   {
   //     title: "Reason",
@@ -153,10 +133,7 @@ function DoctorHome() {
         >
           <DoctorOverview />
         </Card>
-        {/* <h3 className="text-2xl font-semibold pt-0" style={{ color: "#333" }}>
-          Upcoming Appointment
-        </h3>{" "}
-        <Card
+        {/* <Card
           className="overflow-auto max-h-screen pl-5" // Set a maximum height and padding
           style={{
             width: "100%",
@@ -170,7 +147,7 @@ function DoctorHome() {
           ) : (
             <Table columns={columns} dataSource={filteredPatients} />
           )}
-        </Card> */}
+        </Card>  */}
       </div>
     </>
   );

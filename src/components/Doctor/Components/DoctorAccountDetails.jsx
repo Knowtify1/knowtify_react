@@ -121,55 +121,53 @@ function DoctorAccountDetails() {
               {userDetails.specialty || "No specialty specified"}
             </div>
           ) : (
-            <div className="text-center">
-              <div className="flex flex-col md:flex-col items-center mb-4">
-                <div>Name:</div>
-                <Input
-                  className="w-full"
-                  placeholder="Enter name"
-                  name="name"
-                  value={updatedDetails.name}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="flex flex-col md:flex-col items-center mb-4">
-                <div>Email:</div>
-                <Input
-                  className="w-full"
-                  placeholder="Email"
-                  name="email"
-                  value={updatedDetails.email}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="flex flex-col md:flex-col items-center mb-4">
-                <div>User Type:</div>
-                <Input
-                  className="w-full"
-                  placeholder="Type"
-                  name="type"
-                  value={updatedDetails.type}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="flex flex-col md:flex-col items-center mb-4">
-                <div>Specialty:</div>
-                <Select
-                  defaultValue={updatedDetails.specialty}
-                  style={{ width: 350 }}
-                  onChange={handleSpecialtyChange}
-                >
-                  {specialtyOptions.map((option) => (
-                    <Option key={option.value} value={option.value}>
-                      {option.label}
-                    </Option>
-                  ))}
-                </Select>
-              </div>
-              <Button
-                type="primary"
-                htmlType="submit"
-                className="bg-green-600 "
+            <div>
+              <input
+                type="text"
+                name="name"
+                value={updatedDetails.name}
+                onChange={handleChange}
+              />
+              <input
+                type="email"
+                name="email"
+                value={updatedDetails.email}
+                onChange={handleChange}
+              />
+              <input
+                type="tel"
+                name="phone"
+                value={updatedDetails.phone}
+                onChange={handleChange}
+              />
+              <input
+                type="text"
+                name="type"
+                value={updatedDetails.type}
+                onChange={handleChange}
+              />
+              <Select
+                defaultValue={updatedDetails.specialty}
+                style={{ width: 350 }}
+                onChange={handleSpecialtyChange}
+              >
+                {specialtyOptions.map(option => (
+                  <Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Option>
+                ))}
+              </Select>
+              <button
+                style={{
+                  backgroundColor: "blue",
+                  color: "white",
+                  padding: "10px 20px",
+                  border: "none",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                  fontSize: "12px",
+                }}
+                onClick={handleSave}
               >
                 Save
               </Button>
