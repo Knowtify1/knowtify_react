@@ -151,13 +151,13 @@ function DoctorAccountDetails() {
                 style={{ width: 350 }}
                 onChange={handleSpecialtyChange}
               >
-                {specialtyOptions.map(option => (
+                {specialtyOptions.map((option) => (
                   <Option key={option.value} value={option.value}>
                     {option.label}
                   </Option>
                 ))}
               </Select>
-              <button
+              <Button
                 style={{
                   backgroundColor: "blue",
                   color: "white",
