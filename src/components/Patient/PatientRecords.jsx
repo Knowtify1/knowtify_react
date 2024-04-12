@@ -248,9 +248,11 @@ function PatientRecords() {
                   value={patientAllergies}
                   onChange={handleAllergiesChange}
                 />
-                <Button type="success" onClick={onFinish}>
-                  Save
-                </Button>
+                <div className="py-4">
+        <Button type="primary" onClick={onFinish} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+          Save
+        </Button>
+      </div>
                 <Table
                   dataSource={patients.slice(0, 1)}
                   columns={columns}

@@ -31,6 +31,8 @@ function AppointmentSuccess() {
   const [codeSent, setCodeSent] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [register, setregister] = useState(false);
+
+  const [buttonLoading, setButtonLoading] = useState(false); // State to manage button loading state
   const onSendCode = () => {
     handleSendCode(phoneNumber, setConfirmationResult, setCodeSent);
   };
@@ -260,6 +262,7 @@ function AppointmentSuccess() {
                   className="bg-green-600 w-full"
                   onClick={createPatientCollection}
                   disabled={!register}
+                  loading={buttonLoading} // Set loading state for the button
                 >
                   Register
                 </Button>
