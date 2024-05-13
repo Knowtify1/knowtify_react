@@ -16,8 +16,9 @@ import {
   deleteDoc,
   updateDoc,
 } from "../../config/firebase.jsx";
+import { HomeOutlined } from "@ant-design/icons";
 
-function DoctorAppointment() {
+function CheckAppointment() {
   const [loading, setLoading] = useState(false);
   const [appointmentStatus, setAppointmentStatus] = useState(null);
   const [receipt, setReceipt] = useState(null);
@@ -169,11 +170,19 @@ function DoctorAppointment() {
 
   return (
     <>
-      <div className="flex flex-col justify-center items-center h-screen">
+      <div className="flex flex-col justify-center items-center h-screen ">
         <Card
-          title="Check Appointment Status"
-          style={{ width: 400 }}
-          className="p-8"
+          title={
+            <div>
+              <Link to="/" className=" top-3 left-80">
+                <Button type="link" icon={<HomeOutlined />} />
+              </Link>
+              Check Appointment Status
+            </div>
+          }
+          bordered={true}
+          style={{ width: 350 }}
+          className="drop-shadow-md mt-0"
         >
           <Form
             name="checkAppointmentStatus"
@@ -199,7 +208,7 @@ function DoctorAppointment() {
               <Button
                 type="primary"
                 htmlType="submit"
-                className="bg-blue-500 hover:bg-blue-700"
+                className="bg-blue-500 hover:bg-blue-700 w-full"
               >
                 Check Status
               </Button>
@@ -242,6 +251,7 @@ function DoctorAppointment() {
             </Button>,
           ]}
         >
+          {/* Content formatted like an EMR form */}
           {receipt && (
             <div>
               <p>Receipt: {receipt}</p>
@@ -249,14 +259,18 @@ function DoctorAppointment() {
             </div>
           )}
 
-          {/* Additional patient details */}
           {appointmentStatus === "Appointment is approved" && (
             <div id="appointmentDetails">
+              <h2>Patient Information</h2>
               <p>
-                <strong>Patient Name:</strong> {appointmentData?.patientName}
+                <strong>Name:</strong> {appointmentData?.patientName}
               </p>
               <p>
                 <strong>Contact Number:</strong> {appointmentData?.contactNo}
+              </p>
+              <p>
+                <strong>Address:</strong>{" "}
+                {`${appointmentData?.patientAddress.street}, ${appointmentData?.patientAddress.barangay}, ${appointmentData?.patientAddress.city}, ${appointmentData?.patientAddress.province}`}
               </p>
               <p>
                 <strong>Appointment Date:</strong>{" "}
@@ -264,16 +278,8 @@ function DoctorAppointment() {
               </p>
               <p>
                 <strong>Appointment Time:</strong>{" "}
-                {appointmentData.appointmentTime.replace(/"/g, "")}{" "}
+                {appointmentData?.appointmentTime.replace(/"/g, "")}
               </p>
-              <p>
-                <strong>Patient Address:</strong>{" "}
-                {`${appointmentData?.patientAddress?.province}, 
-                  ${appointmentData?.patientAddress?.city}, 
-                  ${appointmentData?.patientAddress?.barangay}, 
-                  ${appointmentData?.patientAddress?.street}`}
-              </p>
-
               <p>
                 <strong>Reason for Appointment:</strong>{" "}
                 {appointmentData?.reasonForAppointment}
@@ -289,11 +295,16 @@ function DoctorAppointment() {
 
           {appointmentStatus === "Appointment is assigned" && (
             <div id="appointmentDetails">
+              <h2>Patient Information</h2>
               <p>
-                <strong>Patient Name:</strong> {appointmentData?.patientName}
+                <strong>Name:</strong> {appointmentData?.patientName}
               </p>
               <p>
                 <strong>Contact Number:</strong> {appointmentData?.contactNo}
+              </p>
+              <p>
+                <strong>Address:</strong>{" "}
+                {`${appointmentData?.patientAddress.street}, ${appointmentData?.patientAddress.barangay}, ${appointmentData?.patientAddress.city}, ${appointmentData?.patientAddress.province}`}
               </p>
               <p>
                 <strong>Appointment Date:</strong>{" "}
@@ -301,16 +312,8 @@ function DoctorAppointment() {
               </p>
               <p>
                 <strong>Appointment Time:</strong>{" "}
-                {appointmentData?.appointmentTime}
+                {appointmentData?.appointmentTime.replace(/"/g, "")}
               </p>
-              <p>
-                <strong>Patient Address:</strong>{" "}
-                {`${appointmentData?.patientAddress.province}, 
-                ${appointmentData?.patientAddress.city}, 
-                ${appointmentData?.patientAddress.barangay}, 
-                ${appointmentData?.patientAddress.street}`}
-              </p>
-
               <p>
                 <strong>Reason for Appointment:</strong>{" "}
                 {appointmentData?.reasonForAppointment}
@@ -325,16 +328,16 @@ function DoctorAppointment() {
           )}
         </Modal>
 
-        <div className="mt-4">
+        {/* <div className="mt-4">
           <Link to="/appointment">
             <Button type="primary" className="bg-blue-500 hover:bg-blue-700">
               Go Back to Homepage
             </Button>
           </Link>
-        </div>
+        </div> */}
       </div>
     </>
   );
 }
 
-export default DoctorAppointment;
+export default CheckAppointment;

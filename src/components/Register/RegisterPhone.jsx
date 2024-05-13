@@ -1,23 +1,6 @@
-import React, { useEffect, useState } from "react";
-import {
-  signInWithPopup,
-  createUserWithEmailAndPassword,
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
-} from "firebase/auth";
-import { Button, Form, Input, Card, Select, Spin, message } from "antd";
-import { Link, useNavigate } from "react-router-dom";
-import {
-  auth,
-  setDoc,
-  doc,
-  db,
-  fsTimeStamp,
-  collection,
-  getDocs,
-  where,
-  query,
-} from "../../config/firebase.jsx";
+import React, { useState } from "react";
+import { Button, Form, Input, Card } from "antd";
+import { useNavigate } from "react-router-dom";
 import { handleSendCode, handleVerifyCode } from "../../config/signinphone.jsx";
 
 function RegisterPhone() {
@@ -26,9 +9,17 @@ function RegisterPhone() {
   const [confirmationResult, setConfirmationResult] = useState(null);
   const [codeSent, setCodeSent] = useState(false);
   const navigate = useNavigate();
+  const [buttonLoading, setButtonLoading] = useState(false); // State to manage button loading state
 
   const onSendCode = () => {
-    handleSendCode(phoneNumber, setConfirmationResult, setCodeSent);
+    // Add +63 prefix to the phone number
+    const formattedPhoneNumber = "+63" + phoneNumber;
+    setButtonLoading(true); // Start loading
+    handleSendCode(
+      formattedPhoneNumber,
+      setConfirmationResult,
+      setCodeSent
+    ).finally(() => setButtonLoading(false)); // Stop loading
   };
 
   const onVerifyCode = () => {
@@ -43,7 +34,7 @@ function RegisterPhone() {
 
   return (
     <Card
-      title="SignIn Phone"
+      title="Sign In Phone"
       bordered={true}
       style={{ width: 350 }}
       className="drop-shadow-md mt-20"
@@ -56,10 +47,22 @@ function RegisterPhone() {
               name="phoneNumber"
               rules={[
                 { required: true, message: "Please input your phone number!" },
+                { len: 10, message: "Phone number must be 10 digits!" },
               ]}
             >
-              <Input onChange={(e) => setPhoneNumber(e.target.value)} />
+              <Input
+                addonBefore="+63"
+                onChange={(e) =>
+                  setPhoneNumber(e.target.value.replace(/\D/, "").slice(0, 10))
+                }
+              />
             </Form.Item>
+            {!codeSent && (
+              <div id="recaptcha-container">
+                {/* Your reCAPTCHA component */}
+              </div>
+            )}
+
             <Form.Item
               label="Verification Code"
               name="verificationCode"
@@ -76,27 +79,28 @@ function RegisterPhone() {
               />
             </Form.Item>
             <Form.Item>
-            <Button
-              type="primary"
-              className="bg-green-600 w-full"
-              style={{ marginBottom: "10px" }}
-              onClick={onSendCode}
-              disabled={!phoneNumber || codeSent}
-            >
-              Send Code
-            </Button>
-            {!codeSent && (
-              <div id="recaptcha-container">
-                {/* Your reCAPTCHA component */}
-              </div>
-            )}
-              
               <Button
                 type="primary"
                 className="bg-green-600 w-full"
-                style={{ marginBottom: "10px" }} 
-                onClick={onVerifyCode} disabled={!verificationCode}
-                >
+                style={{ marginBottom: "10px" }}
+                onClick={onSendCode}
+                disabled={!phoneNumber || codeSent}
+              >
+                Send Code
+              </Button>
+              {!codeSent && (
+                <div id="recaptcha-container">
+                  {/* Your reCAPTCHA component */}
+                </div>
+              )}
+
+              <Button
+                type="primary"
+                className="bg-green-600 w-full"
+                style={{ marginBottom: "10px" }}
+                onClick={onVerifyCode}
+                disabled={!verificationCode}
+              >
                 Verify Code
               </Button>
             </Form.Item>

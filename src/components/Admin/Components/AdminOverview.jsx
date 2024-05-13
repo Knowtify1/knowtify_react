@@ -23,7 +23,6 @@ import {
   ClockCircleTwoTone,
   ScheduleTwoTone,
 } from "@ant-design/icons";
-import { BellOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -143,10 +142,6 @@ function AdminOverview() {
     };
     fetchData();
   }, []);
-
-  const handleNotificationBellClick = () => {
-    setNewAppointmentNotification(false);
-  };
 
   const renderProgress = (count, color1, color2) => {
     const percent = (count / 10) * 100; // Assuming max count is 10 for simplicity
@@ -392,107 +387,120 @@ function AdminOverview() {
 
   return (
     <div className="container mx-auto">
-      <div
-        style={{
-          display: "flex",
-          marginBottom: "20px",
-        }}
-      >
-        <h1>{getCurrentDateMessage()}</h1>
-        <Badge dot={newAppointmentNotification}>
-          <BellOutlined
-            style={{ fontSize: "24px", cursor: "pointer", marginLeft: "400px" }}
-            onClick={handleNotificationBellClick}
-          />
-        </Badge>
+      <div className="flex justify-center mb-6">
+        <h1 className="text-l">{getCurrentDateMessage()}</h1>
       </div>
       <div>
         <div className="flex flex-wrap justify-center">
           <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
-            <Card
-              title={<Title level={4}>Approved Appointments</Title>}
-              extra={<a href="../admindashboard/adminappointment">View all</a>}
-              style={{
-                backgroundColor: "#E3F4E1",
-                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-              }}
-              hoverable
-            >
-              <Row justify="space-around" align="middle">
-                <Col span={20}>
-                  {renderProgress(
-                    approvedAppointmentsCount,
-                    "#52c41a",
-                    "#1890ff"
-                  )}
-                </Col>
-                <Col span={4}>
-                  <div className="text-6xl text-green-600">
-                    {approvedAppointmentsCount !== null
-                      ? approvedAppointmentsCount
-                      : "Loading..."}
-                  </div>
-                </Col>
-              </Row>
-            </Card>
+            <a href="../admindashboard/adminappointment">
+              <Card
+                title={<Title level={4}>Approved Appointments</Title>}
+                extra={
+                  <a href="../admindashboard/adminappointment">View all</a>
+                }
+                style={{
+                  backgroundColor: "#E3F4E1",
+                  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                }}
+                hoverable
+              >
+                <Row justify="space-around" align="middle">
+                  <Col span={20}>
+                    {renderProgress(
+                      approvedAppointmentsCount,
+                      "#52c41a",
+                      "#1890ff"
+                    )}
+                  </Col>
+                  <Col span={4}>
+                    <div className="text-6xl text-green-600">
+                      {approvedAppointmentsCount !== null ? (
+                        <div className="text-6xl text-green-600">
+                          {approvedAppointmentsCount}
+                        </div>
+                      ) : (
+                        <div className="text-lg text-green-600">Loading...</div>
+                      )}
+                    </div>
+                  </Col>
+                </Row>
+              </Card>
+            </a>
           </div>
 
           <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
-            <Card
-              title={<Title level={4}>Pending Appointments</Title>}
-              extra={<a href="../admindashboard/adminappointment">View all</a>}
-              style={{
-                backgroundColor: "#E6F7FF",
-                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-              }}
-              hoverable
-            >
-              <Row justify="space-around" align="middle">
-                <Col span={20}>
-                  {renderProgress(
-                    pendingAppointmentsCount,
-                    "#1890FF",
-                    "#FAAD14"
-                  )}
-                </Col>
-                <Col span={4}>
-                  <div className="text-6xl text-blue-600">
-                    {pendingAppointmentsCount !== null
-                      ? pendingAppointmentsCount
-                      : "Loading..."}
-                  </div>
-                </Col>
-              </Row>
-            </Card>
+            <a href="../admindashboard/adminappointment">
+              <Card
+                title={<Title level={4}>Pending Appointments</Title>}
+                extra={
+                  <a href="../admindashboard/adminappointment">View all</a>
+                }
+                style={{
+                  backgroundColor: "#E6F7FF",
+                  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                }}
+                hoverable
+              >
+                <Row justify="space-around" align="middle">
+                  <Col span={20}>
+                    {renderProgress(
+                      pendingAppointmentsCount,
+                      "#1890FF",
+                      "#FAAD14"
+                    )}
+                  </Col>
+                  <Col span={4}>
+                    <div className="text-6xl text-blue-600">
+                      {pendingAppointmentsCount !== null ? (
+                        <div className="text-6xl text-blue-600">
+                          {pendingAppointmentsCount}
+                        </div>
+                      ) : (
+                        <div className="text-lg text-blue-600">Loading...</div>
+                      )}
+                    </div>
+                  </Col>
+                </Row>
+              </Card>
+            </a>
           </div>
 
           <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
-            <Card
-              title={<Title level={4}>Assigned Appointments</Title>}
-              extra={<a href="../admindashboard/adminappointment">View all</a>}
-              style={{
-                backgroundColor: "#FFF5F5",
-                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-              }}
-              hoverable
-            >
-              <Row justify="space-around" align="middle">
-                <Col span={20}>
-                  {renderProgress(
-                    assignedAppointmentsCount,
-                    "#FF4D4F",
-                    "#FAAD14"
-                  )}
-                </Col>
-                <Col span={4}>
-                  <div className="text-6xl text-red-600">
-                    {assignedAppointmentsCount !== null
-                      ? assignedAppointmentsCount
-                      : "Loading..."}
-                  </div>
-                </Col>
-              </Row>
-            </Card>
+            <a href="../admindashboard/adminappointment">
+              <Card
+                title={<Title level={4}>Assigned Appointments</Title>}
+                extra={
+                  <a href="../admindashboard/adminappointment">View all</a>
+                }
+                style={{
+                  backgroundColor: "#FFF5F5",
+                  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                }}
+                hoverable
+              >
+                <Row justify="space-around" align="middle">
+                  <Col span={20}>
+                    {renderProgress(
+                      assignedAppointmentsCount,
+                      "#FF4D4F",
+                      "#FAAD14"
+                    )}
+                  </Col>
+                  <Col span={4}>
+                    <div className="text-6xl text-red-600">
+                      {assignedAppointmentsCount !== null ? (
+                        <div className="text-6xl text-red-600">
+                          {assignedAppointmentsCount}
+                        </div>
+                      ) : (
+                        <div className="text-lg text-red-600">Loading...</div>
+                      )}
+                    </div>
+                  </Col>
+                </Row>
+              </Card>
+            </a>
           </div>
         </div>
         <div className="mt-4 ml-20 flex justify-center">

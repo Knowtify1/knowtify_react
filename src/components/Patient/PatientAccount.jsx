@@ -19,18 +19,22 @@ function PatientAccount() {
   };
 
   return (
-    <div className="container mx-0 p-2">
-      <div className="flex flex-col gap-4">
-        <Card style={{ width: 400, height: 600 }}>
-          <div className="flex items-center justify-center mb-2">
+    <div className="container mx-0 ">
+      <div className="flex flex-row ">
+        <Card style={{ width: 400, height: 735 }}>
+          <div className="flex items-center justify-center mb-0">
             <Avatar size={120} src={pat} />
           </div>
-          <div className="mt-2 flex items-center justify-center"></div>
           <div className="mt-2 flex items-center justify-center">
             <PatientAccountDetails />
           </div>
           <br></br>
-          <Button type="default" danger onClick={handleSignOut}>
+          <Button
+            type="primary"
+            style={{ backgroundColor: "red", borderColor: "red" }}
+            onClick={handleSignOut}
+            block
+          >
             Logout
           </Button>
         </Card>

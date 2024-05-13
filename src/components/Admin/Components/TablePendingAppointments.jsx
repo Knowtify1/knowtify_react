@@ -185,6 +185,10 @@ function TablePendingAppointments() {
       dataIndex: "typeOfDoctor",
     },
     {
+      title: "Doctor",
+      dataIndex: "tassignedDoctor",
+    },
+    {
       title: "ReferenceID",
       dataIndex: "reference",
     },
@@ -276,6 +280,7 @@ function TablePendingAppointments() {
     form.resetFields();
     setVisible(false);
   };
+
   const fetchAppointments = async (selectedDate, setData, setLoading) => {
     try {
       let appointmentsQuery = collection(db, "appointments");
@@ -298,12 +303,22 @@ function TablePendingAppointments() {
 
       const appointmentsSnapshot = await getDocs(appointmentsQuery);
 
-      const appointmentsData = appointmentsSnapshot.docs
-        .map((doc) => ({ key: doc.id, ...doc.data() }))
-        .sort((a, b) => b.createdDate - a.createdDate);
+      const uniqueAppointments = {};
+      appointmentsSnapshot.docs.forEach((doc) => {
+        const appointment = doc.data();
+        const referenceId = appointment.reference;
+        if (!uniqueAppointments[referenceId]) {
+          uniqueAppointments[referenceId] = {
+            key: doc.id,
+            ...appointment,
+          };
+        }
+      });
+
+      const uniqueAppointmentsData = Object.values(uniqueAppointments);
 
       if (typeof setData === "function") {
-        setData(appointmentsData);
+        setData(uniqueAppointmentsData);
         setLoading(false);
       }
     } catch (error) {
@@ -328,7 +343,12 @@ function TablePendingAppointments() {
     if (index > -1) {
       newData[index].dateOfAppointment = dateOfAppointment;
       newData[index].dateOfAppointment = dateOfAppointment.toDate();
-      newData[index].appointmentTime = moment(appointmentTime).format("HH:mm");
+      // Ensure appointmentTime is in the correct format
+      const formattedAppointmentTime = moment(
+        appointmentTime,
+        "HH:mm A"
+      ).format("h:mm A");
+      newData[index].appointmentTime = formattedAppointmentTime;
       setData(newData);
     }
   };
@@ -360,10 +380,9 @@ function TablePendingAppointments() {
       const appointmentData = appointmentSnapshot.data();
       const contactNo = appointmentData.contactNo; // Assuming contactNo is the field name for the contact number
       const patientName = appointmentData.patientName; // Assuming patientName is the field name for the patient's name
-      const formattedTime = moment(appointmentTime, "HH:mm").format("h:mm A"); // Format time as "7:00 PM"
-      const message = `Good day, ${patientName}! Your booking with Mountain Studio Specialty Clinic has been rescheduled on Date: ${dateOfAppointment.format(
-        "MM/DD/YYYY"
-      )}, Time: ${formattedTime}. Please be at the clinic 5 minutes before your appointment schedule. Thank you!`;
+      const formattedDate = dateOfAppointment.format("MMMM D, YYYY");
+      const formattedTime = moment(appointmentTime, "HH:mm").format("h:mm A"); // Format time to 12-hour format
+      const message = `Good day, ${patientName}! Your booking with Mountain Top Specialty Clinic has been rescheduled on Date: ${formattedDate}, Time: ${formattedTime}. Please be at the clinic 5 minutes before your appointment schedule. Thank you!`;
       sendSMS(contactNo, message); // Send SMS
       setVisible(false);
       message.success("Appointment rescheduled successfully!");
@@ -397,37 +416,34 @@ function TablePendingAppointments() {
   return (
     <>
       <div>
-        <Space direction="vertical" size={20} className="flex">
-          <Space direction="horizontal" size={40}>
+        <Space direction="vertical" size={25} className="flex">
+          <Space direction="horizontal" size={250}>
             <Space direction="horizontal">
               <h1>Select Appointment Date:</h1>
               <DatePicker onChange={handleDateChange} />
             </Space>
-            <h1>Pending Appointments: {data.length}</h1>
             <h1>{getCurrentDateMessage()}</h1>
+            <h1>Pending Appointments: {data.length}</h1>
           </Space>
           {loading ? (
             <Spin size="small" className="block" />
           ) : (
-            <Form form={form} component={false}>
-              {" "}
-              {/* Set component={false} to prevent automatic form wrapping */}
-              <Table
-                columns={columns}
-                dataSource={data}
-                pagination={{ pageSize: 5 }}
-                scroll={{ x: true }} // Enable horizontal scrolling
-              />
-            </Form>
+            <Table
+              columns={columns}
+              dataSource={data}
+              pagination={{ pageSize: 3 }}
+              scroll={{ x: true }} // Enable horizontal scrolling
+            />
           )}
-
           <Modal
             title="Edit Appointment"
             visible={visible}
             onOk={handleOk}
             onCancel={handleCancel}
-            cancelButtonProps={{ style: { color: "green" } }}
-            okButtonProps={{ style: { color: "green" } }}
+            cancelButtonProps={{
+              style: { color: "green", borderColor: "green" },
+            }}
+            okButtonProps={{ style: { color: "green", borderColor: "green" } }}
           >
             <Form form={form} layout="vertical" initialValues={{}}>
               <Form.Item name="key" hidden>

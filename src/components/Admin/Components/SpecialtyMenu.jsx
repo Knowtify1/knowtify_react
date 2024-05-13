@@ -3,15 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button, Space, Tooltip } from "antd";
 import { CalendarOutlined } from "@ant-design/icons";
 
-import adultDiseaseImage from "../../../assets/Book/InMedAdult.png";
-import gynoImage from "../../../assets/Book/gynecology.png";
-import hematology from "../../../assets/Book/hematology.png";
-import infectiousdisease from "../../../assets/Book/infectiousdisease.png";
-import orthoImage from "../../../assets/Book/orthopedics.png";
-import pediatrics from "../../../assets/Book/pediatrics.png";
-import pulmonology1 from "../../../assets/Book/pulmonology1.png";
-import rehabImage from "../../../assets/Book/rehabilitation.png";
-
+import gyn from "../../../assets/Book/gyn.svg";
+import hema from "../../../assets/Book/hema.svg";
+import infect from "../../../assets/Book/infect.svg";
+import ortho from "../../../assets/Book/ortho.svg";
+import pedia from "../../../assets/Book/pedia.svg";
+import pulmo from "../../../assets/Book/pulmo.svg";
+import rehab from "../../../assets/Book/rehab.svg";
+import internal from "../../../assets/Book/internal.svg";
 const SpecialtyMenu = () => {
   const navigate = useNavigate();
 
@@ -27,38 +26,38 @@ const SpecialtyMenu = () => {
     {
       value: "Internal Medicine",
       label: "Internal Medicine",
-      images: adultDiseaseImage,
+      images: internal,
     },
     {
       value: "Hematology",
       label: "Internal Medicine (Adult Hematology)",
-      images: hematology,
+      images: hema,
     },
     {
       value: "Infectious",
       label: "Internal Medicine (Infectious Diseases)",
-      images: infectiousdisease,
+      images: infect,
     },
     {
       value: "Pulmonology",
       label: "Internal Medicine (Pulmonology)",
-      images: pulmonology1,
+      images: pulmo,
     },
-    { value: "Ob", label: "Obstetrics and Gynecology", images: gynoImage },
+    { value: "Ob", label: "Obstetrics and Gynecology", images: gyn },
     {
       value: "Orthopedics",
       label: "General Orthopaedic Surgery",
-      images: orthoImage,
+      images: ortho,
     },
     {
       value: "Physical",
       label: "Physical Medicine and Rehabilitation",
-      images: rehabImage,
+      images: rehab,
     },
     {
       value: "Pediatrics",
       label: "Pediatrics, Vaccines, and Immunizations",
-      images: pediatrics,
+      images: pedia,
     },
   ];
 

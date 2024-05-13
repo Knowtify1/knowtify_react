@@ -6,10 +6,10 @@ function PatientSchedule() {
   return (
     <div className="flex flex-col items-center">
       <div className="w-full text-center">
-        <h3 className="text-3xl font-semibold pt-10" style={{ color: "#333" }}>
-          Patient Schedule
-        </h3>{" "}
         <Card>
+          <h3 className="text-3xl font-semibold pt-0" style={{ color: "#333" }}>
+            Patient Schedule
+          </h3>{" "}
           <PatientCalendar />
         </Card>
       </div>

@@ -23,7 +23,6 @@ import {
   ClockCircleTwoTone,
   ScheduleTwoTone,
 } from "@ant-design/icons";
-import { BellOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -253,34 +252,15 @@ function PatientOverview() {
     return `Today is ${formattedDate}`;
   };
 
-  const handleNotificationBellClick = () => {
-    setNewAppointmentNotification(false);
-  };
-
   return (
-    <div>
-      <div className="container mx-auto">
-        <div
-          style={{
-            display: "flex",
-            marginBottom: "20px",
-          }}
-        >
-          <h1>{getCurrentDateMessage()}</h1>
-          <Badge dot={newAppointmentNotification}>
-            <BellOutlined
-              style={{
-                fontSize: "24px",
-                cursor: "pointer",
-                marginLeft: "400px",
-              }}
-              onClick={handleNotificationBellClick}
-            />
-          </Badge>
-        </div>
-        <div>
-          <div className="flex flex-wrap justify-center">
-            <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
+    <div className="container mx-auto">
+      <div className="flex justify-center mb-6">
+        <h1 className="text-l">{getCurrentDateMessage()}</h1>
+      </div>
+      <div>
+        <div className="flex flex-wrap justify-center">
+          <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
+            <a href="../patientdashboard/patientappointment">
               <Card
                 title={<Title level={4}>Approved Appointments</Title>}
                 extra={
@@ -302,16 +282,22 @@ function PatientOverview() {
                   </Col>
                   <Col span={4}>
                     <div className="text-6xl text-green-600">
-                      {approvedAppointmentsCount !== null
-                        ? approvedAppointmentsCount
-                        : "Loading..."}
+                      {approvedAppointmentsCount !== null ? (
+                        <div className="text-6xl text-green-600">
+                          {approvedAppointmentsCount}
+                        </div>
+                      ) : (
+                        <div className="text-lg text-green-600">Loading...</div>
+                      )}
                     </div>
                   </Col>
                 </Row>
               </Card>
-            </div>
+            </a>
+          </div>
 
-            <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
+          <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
+            <a href="../patientdashboard/patientappointment">
               <Card
                 title={<Title level={4}>Pending Appointments</Title>}
                 extra={
@@ -333,16 +319,22 @@ function PatientOverview() {
                   </Col>
                   <Col span={4}>
                     <div className="text-6xl text-blue-600">
-                      {pendingAppointmentsCount !== null
-                        ? pendingAppointmentsCount
-                        : "Loading..."}
+                      {pendingAppointmentsCount !== null ? (
+                        <div className="text-6xl text-blue-600">
+                          {pendingAppointmentsCount}
+                        </div>
+                      ) : (
+                        <div className="text-lg text-blue-600">Loading...</div>
+                      )}
                     </div>
                   </Col>
                 </Row>
               </Card>
-            </div>
+            </a>
+          </div>
 
-            <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
+          <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
+            <a href="../patientdashboard/patientappointment">
               <Card
                 title={<Title level={4}>Assigned Appointments</Title>}
                 extra={
@@ -364,23 +356,27 @@ function PatientOverview() {
                   </Col>
                   <Col span={4}>
                     <div className="text-6xl text-red-600">
-                      {assignedAppointmentsCount !== null
-                        ? assignedAppointmentsCount
-                        : "Loading..."}
+                      {assignedAppointmentsCount !== null ? (
+                        <div className="text-6xl text-red-600">
+                          {assignedAppointmentsCount}
+                        </div>
+                      ) : (
+                        <div className="text-lg text-red-600">Loading...</div>
+                      )}
                     </div>
                   </Col>
                 </Row>
               </Card>
-            </div>
+            </a>
           </div>
-          <div className="mt-8 flex justify-center">
-            <div className="mr-8">
-              <svg height="200" width="200">
-                {renderPieChart()}
-              </svg>
-            </div>
-            <div className="mt-10">{renderLegend()}</div>
+        </div>
+        <div className="mt-8 flex justify-center">
+          <div className="mr-8">
+            <svg height="200" width="200">
+              {renderPieChart()}
+            </svg>
           </div>
+          <div className="mt-10">{renderLegend()}</div>
         </div>
       </div>
     </div>

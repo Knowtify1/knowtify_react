@@ -99,10 +99,65 @@ function PatientsRecord() {
   const renderPanel = (doctor, records) => (
     <Panel header={getDoctorLabel(doctor)} key={doctor}>
       <Table
-        columns={columns}
         dataSource={records}
         rowKey={(record) => record.id}
         className="bg-white"
+        pagination={false}
+        style={{ marginBottom: 20 }}
+        columns={[
+          {
+            title: "Appointment Date",
+            dataIndex: "appointmentDate",
+            key: "appointmentDate",
+            render: (text, record) =>
+              moment(record.appointmentDate.toDate()).format("MMMM D, YYYY"),
+          },
+          {
+            title: "Reason",
+            dataIndex: "reasonForAppointment",
+            key: "reasonForAppointment",
+          },
+          {
+            title: "Patient Allergies",
+            dataIndex: "patientAllergies",
+            key: "patientAllergies",
+          },
+          {
+            title: "Patient Family History",
+            dataIndex: "patientFamilyHistory",
+            key: "patientFamilyHistory",
+          },
+          {
+            title: "Diagnosis",
+            dataIndex: "previousDiagnoses",
+            key: "previousDiagnoses",
+          },
+          {
+            title: "Investigations ordered (labs, imaging, etc.)",
+            dataIndex: "investigationsOrdered",
+            key: "investigationsOrdered",
+          },
+          {
+            title: "Treatment plan",
+            dataIndex: "treatmentPlan",
+            key: "treatmentPlan",
+          },
+          {
+            title: "Referrals (if any)",
+            dataIndex: "referrals",
+            key: "referrals",
+          },
+          {
+            title: "Lifestyle recommendations",
+            dataIndex: "lifestyleRecommendations",
+            key: "lifestyleRecommendations",
+          },
+          {
+            title: "Follow-up plan",
+            dataIndex: "followUpPlan",
+            key: "followUpPlan",
+          },
+        ]}
       />
     </Panel>
   );
@@ -112,51 +167,6 @@ function PatientsRecord() {
     const doctor = typesofDoc.find((doc) => doc.value === doctorValue);
     return doctor ? doctor.label : doctorValue;
   };
-
-  const columns = [
-    {
-      title: "Appointment Date",
-      dataIndex: "appointmentDate",
-      key: "appointmentDate",
-      render: (text, record) =>
-        moment(record.appointmentDate.toDate()).format("MMMM D, YYYY"),
-    },
-    {
-      title: "Reason",
-      dataIndex: "reasonForAppointment",
-      key: "reasonForAppointment",
-    },
-    {
-      title: "Diagnosis",
-      dataIndex: "previousDiagnoses",
-      key: "previousDiagnoses",
-    },
-    {
-      title: "Investigations ordered (labs, imaging, etc.)",
-      dataIndex: "investigationsOrdered",
-      key: "investigationsOrdered",
-    },
-    {
-      title: "Treatment plan",
-      dataIndex: "treatmentPlan",
-      key: "treatmentPlan",
-    },
-    {
-      title: "Referrals (if any)",
-      dataIndex: "referrals",
-      key: "referrals",
-    },
-    {
-      title: "Lifestyle recommendations",
-      dataIndex: "lifestyleRecommendations",
-      key: "lifestyleRecommendations",
-    },
-    {
-      title: "Follow-up plan",
-      dataIndex: "followUpPlan",
-      key: "followUpPlan",
-    },
-  ];
 
   return (
     <div className="overflow-x-auto top-0 left-0 right-0 bottom-0 p-4 bg-white">

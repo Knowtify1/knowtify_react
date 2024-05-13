@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../../../config/firebase.jsx";
 import { EditOutlined } from "@ant-design/icons";
 import { message, Typography, Input, Button } from "antd";
@@ -48,17 +48,18 @@ function AdminAccountDetails() {
     try {
       const userId = auth.currentUser.uid;
       const userRef = doc(db, "admin_accounts", userId);
-      await updateDoc(userRef, updatedDetails);
-      setUserDetails(updatedDetails);
+      await setDoc(userRef, updatedDetails, { merge: true }); // Use setDoc instead of updateDoc
 
       // Save changes to users_accounts_records
       const userRecordsRef = doc(db, "users_accounts_records", userId);
-      await updateDoc(userRecordsRef, updatedDetails);
+      await setDoc(userRecordsRef, updatedDetails, { merge: true }); // Use setDoc instead of updateDoc
 
+      setUserDetails(updatedDetails);
       setEditing(false);
       message.success("Changes saved successfully.");
     } catch (error) {
       console.error("Error updating document:", error);
+      message.error("Failed to save changes.");
     }
   };
 
@@ -83,7 +84,15 @@ function AdminAccountDetails() {
         <div>
           {!editing ? (
             <div>
-              <Title level={2}>{userDetails.name}</Title>
+              <h1
+                style={{
+                  fontSize: "24px",
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+              >
+                {userDetails.name}
+              </h1>{" "}
               <EditOutlined
                 style={{
                   fontSize: "16px",
@@ -137,6 +146,7 @@ function AdminAccountDetails() {
                 type="primary"
                 htmlType="submit"
                 className="bg-green-600 "
+                onClick={handleSave} // <- Added onClick event for save
               >
                 Save
               </Button>

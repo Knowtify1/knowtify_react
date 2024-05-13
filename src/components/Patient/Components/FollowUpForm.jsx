@@ -49,6 +49,7 @@ const FollowUpForm = () => {
   const [patientDetails, setPatientDetails] = useState({});
   const [showSuccessMessage, setShowSuccessMessage] = useState(false); // State to indicate if success message is shown
   const [appointmentData, setAppointmentData] = useState({}); // State to hold appointment data
+  const [assignedDoctor, setAssignedDoctor] = useState(null);
 
   // Define the success message constant
   const successMessage = "Appointment booked successfully!";
@@ -69,7 +70,8 @@ const FollowUpForm = () => {
             patientaddress: userDetails.patientAddress,
           });
           setPatientDetails(userDetails);
-          // Fetch typeOfDoctor from other collections and set it in the form
+
+          // Fetch typeOfDoctor from "patients" collection
           const appointmentsQuerySnapshot = await getDocs(
             query(
               collection(db, "patients"),
@@ -81,6 +83,19 @@ const FollowUpForm = () => {
             const appointmentData = doc.data();
             previousDoctors.add(appointmentData.typeOfDoctor);
           });
+
+          // Fetch typeOfDoctor from "patientRecords" collection
+          const patientRecordsQuerySnapshot = await getDocs(
+            query(
+              collection(db, "patientRecords"),
+              where("patientName", "==", userDetails.name)
+            )
+          );
+          patientRecordsQuerySnapshot.forEach((doc) => {
+            const recordData = doc.data();
+            previousDoctors.add(recordData.typeOfDoctor);
+          });
+
           settypesofDoc(
             Array.from(previousDoctors).map((doctor) => ({
               value: doctor,
@@ -91,7 +106,7 @@ const FollowUpForm = () => {
           // Fetch assigned doctor
           const assignedDoctorId =
             userDetails.assignedDoctor || userDetails.previousDoctor;
-          setAssignedDoctor(assignedDoctorId);
+          setAssignedDoctor(assignedDoctorId); // Set assigned doctor
           setSelectedDoctor(userDetails.previousDoctor); // Select previous doctor by default
         } else {
           console.log("User details not found.");

@@ -10,11 +10,9 @@ import {
   updateDoc,
   doc,
 } from "../../../config/firebase.jsx";
-import { Collapse, Input, Space, Button } from "antd";
+import { Input, Space, Button, Table } from "antd";
 import { SaveOutlined, EditOutlined } from "@ant-design/icons";
 import moment from "moment";
-
-const { Panel } = Collapse;
 
 function DoctorPatientsRecords() {
   const [authID, setAuthID] = useState(null);
@@ -22,7 +20,6 @@ function DoctorPatientsRecords() {
   const [filteredRecords, setFilteredRecords] = useState([]);
   const [editingKey, setEditingKey] = useState("");
   const [searchName, setSearchName] = useState("");
-  const [highlightedPanelKey, setHighlightedPanelKey] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -44,13 +41,6 @@ function DoctorPatientsRecords() {
       patient.patientName.toLowerCase().includes(searchName.toLowerCase())
     );
     setFilteredRecords(filtered);
-
-    // Highlight the first matching panel
-    if (filtered.length > 0) {
-      setHighlightedPanelKey(filtered[0].id);
-    } else {
-      setHighlightedPanelKey(null);
-    }
   }, [searchName, patientsRecords]);
 
   const fetchPatientsRecords = async (doctorID) => {
@@ -106,17 +96,208 @@ function DoctorPatientsRecords() {
 
   const isEditing = (recordID) => recordID === editingKey;
 
-  // Grouping patient records by patient name
-  const groupedRecords = filteredRecords.reduce((acc, record) => {
-    if (!acc[record.patientName]) {
-      acc[record.patientName] = { ...record, records: [] };
-    }
-    acc[record.patientName].records.push(record);
-    return acc;
-  }, {});
+  const columns = [
+    {
+      title: "Patient Name",
+      dataIndex: "patientName",
+      key: "patientName",
+      sorter: (a, b) => a.patientName.localeCompare(b.patientName),
+    },
+    {
+      title: "Reason for Appointment",
+      dataIndex: "reasonForAppointment",
+      key: "reasonForAppointment",
+    },
+    {
+      title: "Patient Allergies",
+      dataIndex: "patientAllergies",
+      key: "patientAllergies",
+      render: (text, record) => {
+        const editable = isEditing(record.id);
+        return editable ? (
+          <Input
+            value={text}
+            onChange={(e) =>
+              handleInputChange(e, record.id, "patientAllergies")
+            }
+          />
+        ) : (
+          text
+        );
+      },
+    },
+    {
+      title: "Patient Family History",
+      dataIndex: "patientFamilyHistory",
+      key: "patientFamilyHistory",
+      render: (text, record) => {
+        const editable = isEditing(record.id);
+        return editable ? (
+          <Input
+            value={text}
+            onChange={(e) =>
+              handleInputChange(e, record.id, "patientFamilyHistory")
+            }
+          />
+        ) : (
+          text
+        );
+      },
+    },
+    {
+      title: "Diagnosis",
+      dataIndex: "previousDiagnoses",
+      key: "previousDiagnoses",
+      render: (text, record) => {
+        const editable = isEditing(record.id);
+        return editable ? (
+          <Input
+            value={text}
+            onChange={(e) =>
+              handleInputChange(e, record.id, "previousDiagnoses")
+            }
+          />
+        ) : (
+          text
+        );
+      },
+    },
+    {
+      title: "Investigations Ordered",
+      dataIndex: "investigationsOrdered",
+      key: "investigationsOrdered",
+      render: (text, record) => {
+        const editable = isEditing(record.id);
+        return editable ? (
+          <Input
+            value={text}
+            onChange={(e) =>
+              handleInputChange(e, record.id, "investigationsOrdered")
+            }
+          />
+        ) : (
+          text
+        );
+      },
+    },
+    {
+      title: "Treatment Plan",
+      dataIndex: "treatmentPlan",
+      key: "treatmentPlan",
+      render: (text, record) => {
+        const editable = isEditing(record.id);
+        return editable ? (
+          <Input
+            value={text}
+            onChange={(e) => handleInputChange(e, record.id, "treatmentPlan")}
+          />
+        ) : (
+          text
+        );
+      },
+    },
+    {
+      title: "Medications Prescribed",
+      dataIndex: "medicationsPrescribed",
+      key: "medicationsPrescribed",
+      render: (text, record) => {
+        const editable = isEditing(record.id);
+        return editable ? (
+          <Input
+            value={text}
+            onChange={(e) =>
+              handleInputChange(e, record.id, "medicationsPrescribed")
+            }
+          />
+        ) : (
+          text
+        );
+      },
+    },
+    {
+      title: "Referrals",
+      dataIndex: "referrals",
+      key: "referrals",
+      render: (text, record) => {
+        const editable = isEditing(record.id);
+        return editable ? (
+          <Input
+            value={text}
+            onChange={(e) => handleInputChange(e, record.id, "referrals")}
+          />
+        ) : (
+          text
+        );
+      },
+    },
+    {
+      title: "Lifestyle Recommendations",
+      dataIndex: "lifestyleRecommendations",
+      key: "lifestyleRecommendations",
+      render: (text, record) => {
+        const editable = isEditing(record.id);
+        return editable ? (
+          <Input
+            value={text}
+            onChange={(e) =>
+              handleInputChange(e, record.id, "lifestyleRecommendations")
+            }
+          />
+        ) : (
+          text
+        );
+      },
+    },
+    {
+      title: "Follow-up Plan",
+      dataIndex: "followUpPlan",
+      key: "followUpPlan",
+      render: (text, record) => {
+        const editable = isEditing(record.id);
+        return editable ? (
+          <Input
+            value={text}
+            onChange={(e) => handleInputChange(e, record.id, "followUpPlan")}
+          />
+        ) : (
+          text
+        );
+      },
+    },
+    {
+      title: "Action",
+      dataIndex: "action",
+      key: "action",
+      render: (text, record) => {
+        const editable = isEditing(record.id);
+        return editable ? (
+          <Space>
+            <Button
+              type="primary"
+              className="bg-green-600 "
+              onClick={() => handleSave(record.id)}
+              icon={<SaveOutlined />}
+            >
+              Save
+            </Button>
+            <Button onClick={handleCancel}>Cancel</Button>
+          </Space>
+        ) : (
+          <Button
+            type="primary"
+            className="bg-blue-600"
+            onClick={() => handleEdit(record.id)}
+            icon={<EditOutlined />}
+          >
+            Edit
+          </Button>
+        );
+      },
+    },
+  ];
 
   return (
-    <div className="overflow-auto max-h-screen p-2">
+    <div>
       <h2>Doctor's Patients Records</h2>
 
       {/* Search Input */}
@@ -127,148 +308,13 @@ function DoctorPatientsRecords() {
         style={{ marginBottom: "1rem" }}
       />
 
-      {/* Rendering Grouped Patient Records */}
-      <Collapse defaultActiveKey={[]} accordion={false}>
-        {Object.keys(groupedRecords).map((patientName) => (
-          <Panel
-            key={groupedRecords[patientName].id}
-            header={<strong>{patientName}</strong>}
-          >
-            <div>
-              <p>
-                <strong>Patient Name:</strong>{" "}
-                {groupedRecords[patientName].patientName}
-              </p>
-              <p>
-                <strong>Age:</strong> {groupedRecords[patientName].age}
-              </p>
-              <p>
-                <strong>Contact Number:</strong>{" "}
-                {groupedRecords[patientName].contactNo}
-              </p>
-              <p>
-                <strong>Reason:</strong>{" "}
-                {groupedRecords[patientName].reasonForAppointment}
-              </p>
-              <p>
-                <strong>Family History:</strong>{" "}
-                {groupedRecords[patientName].patientFamilyHistory}
-              </p>
-              <p>
-                <strong>History:</strong>{" "}
-                {groupedRecords[patientName].patientHistory}
-              </p>
-              <p>
-                <strong>Allergies:</strong>{" "}
-                {groupedRecords[patientName].patientAllergies}
-              </p>
-            </div>
-            {groupedRecords[patientName].records.map((record) => (
-              <div key={record.id}>
-                <p>
-                  <strong>Appointment Date:</strong>{" "}
-                  {moment(record.appointmentDate.toDate()).format(
-                    "MMMM D, YYYY"
-                  )}
-                </p>
-                <p>
-                  <strong>Appointment Time:</strong>{" "}
-                  <span>
-                    {moment(
-                      record.appointmentTime.replace(/"/g, ""),
-                      "h:mm A"
-                    ).format("h:mm")}{" "}
-                    {moment(
-                      record.appointmentTime.replace(/"/g, ""),
-                      "h:mm A"
-                    ).format("HH:mm") >= "07:00" &&
-                    moment(
-                      record.appointmentTime.replace(/"/g, ""),
-                      "h:mm A"
-                    ).format("HH:mm") < "12:00"
-                      ? "AM"
-                      : "PM"}
-                  </span>
-                </p>
-                <Input
-                  addonBefore={<strong>Reference ID</strong>}
-                  value={record.reference}
-                  onChange={(e) => handleInputChange(e, record.id, "reference")}
-                  disabled={!isEditing(record.id)}
-                />
-                <Input
-                  addonBefore={<strong>Diagnosis</strong>}
-                  value={record.previousDiagnoses}
-                  onChange={(e) =>
-                    handleInputChange(e, record.id, "previousDiagnoses")
-                  }
-                  disabled={!isEditing(record.id)}
-                />
-                <Input
-                  addonBefore={<strong>Treatment plan</strong>}
-                  value={record.treatmentPlan}
-                  onChange={(e) =>
-                    handleInputChange(e, record.id, "treatmentPlan")
-                  }
-                  disabled={!isEditing(record.id)}
-                />
-                <Input
-                  addonBefore={<strong>Medications Prescribed </strong>}
-                  value={record.medicationsPrescribed}
-                  onChange={(e) =>
-                    handleInputChange(e, record.id, "medicationsPrescribed")
-                  }
-                  disabled={!isEditing(record.id)}
-                />
-                <Input
-                  addonBefore={<strong>Referrals (if any)</strong>}
-                  value={record.referrals}
-                  onChange={(e) => handleInputChange(e, record.id, "referrals")}
-                  disabled={!isEditing(record.id)}
-                />
-                <Input
-                  addonBefore={<strong>Follow-up plan</strong>}
-                  value={record.followUpPlan}
-                  onChange={(e) =>
-                    handleInputChange(e, record.id, "followUpPlan")
-                  }
-                  disabled={!isEditing(record.id)}
-                />
-
-                <Space>
-                  <Button
-                    type="success"
-                    onClick={() => handleSave(record.id)}
-                    icon={<SaveOutlined />}
-                    style={{
-                      display: isEditing(record.id) ? "block" : "none",
-                    }}
-                  >
-                    Save
-                  </Button>
-                  <Button
-                    onClick={handleCancel}
-                    style={{
-                      display: isEditing(record.id) ? "block" : "none",
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </Space>
-                <Button
-                  onClick={() => handleEdit(record.id)}
-                  icon={<EditOutlined />}
-                  style={{
-                    display: isEditing(record.id) ? "none" : "block",
-                  }}
-                >
-                  Edit
-                </Button>
-              </div>
-            ))}
-          </Panel>
-        ))}
-      </Collapse>
+      {/* Rendering Table */}
+      <Table
+        dataSource={filteredRecords}
+        columns={columns}
+        rowKey="id"
+        pagination={false}
+      />
     </div>
   );
 }

@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  onAuthStateChanged,
-  signInWithPhoneNumber,
-  RecaptchaVerifier,
-  reauthenticateWithPhoneNumber,
-} from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
 import {
   doc,
   getDoc,
@@ -16,11 +11,14 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "../../../config/firebase.jsx";
 import { EditOutlined } from "@ant-design/icons";
-import { message, Input, Button, Spin } from "antd";
+import { message, Input, Form, Button } from "antd";
 import {
   handleSendCode,
   handleVerifyCode,
 } from "../../../config/signinphone.jsx";
+import { useNavigate } from "react-router-dom";
+import { getAuth, signInWithCredential } from "firebase/auth";
+import { PhoneAuthProvider } from "firebase/auth";
 
 function PatientAccountDetails() {
   const [userDetails, setUserDetails] = useState(null);
@@ -28,8 +26,10 @@ function PatientAccountDetails() {
   const [updatedDetails, setUpdatedDetails] = useState(null);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
-  const [confirmationResult, setConfirmationResult] = useState(null);
   const [codeSent, setCodeSent] = useState(false);
+  const [confirmationResult, setConfirmationResult] = useState(null);
+  const [buttonLoading, setButtonLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -64,36 +64,33 @@ function PatientAccountDetails() {
     setEditing(true);
   };
 
-  const onSendCode = () => {
-    handleSendCode(phoneNumber, setConfirmationResult, setCodeSent);
+  const handleCancel = () => {
+    setEditing(false);
+    setUpdatedDetails(userDetails);
+    setPhoneNumber(""); // Clear input fields
+    setVerificationCode("");
+    setCodeSent(false);
   };
 
-  const onVerifyCode = () => {
-    handleVerifyCode(confirmationResult, verificationCode);
-    if (confirmationResult) {
-      message.success("Phone number verified successfully.");
-    } else {
-      message.error("Failed to verify phone number.");
-    }
-  };
-
-  const handleSave = async () => {
+  const savePhoneNumberDetails = async () => {
     try {
-      const user = auth.currentUser;
-      const credential = signInWithPhoneNumber(
-        auth,
-        phoneNumber,
-        RecaptchaVerifier
-      );
-      await reauthenticateWithPhoneNumber(user, credential);
-
-      const userId = user.uid;
+      const userId = userDetails.uid; // Reusing the old phone number's UID
       const userRef = doc(db, "users_accounts_records", userId);
-      await updateDoc(userRef, updatedDetails);
+
+      // Update user's phone number and name in user's account
+      await updateDoc(userRef, {
+        phone: `+63${phoneNumber}`,
+        name: updatedDetails.name, // Update name
+        // Update any other user details here as needed
+      });
 
       // Update patient_accounts collection
       const patientAccountRef = doc(db, "patient_accounts", userId);
-      await updateDoc(patientAccountRef, updatedDetails);
+      await updateDoc(patientAccountRef, {
+        phone: `+63${phoneNumber}`,
+        name: updatedDetails.name, // Update name
+        // Update any other user details here as needed
+      });
 
       // Update patient's document in patients collection
       const patientQuerySnapshot = await getDocs(
@@ -102,7 +99,11 @@ function PatientAccountDetails() {
 
       patientQuerySnapshot.forEach(async (doc) => {
         const patientRef = doc.ref;
-        await updateDoc(patientRef, { contactNo: updatedDetails.phone });
+        await updateDoc(patientRef, {
+          contactNo: `+63${phoneNumber}`,
+          patientName: updatedDetails.name, // Update patient name
+          // Update any other user details here as needed
+        });
       });
 
       // Update appointments collection
@@ -115,7 +116,11 @@ function PatientAccountDetails() {
 
       appointmentsQuerySnapshot.forEach(async (doc) => {
         const appointmentRef = doc.ref;
-        await updateDoc(appointmentRef, { contactNo: updatedDetails.phone });
+        await updateDoc(appointmentRef, {
+          contactNo: `+63${phoneNumber}`,
+          patientName: updatedDetails.name, // Update patient name
+          // Update any other user details here as needed
+        });
       });
 
       // Update patientRecords collection
@@ -125,14 +130,22 @@ function PatientAccountDetails() {
 
       patientRecordsQuerySnapshot.forEach(async (doc) => {
         const patientRecordRef = doc.ref;
-        await updateDoc(patientRecordRef, { contactNo: updatedDetails.phone });
+        await updateDoc(patientRecordRef, {
+          contactNo: `+63${phoneNumber}`,
+          // Update any other user details here as needed
+        });
       });
 
       // Display success message
       message.success("Changes saved successfully.");
 
       // Update local state
-      setUserDetails(updatedDetails);
+      setUserDetails({
+        ...userDetails,
+        phone: `+63${phoneNumber}`,
+        name: updatedDetails.name, // Update name in local state
+        // Update any other user details in local state as needed
+      });
       setEditing(false);
     } catch (error) {
       console.error("Error updating document:", error);
@@ -142,6 +155,51 @@ function PatientAccountDetails() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUpdatedDetails({ ...updatedDetails, [name]: value });
+  };
+
+  const onSendCode = () => {
+    // Add +63 prefix to the phone number
+    const formattedPhoneNumber = "+63" + phoneNumber;
+    setButtonLoading(true); // Start loading
+    handleSendCode(
+      formattedPhoneNumber,
+      setConfirmationResult,
+      setCodeSent
+    ).finally(() => setButtonLoading(false)); // Stop loading
+  };
+
+  const onVerifyCode = async () => {
+    handleVerifyCode(confirmationResult, verificationCode);
+    if (confirmationResult) {
+      try {
+        const userId = userDetails.uid; // Reusing the old phone number's UID
+        const userRef = doc(db, "users_accounts_records", userId);
+
+        // Update user's phone number in user's account
+        await updateDoc(userRef, { phone: `+63${phoneNumber}` }); // Prefix with "+63"
+
+        // Save the phone number details in other collections
+        savePhoneNumberDetails();
+
+        // Log out current user
+        const auth = getAuth();
+        await auth.signOut();
+
+        // Log in with the new phone number
+        const credential = PhoneAuthProvider.credential(
+          confirmationResult.verificationId,
+          verificationCode
+        );
+        await signInWithCredential(auth, credential);
+
+        navigate("/patientdashboard", { replace: true });
+        console.log("Verify Success");
+      } catch (error) {
+        console.error("Error updating document:", error);
+      }
+    } else {
+      console.log("Failed");
+    }
   };
 
   // Function to format Firestore Timestamp to "Month Day, Year"
@@ -157,7 +215,7 @@ function PatientAccountDetails() {
   return (
     <div>
       {userDetails ? (
-        <div style={{ padding: "20px" }}>
+        <div>
           {!editing ? (
             <div>
               <h1
@@ -172,7 +230,7 @@ function PatientAccountDetails() {
               <EditOutlined
                 style={{
                   fontSize: "16px",
-                  color: "#38a169",
+                  color: "blue",
                   cursor: "pointer",
                 }}
                 onClick={handleEdit}
@@ -194,51 +252,103 @@ function PatientAccountDetails() {
                 value={updatedDetails.name}
                 onChange={handleChange}
               />
-              <Input
-                style={{ marginBottom: "10px" }}
-                placeholder="Phone"
-                name="phone"
-                value={updatedDetails.phone}
-                onChange={handleChange}
-              />
+              <div>
+                <Form>
+                  <Form.Item
+                    label="Phone Number"
+                    name="phoneNumber"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please input your phone number!",
+                      },
+                      { len: 10, message: "Phone number must be 10 digits!" },
+                    ]}
+                  >
+                    <Input
+                      addonBefore="+63"
+                      value={phoneNumber}
+                      onChange={(e) =>
+                        setPhoneNumber(
+                          e.target.value.replace(/\D/, "").slice(0, 10)
+                        )
+                      }
+                    />
+                  </Form.Item>
+                  {!codeSent && (
+                    <div id="recaptcha-container">
+                      {/* Your reCAPTCHA component */}
+                    </div>
+                  )}
 
-              <Button
-                onClick={onSendCode}
-                disabled={!updatedDetails.phone || codeSent}
-                style={{ marginRight: "10px", marginBottom: "10px" }}
-              >
-                Send Verification Code
-              </Button>
-              <Input
-                style={{ marginBottom: "10px" }}
-                placeholder="Verification Code"
-                value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value)}
-              />
-              <Button
-                onClick={onVerifyCode}
-                disabled={!verificationCode || !codeSent}
-                style={{ marginRight: "10px" }}
-              >
-                Verify Code
-              </Button>
-              <Button
-                type="primary"
-                htmlType="submit"
-                className="bg-green-600 "
-              >
-                Save
-              </Button>
-              <Button onClick={() => setEditing(false)}>Cancel</Button>
+                  <Form.Item
+                    label="Verification Code"
+                    name="verificationCode"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please input the verification code!",
+                      },
+                    ]}
+                  >
+                    <Input
+                      disabled={!codeSent}
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value)}
+                    />
+                  </Form.Item>
+                  <Form.Item>
+                    <Button
+                      type="primary"
+                      className="bg-green-600 w-full"
+                      style={{ marginBottom: "10px" }}
+                      onClick={onSendCode}
+                      disabled={!phoneNumber || codeSent}
+                    >
+                      {buttonLoading ? "Sending..." : "Send Code"}
+                    </Button>
+                    {!codeSent && (
+                      <div id="recaptcha-container">
+                        {/* Render reCAPTCHA component only if code has not been sent */}
+                        {/* Your reCAPTCHA component */}
+                      </div>
+                    )}
+                    <Button
+                      type="primary"
+                      className="bg-green-600 w-full"
+                      style={{ marginBottom: "10px" }}
+                      onClick={onVerifyCode}
+                      disabled={!verificationCode}
+                    >
+                      Verify Code
+                    </Button>
+                    <Button
+                      type="default"
+                      className="bg-gray-400 w-full"
+                      style={{ marginBottom: "10px" }}
+                      onClick={handleCancel}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="primary"
+                      className="bg-blue-600 w-full"
+                      style={{ marginBottom: "10px" }}
+                      onClick={savePhoneNumberDetails}
+                    >
+                      Save
+                    </Button>
+                  </Form.Item>
+                </Form>
+              </div>
             </div>
           )}
         </div>
       ) : (
-        <Spin />
+        <p>Loading...</p>
       )}
-      <div id="recaptcha-container"></div>
     </div>
   );
 }
-////cell
+
 export default PatientAccountDetails;

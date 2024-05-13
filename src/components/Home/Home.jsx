@@ -15,6 +15,7 @@ import resume from "../../assets/resume.png";
 import andre from "../../assets/andre.jpeg";
 import marj from "../../assets/marj.jpeg";
 import { sendSMS } from "../../config/sendSMS";
+import { UserOutlined } from "@ant-design/icons";
 
 function Home() {
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -148,8 +149,8 @@ function Home() {
         </div>
       </Modal>
 
-      <div className="flex-1">
-        <header className="bg-white py-4  fixed w-full z-0">
+      <div className="relative w-full h-full">
+        <header className="bg-white py-4 absolute w-full z-0">
           <div className="container mx-auto flex items-center justify-between px-4 sm:px-10 lg:px-20">
             <img src={knowtifylogov2} alt="knowtifylogo" className="h-12" />
             <div className="flex flex-wrap items-center">
@@ -158,25 +159,33 @@ function Home() {
                 <Button className="text-sm sm:text-base">Find a Doctor</Button>
               </Link>
               <Link to="/login" className="mr-2 sm:mr-4">
-                <Button className="text-sm sm:text-base">Login</Button>
+                <Button className="text-sm sm:text-base">
+                  Login as Doctor
+                </Button>
               </Link>
               <Link to="/register" className="mr-2 sm:mr-6">
                 <Button className="text-sm sm:text-base bg-green-600">
                   Sign Up
                 </Button>
               </Link>
+              <Link to="/login" className="mr-2 sm:mr-6">
+                <Button
+                  icon={<UserOutlined />}
+                  className="text-sm sm:text-base"
+                ></Button>
+              </Link>
             </div>
           </div>
         </header>
 
-        <main className="container mx-30 mt-30 px-40 flex flex-col items-center">
+        <main className="container mx-30 mt-50 px-40 flex flex-col items-center">
           <section>
             <div className=" flex items-center">
-              <div>
-                <h1 className="text-5xl font-bold text-gray-800">
-                  Manage your patients <br></br> in one website.
+              <div className="ml-8 mt-40">
+                <h1 className="text-4xl lg:text-5xl font-bold text-green-900 text-left mb-5">
+                  Manage your patients
+                  <br /> in one website.
                 </h1>
-                <br></br>
                 <p>
                   <CheckOutlined className="text-green-500 mr-2" /> Electronic
                   Medical Records
@@ -190,7 +199,7 @@ function Home() {
                   System
                 </p>
               </div>
-              <div className="p-2">
+              <div className="p-6">
                 <FeatureItem
                   image={
                     <img src={doc2} alt="Image1" className="w-85 max-h-90" />

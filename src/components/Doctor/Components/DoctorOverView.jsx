@@ -23,7 +23,6 @@ import {
   ClockCircleTwoTone,
   ScheduleTwoTone,
 } from "@ant-design/icons";
-import { BellOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -190,34 +189,15 @@ function DoctorOverview() {
     return `Today is ${formattedDate}`;
   };
 
-  const handleNotificationBellClick = () => {
-    setNewAppointmentNotification(false);
-  };
-
   return (
-    <div>
-      <div className="container mx-auto">
-        <div
-          style={{
-            display: "flex",
-            marginBottom: "20px",
-          }}
-        >
-          <h1>{getCurrentDateMessage()}</h1>
-          <Badge dot={newAppointmentNotification}>
-            <BellOutlined
-              style={{
-                fontSize: "24px",
-                cursor: "pointer",
-                marginLeft: "400px",
-              }}
-              onClick={handleNotificationBellClick}
-            />
-          </Badge>
-        </div>
-        <div>
-          <div className="flex flex-wrap justify-center">
-            <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
+    <div className="container mx-auto">
+      <div className="flex justify-center mb-6">
+        <h1 className="text-l">{getCurrentDateMessage()}</h1>
+      </div>
+      <div>
+        <div className="flex flex-wrap justify-center">
+          <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
+            <a href="../doctordashboard/doctorappointment">
               <Card
                 title={<Title level={4}>Assigned Patients</Title>}
                 extra={
@@ -239,16 +219,20 @@ function DoctorOverview() {
                   </Col>
                   <Col span={4}>
                     <div className="text-6xl text-red-600">
-                      {assignedPatientsCount !== null
-                        ? assignedPatientsCount
-                        : "Loading..."}
+                      {assignedPatientsCount !== null ? (
+                        assignedPatientsCount
+                      ) : (
+                        <span style={{ fontSize: "0.5em" }}>Loading...</span>
+                      )}
                     </div>
                   </Col>
                 </Row>
               </Card>
-            </div>
+            </a>
+          </div>
 
-            <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
+          <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
+            <a href="../doctordashboard/doctorappointment">
               <Card
                 title={<Title level={4}>Follow-up Patients</Title>}
                 extra={
@@ -266,14 +250,20 @@ function DoctorOverview() {
                   </Col>
                   <Col span={4}>
                     <div className="text-6xl text-green-600">
-                      {followUpCount !== null ? followUpCount : "Loading..."}
+                      {followUpCount !== null ? (
+                        followUpCount
+                      ) : (
+                        <span style={{ fontSize: "0.5em" }}>Loading...</span>
+                      )}
                     </div>
                   </Col>
                 </Row>
               </Card>
-            </div>
+            </a>
+          </div>
 
-            <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
+          <div className="w-full sm:w-1/2 lg:w-1/3 p-4">
+            <a href="../doctordashboard/doctorappointment">
               <Card
                 title={<Title level={4}>Consultation Patients</Title>}
                 extra={
@@ -291,57 +281,65 @@ function DoctorOverview() {
                   </Col>
                   <Col span={4}>
                     <div className="text-6xl text-yellow-600">
-                      {consultationCount !== null
-                        ? consultationCount
-                        : "Loading..."}
+                      {consultationCount !== null ? (
+                        consultationCount
+                      ) : (
+                        <span style={{ fontSize: "0.5em" }}>Loading...</span>
+                      )}
                     </div>
                   </Col>
                 </Row>
               </Card>
-            </div>
+            </a>
           </div>
-          <div className="mt-8">
-            <div className="flex">
-              {/* Pie Chart rendering */}
-              <div className="mr-8">{renderPieChart()}</div>
-              <div className="mt-10">
-                <div className="ml-4">
-                  <div className="flex items-center mb-2">
-                    <div className="w-4 h-4 bg-red-500 rounded-full mr-2"></div>
-                    <span>
-                      Assigned Patients -{" "}
-                      {assignedPatientsCount !== null
-                        ? `${assignedPatientsCount} (${(
-                            (assignedPatientsCount / totalAppointmentsCount) *
-                            100
-                          ).toFixed(1)}%)`
-                        : "Loading..."}
-                    </span>
-                  </div>
-                  <div className="flex items-center mb-2">
-                    <div className="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
-                    <span>
-                      Follow-up Patients -{" "}
-                      {followUpCount !== null
-                        ? `${followUpCount} (${(
-                            (followUpCount / totalAppointmentsCount) *
-                            100
-                          ).toFixed(1)}%)`
-                        : "Loading..."}
-                    </span>
-                  </div>
-                  <div className="flex items-center mb-2">
-                    <div className="w-4 h-4 bg-yellow-500 rounded-full mr-2"></div>
-                    <span>
-                      Consultation Patients -{" "}
-                      {consultationCount !== null
-                        ? `${consultationCount} (${(
-                            (consultationCount / totalAppointmentsCount) *
-                            100
-                          ).toFixed(1)}%)`
-                        : "Loading..."}
-                    </span>
-                  </div>
+        </div>
+        <div className="mt-8">
+          <div className="mt-4 ml-20 flex justify-center">
+            {/* Pie Chart rendering */}
+            <div className="mr-8">{renderPieChart()}</div>
+            <div className="mt-10">
+              <div className="ml-4">
+                <div className="flex items-center mb-2">
+                  <div className="w-4 h-4 bg-red-500 rounded-full mr-2"></div>
+                  <span>
+                    Assigned Patients -{" "}
+                    {assignedPatientsCount !== null ? (
+                      `${assignedPatientsCount} (${(
+                        (assignedPatientsCount / totalAppointmentsCount) *
+                        100
+                      ).toFixed(1)}%)`
+                    ) : (
+                      <span style={{ fontSize: "0.5em" }}>Loading...</span>
+                    )}
+                  </span>
+                </div>
+                <div className="flex items-center mb-2">
+                  <div className="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
+                  <span>
+                    Follow-up Patients -{" "}
+                    {followUpCount !== null ? (
+                      `${followUpCount} (${(
+                        (followUpCount / totalAppointmentsCount) *
+                        100
+                      ).toFixed(1)}%)`
+                    ) : (
+                      <span style={{ fontSize: "0.5em" }}>Loading...</span>
+                    )}
+                  </span>
+                </div>
+                <div className="flex items-center mb-2">
+                  <div className="w-4 h-4 bg-yellow-500 rounded-full mr-2"></div>
+                  <span>
+                    Consultation Patients -{" "}
+                    {consultationCount !== null ? (
+                      `${consultationCount} (${(
+                        (consultationCount / totalAppointmentsCount) *
+                        100
+                      ).toFixed(1)}%)`
+                    ) : (
+                      <span style={{ fontSize: "0.5em" }}>Loading...</span>
+                    )}
+                  </span>
                 </div>
               </div>
             </div>

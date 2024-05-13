@@ -5,21 +5,26 @@ import DoctorEMRForms from "./Components/DoctorEMRForms";
 function DoctorEMR() {
   return (
     <>
-      <div className="container mx-auto p-4">
-        <div className="flex flex-col gap-4">
-          <Card
-            title={
-              <h3 className="text-3xl font-semibold text-center ">
-                Patient EMR Record
-              </h3>
-            }
-          >
-            <DoctorEMRForms />
-          </Card>
-          <Card
-            title={<h3 className="text-3xl font-semibold text-center"></h3>}
-          ></Card>
-        </div>
+      <div>
+        <Card
+          className="overflow-auto pl-5" // Set a maximum height and padding
+          style={{
+            width: "100%",
+            height: "auto",
+            backgroundColor: "#fff",
+            boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          <div className="w-full text-center">
+            <h3
+              className="text-3xl font-semibold pt-0"
+              style={{ color: "#333" }}
+            >
+              Patient Records
+            </h3>{" "}
+          </div>
+          <DoctorEMRForms />
+        </Card>
       </div>
     </>
   );

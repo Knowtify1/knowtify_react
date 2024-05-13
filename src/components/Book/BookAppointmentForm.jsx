@@ -137,9 +137,7 @@ function BookAppointmentForm() {
   const handleTypeChange = (value) => {
     const selectedType = value;
     const timeOptions = doctorTimeOptions[selectedType] || [];
-    form.setFieldsValue({
-      timepicker: timeOptions.length > 0 ? timeOptions[0].value : null,
-    });
+
     setAvailableDays(doctorAvailability[selectedType] || []);
   };
 
@@ -147,7 +145,8 @@ function BookAppointmentForm() {
     const {
       patientname,
       contactno,
-      birthdate, // Replace 'age' with 'birthdate'
+      birthdate,
+      gender,
       patientaddress,
       reasonforappointment,
       typedoctor,
@@ -218,6 +217,7 @@ function BookAppointmentForm() {
         typeOfDoctor: typedoctor,
         appointmentDate: appointmentDate,
         appointmentTime: JSON.stringify(timepicker),
+        gender: gender, // Add gender to userData
         approved: false,
         assignedDoctor: "",
         status: "pending",
@@ -276,15 +276,15 @@ function BookAppointmentForm() {
       <div>
         <Form
           labelCol={{
-            span: 24,
+            span: 30,
           }}
           wrapperCol={{
-            span: 24,
+            span: 30,
           }}
           layout="horizontal"
           disabled={componentDisabled}
           style={{
-            maxWidth: 1100,
+            maxWidth: 1300,
           }}
           initialValues={{
             remember: true,
@@ -295,7 +295,7 @@ function BookAppointmentForm() {
           form={form}
         >
           <Row gutter={[10, 10]}>
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item
                 label="Patient Name"
                 name="patientname"
@@ -309,42 +309,7 @@ function BookAppointmentForm() {
                 <Input type="text" />
               </Form.Item>
             </Col>
-
-            <Col span={8}>
-              <Form.Item
-                label="Phone Number"
-                name="contactno"
-                rules={[
-                  { required: true, message: "Please input your phone number" },
-                  {
-                    message:
-                      "Please enter a valid phone number starting with +63",
-                  },
-                ]}
-              >
-                <Input.Group compact>
-                  <Input style={{ width: "25%" }} value="+63" readOnly />
-                  <Form.Item
-                    name={["contactno"]}
-                    noStyle
-                    rules={[
-                      { required: true, message: "Phone number is required" },
-                      {
-                        pattern: /^\d{10}$/, // Updated pattern to match exactly 9 digits
-                        message: "Please enter a valid 9-digit phone number",
-                      },
-                    ]}
-                  >
-                    <Input
-                      style={{ width: "75%" }}
-                      placeholder="Enter your phone number"
-                    />
-                  </Form.Item>
-                </Input.Group>
-              </Form.Item>
-            </Col>
-
-            <Col span={6}>
+            <Col span={12}>
               <Form.Item
                 label="Birthdate"
                 name="birthdate"
@@ -368,7 +333,62 @@ function BookAppointmentForm() {
                 />
               </Form.Item>
             </Col>
-            <Col span={21}>
+            <Col span={12}>
+              <Form.Item
+                label="Phone Number"
+                name="contactno"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please input your phone number",
+                  },
+                  {
+                    message:
+                      "Please enter a valid phone number starting with +63",
+                  },
+                ]}
+              >
+                <Input.Group compact>
+                  <Input style={{ width: "25%" }} value="+63" readOnly />
+                  <Form.Item
+                    name={["contactno"]}
+                    noStyle
+                    rules={[
+                      { required: true, message: "Phone number is required" },
+                      {
+                        pattern: /^\d{10}$/, // Updated pattern to match exactly 9 digits
+                        message: "Please enter a valid 10-digit phone number",
+                      },
+                    ]}
+                  >
+                    <Input
+                      style={{ width: "75%" }}
+                      placeholder="Enter your phone number"
+                    />
+                  </Form.Item>
+                </Input.Group>
+              </Form.Item>
+            </Col>
+
+            <Col span={12}>
+              <Form.Item
+                label="Gender"
+                name="gender"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select your gender!",
+                  },
+                ]}
+              >
+                <Select placeholder="Select Gender">
+                  <Option value="male">Male</Option>
+                  <Option value="female">Female</Option>
+                  <Option value="other">Other</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={24}>
               <Form.Item
                 label="Patient's Address"
                 name="patientaddress"
@@ -392,7 +412,7 @@ function BookAppointmentForm() {
                   </Form.Item>
                   <Form.Item
                     name={["patientaddress", "barangay"]}
-                    noStyleS
+                    noStyle
                     rules={[
                       { required: true, message: "Barangay is required" },
                     ]}
@@ -433,7 +453,7 @@ function BookAppointmentForm() {
                 <Input />
               </Form.Item>
             </Col>
-            <Col span={16}>
+            <Col span={24}>
               <Form.Item
                 label="Type of Doctor to Consult"
                 rules={[{ required: true, message: "Select Type" }]}
@@ -448,9 +468,8 @@ function BookAppointmentForm() {
               </Form.Item>
             </Col>
           </Row>
-
           <Row gutter={[10, 10]}>
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item
                 label="Appointment Date"
                 rules={[{ required: true, message: "Select Date" }]}
@@ -470,8 +489,7 @@ function BookAppointmentForm() {
                 />
               </Form.Item>
             </Col>
-
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item
                 name="timepicker"
                 label="Appointment Time"
@@ -483,20 +501,37 @@ function BookAppointmentForm() {
                   }
                   style={{}}
                   placeholder="Select a time"
-                  disabledDate={(current) => {
-                    const currentTime = dayjs();
+                  disabledTime={(current) => {
                     const selectedDate = form.getFieldValue("adate");
                     if (!selectedDate) return false; // If no date is selected, all times are enabled
+
+                    const currentTime = dayjs();
                     const selectedTime = dayjs(selectedDate)
                       .set("hour", current.hour())
                       .set("minute", current.minute());
-                    return currentTime.isAfter(selectedTime); // Disable times that have already passed
+
+                    const isToday = dayjs(selectedDate).isSame(
+                      currentTime,
+                      "date"
+                    );
+
+                    // Disable times that have already passed if the selected date is today
+                    if (isToday && selectedTime.isBefore(currentTime)) {
+                      return {
+                        disabledHours: () =>
+                          current.hour() < currentTime.hour(),
+                        disabledMinutes: (selectedHour) =>
+                          selectedHour === currentTime.hour()
+                            ? current.minute() <= currentTime.minute()
+                            : false,
+                      };
+                    }
+                    return {};
                   }}
                 />
               </Form.Item>
             </Col>
           </Row>
-
           <Row>
             <Col span={24}>
               <Form.Item

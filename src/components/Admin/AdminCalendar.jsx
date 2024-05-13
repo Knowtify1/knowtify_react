@@ -12,11 +12,11 @@ function AdminCalendar() {
             <AdminFullCalendar />
           </Card>
         </div>
-        <div className="pl-8 pr-8 pb-5 pt-5">
+        {/* <div className="pl-8 pr-8 pb-5 pt-5">
           <Card>
             <AdminDateCalendar />
           </Card>
-        </div>
+        </div> */}
       </div>
     </>
   );

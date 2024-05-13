@@ -7,19 +7,24 @@ import {
   Button,
   Modal,
   Select,
-  message, // Import message from antd
+  message,
+  Form,
 } from "antd";
 import {
+  setDoc,
   doc,
   db,
   collection,
+  getDoc,
   getDocs,
   where,
   query,
   fsTimeStamp,
   runTransaction,
 } from "../../../config/firebase.jsx";
+import { sendSMS } from "../../../config/sendSMS.jsx";
 import moment from "moment";
+import { notification } from "antd";
 
 const { Option } = Select;
 
@@ -34,118 +39,56 @@ const typesofDoc = [
   { value: "Pediatrics", label: "Pediatrics, Vaccines, and Immunizations" },
 ];
 
-function TableApprovedAppointments() {
+const TableApprovedAppointments = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedDoctorType, setSelectedDoctorType] = useState(null);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [doctorsList, setDoctorsList] = useState([]);
+  const [visible, setVisible] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
+  const [form] = Form.useForm();
+  const [selectedRecordKey, setSelectedRecordKey] = useState(null);
 
   const columns = [
-    {
-      title: "Name",
-      dataIndex: "patientName",
-    },
+    { title: "Name", dataIndex: "patientName" },
     {
       title: "Appointment Date",
       dataIndex: "dateOfAppointment",
-      render: (text, record) => (
-        <span>{formatDate(record.appointmentDate)}</span>
-      ),
+      render: (text, record) => formatDate(record.appointmentDate),
     },
     {
       title: "Appointment Time",
       dataIndex: "appointmentTime",
-      render: (text, record) => {
-        const appointmentTime = moment(text, "h:mm A");
-        const timeLabel = appointmentTime.isBetween(
-          moment("6:00 AM", "h:mm A"),
-          moment("11:59 AM", "h:mm A")
-        )
-          ? "AM"
-          : "PM";
-        return (
-          <span>
-            {appointmentTime.format("h:mm")} {timeLabel}
-          </span>
-        );
-      },
+      render: (text, record) => formatAppointmentTime(record.appointmentTime),
     },
-    {
-      title: "Reason",
-      dataIndex: "reasonForAppointment",
-    },
+    { title: "Reason", dataIndex: "reasonForAppointment" },
     {
       title: "Status",
       dataIndex: "status",
-      render: (text) => (
-        <span
-          className={`inline-block px-2 py-1 rounded border ${
-            text === "approved"
-              ? "bg-green-600 text-white"
-              : text === "assigned"
-              ? "bg-blue-600 text-white"
-              : ""
-          }`}
-        >
-          {text}
-        </span>
-      ),
+      render: (text) => renderStatus(text),
     },
-    {
-      title: "Type of Doctor",
-      dataIndex: "typeOfDoctor",
-    },
-    {
-      title: "ReferenceID",
-      dataIndex: "reference",
-    },
-    {
-      title: "Doctor",
-      dataIndex: "assignedDoctor",
-    },
+    { title: "Type of Doctor", dataIndex: "typeOfDoctor" },
+    { title: "ReferenceID", dataIndex: "reference" },
+    { title: "Doctor", dataIndex: "assignedDoctor" },
     {
       title: "Action",
       dataIndex: "action",
-      render: (text, record) => (
-        <Space direction="horizontal">
-          {record.status !== "assigned" && (
-            <>
-              <Button type="link" onClick={() => handleAssign(record)}>
-                Assign
-              </Button>
-            </>
-          )}
-        </Space>
-      ),
+      render: (text, record) => renderActionButtons(record),
     },
   ];
 
-  const formatDate = (date) => {
-    if (date && date.toDate) {
-      const options = { month: "long", day: "numeric", year: "numeric" };
-      return date.toDate().toLocaleDateString(undefined, options);
-    }
-    return "";
-  };
-
-  const fetchApprovedAppointments = async (
-    selectedDate,
-    setData,
-    setLoading
-  ) => {
+  const fetchApprovedAppointments = async (selectedDate) => {
     try {
       let appointmentsQuery = collection(db, "patients");
 
       if (selectedDate) {
         const startOfDayTimestamp = fsTimeStamp.fromDate(
-          new Date(selectedDate.setHours(0, 0, 0, 0))
+          moment(selectedDate).startOf("day").toDate()
         );
         const endOfDayTimestamp = fsTimeStamp.fromDate(
-          new Date(selectedDate.setHours(23, 59, 59, 999))
+          moment(selectedDate).endOf("day").toDate()
         );
 
         appointmentsQuery = query(
@@ -156,30 +99,213 @@ function TableApprovedAppointments() {
       }
 
       const appointmentsSnapshot = await getDocs(appointmentsQuery);
+      const appointmentsData = {};
+      appointmentsSnapshot.docs.forEach((doc) => {
+        const appointment = doc.data();
+        const key = appointment.reference; // Assuming reference is the field name for reference ID
+        if (!appointmentsData[key]) {
+          appointmentsData[key] = [];
+        }
+        appointmentsData[key].push({
+          key: doc.id,
+          ...appointment,
+        });
+      });
 
+      const flattenedData = Object.values(appointmentsData).flatMap(
+        (appointments) => appointments
+      );
+
+      setData(flattenedData);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+      setLoading(false);
+    }
+  };
+
+  const handleDateChange = (date) => {
+    const selectedDate = date ? date.toDate() : null;
+    setSelectedDate(selectedDate);
+
+    fetchAppointments(selectedDate, setData, setLoading);
+  };
+
+  const renderStatus = (text) => (
+    <span
+      className={`inline-block px-2 py-1 rounded border ${
+        text === "approved"
+          ? "bg-green-600 text-white"
+          : text === "assigned"
+          ? "bg-blue-600 text-white"
+          : ""
+      }`}
+    >
+      {text}
+    </span>
+  );
+
+  const formatAppointmentTime = (time) => {
+    const appointmentTime = moment(time, "h:mm A");
+    const timeLabel = appointmentTime.isBetween(
+      moment("6:00 AM", "h:mm A"),
+      moment("11:59 AM", "h:mm A")
+    )
+      ? "AM"
+      : "PM";
+    return (
+      <span>
+        {appointmentTime.format("h:mm")} {timeLabel}
+      </span>
+    );
+  };
+
+  const formatDate = (date) =>
+    date
+      ? date.toDate().toLocaleDateString(undefined, {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "";
+
+  const renderActionButtons = (record) => (
+    <Space direction="horizontal">
+      {record.status !== "assigned" && (
+        <>
+          <Button
+            type="primary"
+            style={{ backgroundColor: "green", borderColor: "green" }}
+            onClick={() => handleAssign(record)}
+          >
+            Assign
+          </Button>
+          <Button
+            type="primary"
+            style={{ backgroundColor: "blue", borderColor: "blue" }}
+            onClick={() => showModal(record)}
+          >
+            Reschedule
+          </Button>
+        </>
+      )}
+    </Space>
+  );
+
+  const showModal = (record) => {
+    if (!record || !record.key) {
+      console.error("Record or record key is undefined.");
+      return;
+    }
+
+    setSelectedRecordKey(record.key);
+
+    setVisible(true);
+
+    form.setFieldsValue({
+      key: record.key,
+      dateOfAppointment: moment(record.dateOfAppointment),
+      appointmentTime: moment(record.appointmentTime, "h:mm A"),
+    });
+  };
+
+  useEffect(() => {
+    fetchAppointments(selectedDate, setData, setLoading);
+  }, [selectedDate]);
+
+  const onSelectChange = (newSelectedRowKeys) => {
+    console.log("selectedRowKeys changed: ", newSelectedRowKeys);
+    setSelectedRowKeys(newSelectedRowKeys);
+  };
+
+  const updateAppointmentInTable = (values) => {
+    const { key, dateOfAppointment, appointmentTime } = values;
+    const newData = [...data];
+    const index = newData.findIndex((item) => key === item.key);
+    if (index > -1) {
+      newData[index].dateOfAppointment = dateOfAppointment;
+      newData[index].dateOfAppointment = dateOfAppointment.toDate();
+      // Ensure appointmentTime is in the correct format
+      const formattedAppointmentTime = moment(
+        appointmentTime,
+        "HH:mm A"
+      ).format("h:mm A");
+      newData[index].appointmentTime = formattedAppointmentTime;
+      setData(newData);
+    }
+  };
+
+  const handleOk = async () => {
+    try {
+      const values = await form.validateFields();
+      updateAppointmentInTable(values);
+      const { key, dateOfAppointment, appointmentTime } = values;
+      const appointmentRef = doc(db, "patients", key);
+      await setDoc(
+        appointmentRef,
+        {
+          appointmentDate: dateOfAppointment.toDate(),
+          appointmentTime: moment(appointmentTime, "HH:mm").format("h:mm A"),
+        },
+        { merge: true }
+      );
+
+      // Generate message with selected date and time from the modal
+      const appointmentSnapshot = await getDoc(appointmentRef);
+      const appointmentData = appointmentSnapshot.data();
+      const contactNo = appointmentData.contactNo; // Assuming contactNo is the field name for the contact number
+      const patientName = appointmentData.patientName; // Assuming patientName is the field name for the patient's name
+      const formattedDate = dateOfAppointment.format("MMMM D, YYYY");
+      const formattedTime = moment(appointmentTime, "HH:mm").format("h:mm A"); // Format time to 12-hour format
+      const message = `Good day, ${patientName}! Your booking with Mountain Top Specialty Clinic has been rescheduled on Date: ${formattedDate}, Time: ${formattedTime}. Please be at the clinic 5 minutes before your appointment schedule. Thank you!`;
+      sendSMS(contactNo, message); // Send SMS
+      setVisible(false);
+      message.success("Appointment rescheduled successfully!");
+    } catch (error) {
+      console.error("Validation failed:", error);
+    }
+  };
+
+  const timeSlots = [
+    "7:00",
+    "8:00",
+    "9:00",
+    "10:00",
+    "11:00",
+    "12:00",
+    "13:00",
+    "14:00",
+    "15:00",
+    "16:00",
+    "17:00",
+  ];
+
+  const fetchAppointments = async (selectedDate) => {
+    try {
+      let appointmentsQuery = collection(db, "patients");
+
+      if (selectedDate) {
+        const startOfDayTimestamp = fsTimeStamp.fromDate(
+          moment(selectedDate).startOf("day").toDate()
+        );
+        const endOfDayTimestamp = fsTimeStamp.fromDate(
+          moment(selectedDate).endOf("day").toDate()
+        );
+
+        appointmentsQuery = query(
+          appointmentsQuery,
+          where("appointmentDate", ">=", startOfDayTimestamp),
+          where("appointmentDate", "<=", endOfDayTimestamp)
+        );
+      }
+
+      const appointmentsSnapshot = await getDocs(appointmentsQuery);
       const appointmentsData = appointmentsSnapshot.docs.map((doc) => ({
         key: doc.id,
         ...doc.data(),
       }));
-
-      // Sort appointmentsData based on appointmentDate and appointmentTime
-      appointmentsData.sort((a, b) => {
-        const dateComparison = b.appointmentDate - a.appointmentDate;
-
-        if (dateComparison === 0) {
-          // If the dates are equal, compare by appointmentTime
-          const timeA = moment(a.appointmentTime, "HH:mm");
-          const timeB = moment(b.appointmentTime, "HH:mm");
-          return timeA.isBefore(timeB) ? -1 : timeA.isAfter(timeB) ? 1 : 0;
-        }
-
-        return dateComparison;
-      });
-
-      if (typeof setData === "function") {
-        setData(appointmentsData);
-        setLoading(false);
-      }
+      setData(appointmentsData);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching appointments:", error);
       setLoading(false);
@@ -203,7 +329,13 @@ function TableApprovedAppointments() {
   };
 
   const handleAssign = (record) => {
+    if (!record || !record.key) {
+      console.error("Record or record key is undefined.");
+      return;
+    }
+
     setSelectedPatient(record);
+
     setIsModalVisible(true);
 
     const typeOfDoctor = record.typeOfDoctor || null;
@@ -242,14 +374,14 @@ function TableApprovedAppointments() {
     }
     setIsModalVisible(false);
   };
-  const handleModalCancel = () => {
-    setIsModalVisible(false);
+
+  const handleCancel = () => {
+    form.resetFields();
+    setVisible(false);
   };
 
-  const handleDateChange = (date) => {
-    const selectedDate = date ? date.toDate() : null;
-    setSelectedDate(selectedDate);
-    fetchApprovedAppointments(selectedDate, setData, setLoading);
+  const handleModalCancel = () => {
+    setIsModalVisible(false);
   };
 
   useEffect(() => {
@@ -280,38 +412,33 @@ function TableApprovedAppointments() {
 
   return (
     <>
-      <div className="container mx-auto px-4">
-        <Space direction="vertical" size={4} className="md:flex md:flex-col">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <h1 className="mr-2">Select Appointment Date:</h1>
+      <div>
+        <Space direction="vertical" size={25} className="flex">
+          <Space direction="horizontal" size={250}>
+            <Space direction="horizontal">
+              <h1>Select Appointment Date:</h1>
               <DatePicker onChange={handleDateChange} />
-            </div>
-            <div className="flex items-center">
-              <h1 className="mr-2">Approved Appointments: {data.length}</h1>
-              <h1>{getCurrentDateMessage()}</h1>
-            </div>
-          </div>
-
+            </Space>
+            <h1>{getCurrentDateMessage()}</h1>
+            <h1>Approved Appointments: {data.length}</h1>
+          </Space>
           {loading ? (
-            <div className="flex justify-center">
-              <Spin size="large" />
-            </div>
+            <Spin size="small" className="block" />
           ) : (
             <Table
               columns={columns}
               dataSource={data}
-              pagination={{ pageSize: 5 }}
+              pagination={{ pageSize: 3 }}
               scroll={{ x: true }} // Enable horizontal scrolling
             />
           )}
-
           <Modal
             title="Select Doctor"
             visible={isModalVisible}
             onOk={handleModalOk}
             onCancel={handleModalCancel}
-            okButtonProps={{ className: "bg-green-500" }}
+            cancelButtonProps={{ style: { color: "green" } }}
+            okButtonProps={{ className: "bg-green-700" }}
           >
             <Select
               style={{ width: "100%" }}
@@ -328,10 +455,47 @@ function TableApprovedAppointments() {
               ))}
             </Select>
           </Modal>
+
+          <Modal
+            title="Edit Appointment"
+            visible={visible}
+            onOk={handleOk}
+            onCancel={handleCancel}
+            cancelButtonProps={{ style: { color: "green" } }}
+            okButtonProps={{ className: "bg-green-700" }}
+          >
+            <Form form={form} layout="vertical" initialValues={{}}>
+              <Form.Item name="key" hidden>
+                <input type="hidden" />
+              </Form.Item>
+              <Form.Item
+                name="dateOfAppointment"
+                label="Appointment Date"
+                rules={[{ required: true, message: "Please select a date" }]}
+              >
+                <DatePicker />
+              </Form.Item>
+
+              <Form.Item
+                name="appointmentTime"
+                label="Appointment Time"
+                rules={[{ required: true, message: "Please select a time" }]}
+                style={{ marginBottom: 0 }}
+              >
+                <Select>
+                  {timeSlots.map((slot) => (
+                    <Option key={slot} value={slot}>
+                      {moment(slot, "HH:mm").format("h:mm A")}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Form>
+          </Modal>
         </Space>
       </div>
     </>
   );
-}
+};
 
 export default TableApprovedAppointments;

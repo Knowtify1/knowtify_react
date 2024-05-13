@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { auth } from "../../config/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+} from "firebase/auth";
 import { Button, Card, Form, Input, Space, Modal, Spin, Checkbox } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import { doc, db, getDoc } from "../../config/firebase";
-import { LoadingOutlined, QuestionCircleOutlined } from "@ant-design/icons";
+import {
+  LoadingOutlined,
+  QuestionCircleOutlined,
+  HomeOutlined,
+} from "@ant-design/icons"; // Import HomeOutlined from Ant Design Icons
 
 const Login = () => {
   const navigate = useNavigate();
@@ -103,15 +110,23 @@ const Login = () => {
   };
 
   return (
-    <div className=" flex items-center justify-center">
+    <div>
       {showSpinner && (
         <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-white bg-opacity-70 z-50">
           <h1>Logging In</h1>
           <Spin indicator={<LoadingOutlined />} size="large" />
         </div>
       )}
+
       <Card
-        title="Login"
+        title={
+          <div>
+            <Link to="/" className=" top-3 left-80">
+              <Button type="link" icon={<HomeOutlined />} />
+            </Link>
+            Login
+          </div>
+        }
         bordered={true}
         style={{ width: 350 }}
         className="drop-shadow-md mt-20"
@@ -127,6 +142,7 @@ const Login = () => {
             }}
             style={{
               maxWidth: 300,
+              textAlign: "left", // Align form elements left
             }}
             initialValues={{
               remember: true,
@@ -192,31 +208,10 @@ const Login = () => {
             </Form.Item>
           </Form>
 
-          <div className="text-center mt-2">
-            <Link to="/registerphone">
-              <Button
-                type="primary"
-                style={{ marginBottom: "10px" }}
-                className="bg-green-600 w-full"
-              >
-                Patient Login
-              </Button>
-            </Link>
-          </div>
-
           <h3 className="w-full text-center">
             Don't have an account? <Space />
             <Link to="/register">Sign Up</Link>
           </h3>
-
-          <div className="text-center mt-2">
-            <Button
-              type="link"
-              onClick={() => setForgotPasswordModalVisible(true)}
-            >
-              Forgot Password?
-            </Button>
-          </div>
 
           <Modal
             title="Forgot Password"

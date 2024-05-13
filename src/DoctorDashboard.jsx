@@ -76,7 +76,7 @@ function DoctorDashboard() {
           style={{ ...siderStyle, width: collapsed ? 250 : 500 }}
           theme={darkTheme ? "dark" : "light"}
           collapsed={collapsed}
-          width={250}
+          width={255}
         >
           <div style={logo}>
             <div style={logoIconStyle}>
@@ -86,13 +86,9 @@ function DoctorDashboard() {
           <DoctorMenu />
         </Sider>
         <Layout>
-          <Header style={headerStyle}>
+          {/* <Header style={headerStyle}>
             <div className="flex items-center">
               <Space direction="horizontal" size={10}>
-                <Button
-                  icon={collapsed ? <MenuOutlined /> : <LeftOutlined />}
-                  onClick={toggleSidebar}
-                />
                 <h1>Welcome Doctor!</h1>
               </Space>
             </div>
@@ -100,7 +96,7 @@ function DoctorDashboard() {
             <Button onClick={toggleTheme}>
               {darkTheme ? "Light" : "Dark"} Mode
             </Button>
-          </Header>
+          </Header> */}
           <div className="p-4">
             <Outlet />
           </div>

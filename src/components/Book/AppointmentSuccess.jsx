@@ -1,82 +1,63 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
-import { Card, Spin, Space, Button, Form, Input } from "antd";
+import { Card, Spin, Button, Form, Input, Select } from "antd";
 import {
   setDoc,
   doc,
   db,
   collection,
   addDoc,
-  getDoc,
-  getDocs,
-  where,
-  query,
   fsTimeStamp,
-  deleteDoc,
-  auth,
 } from "../../config/firebase.jsx";
 import { handleSendCode, handleVerifyCode } from "../../config/signinphone.jsx";
+import { HomeOutlined } from "@ant-design/icons";
+
+const { Option } = Select;
+
 function AppointmentSuccess() {
   const location = useLocation();
   const { appointmentData } = location.state;
   const { phone } = location.state;
-  const [appointmentID, setAppointmentID] = useState("");
-  const [appointmentDetails, setAppointmentDetails] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [showAppointmentDetails, setShowAppointmentDetails] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState(phone);
   const [verificationCode, setVerificationCode] = useState("");
   const [confirmationResult, setConfirmationResult] = useState(null);
   const [PatientAuthID, setPatientAuthID] = useState("");
   const [codeSent, setCodeSent] = useState(false);
   const [verifying, setVerifying] = useState(false);
-  const [register, setregister] = useState(false);
+  const [register, setRegister] = useState(false);
+  const [verificationInitiated, setVerificationInitiated] = useState(false);
+  const [creatingAppointment, setCreatingAppointment] = useState(false);
+  const [showAppointmentDetails, setShowAppointmentDetails] = useState(false);
+  const [assignedDoctor, setAssignedDoctor] = useState("");
 
-  const [buttonLoading, setButtonLoading] = useState(false); // State to manage button loading state
   const onSendCode = () => {
     handleSendCode(phoneNumber, setConfirmationResult, setCodeSent);
   };
+
   const onVerifyCode = async () => {
     setVerifying(true);
     handleVerifyCode(confirmationResult, verificationCode, setPatientAuthID);
     if (confirmationResult) {
       saveAppointment();
-      setVerifying(false);
-      setregister(true);
-    } else {
-      setShowAppointmentDetails(false);
     }
+    setVerificationInitiated(true);
+    setVerifying(false);
   };
-  useEffect(() => {
-    setPhoneNumber(phone);
-  }, [phone]);
+
   const saveAppointment = async () => {
-    const myDoc = collection(db, "appointments");
-    try {
-      const docref = await addDoc(myDoc, appointmentData);
-      setAppointmentID(docref.id);
-      console.log("appointment ID: " + docref.id);
-      console.log(appointmentID);
-    } catch (error) {
-      console.log(error);
+    if (!creatingAppointment) {
+      setCreatingAppointment(true);
+      const myDoc = collection(db, "appointments");
+      try {
+        const docref = await addDoc(myDoc, appointmentData);
+        console.log("appointment ID: " + docref.id);
+      } catch (error) {
+        console.error("Error saving appointment:", error);
+      } finally {
+        setCreatingAppointment(false);
+      }
     }
   };
-  // const fetchAppointmentDetails = async () => {
-  //   try {
-  //     const appointmentDoc = doc(collection(db, "appointments"), appointmentID);
-  //     const snapshot = await getDoc(appointmentDoc);
-  //     if (snapshot.exists()) {
-  //       setAppointmentDetails(snapshot.data());
-  //       console.error("Appointment found");
-  //     } else {
-  //       console.error("Appointment not found");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching appointment details", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   const createPatientCollection = async () => {
     console.log("ID: " + PatientAuthID);
     const dateofregistration = fsTimeStamp.now();
@@ -87,11 +68,10 @@ function AppointmentSuccess() {
       type: "patient",
       referenceId: appointmentData.reference,
       phone: phone,
-      age: appointmentData.age, // Assuming age is part of appointmentData
+      age: appointmentData.age,
       patientAddress: appointmentData.patientAddress,
       dateofregistration: dateofregistration,
     };
-    console.log("patientData: " + patientData);
     const patientsCollection = collection(db, "patient_accounts");
     const patientsDocRef = doc(patientsCollection, `${PatientAuthID}`);
     try {
@@ -106,10 +86,11 @@ function AppointmentSuccess() {
       await setDoc(users_accountsDocRef, patientData);
       console.log("users_accounts_records: firestore success");
     } catch (error) {
-      console.log(error);
+      console.error("Error creating user accounts record:", error);
     }
     setShowAppointmentDetails(true);
   };
+
   return (
     <>
       {showAppointmentDetails ? (
@@ -117,7 +98,7 @@ function AppointmentSuccess() {
           <div className="relative p-4 justify-center items-center ">
             <Card
               title="Appointment Details"
-              style={{ width: "80%" }}
+              style={{ width: "99%" }}
               className="p-8 mb-4"
             >
               <div className="rounded-md bg-gray-500 p-2 flex items-center justify-center">
@@ -166,18 +147,16 @@ function AppointmentSuccess() {
                 </Link>
               </div>
               <div className="mt-4">
-                <p className="text-lg mb-2">
-                  You can now login to your account.
-                </p>
-              <Link to="/patientdashboard">
-                <Button
-                  type="primary"
-                  className="bg-blue-500 hover:bg-blue-700"
-                >
-                  Login
-                </Button>
-              </Link>
-            </div>
+                <p className="text-lg mb-2">or Login to your account.</p>
+                <Link to="/patientdashboard">
+                  <Button
+                    type="primary"
+                    className="bg-blue-500 hover:bg-blue-700"
+                  >
+                    Login
+                  </Button>
+                </Link>
+              </div>
               {/* <div className="mt-6">
             <p className="text-lg mb-2">
               Upon a successful appointment, you will receive a confirmation
@@ -196,16 +175,21 @@ function AppointmentSuccess() {
             </p>
           </div> */}
             </Card>
-           
           </div>
         </div>
       ) : (
         <Card
-          title="Verify Phone"
+          title={
+            <div>
+              <Link to="/" className=" top-3 left-80">
+                <Button type="link" icon={<HomeOutlined />} />
+              </Link>
+              Verify Phone
+            </div>
+          }
           bordered={true}
-          style={{ width: 350 }}
+          style={{ width: 400 }}
           className="drop-shadow-md mt-20"
-          headStyle={{ textAlign: "center" }}
         >
           <div
             style={{
@@ -230,6 +214,9 @@ function AppointmentSuccess() {
                   disabled={!codeSent}
                   onChange={(e) => setVerificationCode(e.target.value)}
                 />
+                <div style={{ color: "red", marginTop: "5px" }}>
+                  Please click "Send Code" to send verification code.
+                </div>
               </Form.Item>
               <Form.Item>
                 <Button
@@ -252,7 +239,7 @@ function AppointmentSuccess() {
                     className="bg-green-600 w-full"
                     style={{ marginBottom: "10px" }}
                     onClick={onVerifyCode}
-                    disabled={!verificationCode}
+                    disabled={!verificationCode || verificationInitiated}
                   >
                     Verify Code
                   </Button>
@@ -261,8 +248,6 @@ function AppointmentSuccess() {
                   type="primary"
                   className="bg-green-600 w-full"
                   onClick={createPatientCollection}
-                  disabled={!register}
-                  loading={buttonLoading} // Set loading state for the button
                 >
                   Register
                 </Button>
@@ -274,4 +259,5 @@ function AppointmentSuccess() {
     </>
   );
 }
+
 export default AppointmentSuccess;

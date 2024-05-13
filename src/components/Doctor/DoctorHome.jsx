@@ -116,14 +116,9 @@ function DoctorHome() {
   return (
     <>
       <div className="w-full text-center">
-        <div className="w-full text-center">
-          <h3 className="text-3xl font-semibold pt-0" style={{ color: "#333" }}>
-            Doctor Overview
-          </h3>{" "}
-        </div>
         <DoctorSetSpecialty />
         <Card
-          className="overflow-auto max-h-screen pl-5" // Set a maximum height and padding
+          className="overflow-auto pl-5" // Set a maximum height and padding
           style={{
             width: "100%",
             height: "auto",
@@ -131,6 +126,9 @@ function DoctorHome() {
             boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
           }}
         >
+          <h3 className="text-3xl font-semibold pt-0" style={{ color: "#333" }}>
+            Doctor Overview
+          </h3>{" "}
           <DoctorOverview />
         </Card>
         {/* <Card

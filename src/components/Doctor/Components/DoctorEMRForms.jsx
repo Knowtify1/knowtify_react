@@ -66,7 +66,7 @@ function DoctorEMRForms() {
   };
 
   const onCancel = () => {
-    navigate("../doctorpatientrecord");
+    navigate("../doctorappointment");
   };
 
   const formatDate = (date) => {
@@ -80,93 +80,172 @@ function DoctorEMRForms() {
   return (
     <>
       <div>
-        <Row gutter={[4, 4]} justify="center">
-          <Col span={10}>
-            <Card title="Patient Details">
-              {patientEMRData ? (
-                <div>
-                  <p>
-                    <strong>Patient Name:</strong> {patientEMRData.patientName}
-                  </p>
-                  <p>
-                    <strong>Age:</strong> {patientEMRData.age}
-                  </p>
-                  <p>
-                    <strong>Contact Number:</strong> {patientEMRData.contactNo}
-                  </p>
-                  <p>
-                    <strong>Appointment Date:</strong>{" "}
-                    {formatDate(patientEMRData.appointmentDate)}
-                  </p>
-                  <p>
-                    <strong>Appointment Time:</strong>{" "}
-                    {patientEMRData.appointmentTime.replace(/"/g, "")}
-                  </p>
-                  <p>
-                    <strong>Reason:</strong>{" "}
-                    {patientEMRData.reasonForAppointment}
-                  </p>
-                  <p>
-                    <strong>Allergies:</strong>{" "}
-                    {patientEMRData.patientAllergies}
-                  </p>
-                  <p>
-                    <strong>Family History:</strong>{" "}
-                    {patientEMRData.patientFamilyHistory}
-                  </p>
-                  <p>
-                    <strong>History:</strong> {patientEMRData.patientHistory}
-                  </p>
-                </div>
-              ) : (
-                <p>No Data</p>
-              )}
-            </Card>
-          </Col>
-          <Col span={14}>
-            <Card title="Medical Information">
-              <Form
-                name="medicalInformationForm"
-                onFinish={onFinish}
-                className="space-y-4"
-              >
-                <Form.Item name="previousDiagnoses" label="Diagnosis">
-                  <Input.TextArea />
-                </Form.Item>
-                <Form.Item
-                  name="investigationsOrdered"
-                  label="Investigations ordered (labs, imaging, etc.)"
-                >
-                  <Input.TextArea />
-                </Form.Item>
-                <Form.Item name="treatmentPlan" label="Treatment plan">
-                  <Input.TextArea />
-                </Form.Item>
-                <Form.Item name="medicationsPrescribed" label="Prescriptions">
-                  <Input.TextArea />
-                </Form.Item>
-                <Form.Item name="referrals" label="Referrals (if any)">
-                  <Input.TextArea />
-                </Form.Item>
-                <Form.Item
-                  name="lifestyleRecommendations"
-                  label="Lifestyle recommendations"
-                >
-                  <Input.TextArea />
-                </Form.Item>
-                <Form.Item name="followUpPlan" label="Follow-up plan">
-                  <Input.TextArea />
-                </Form.Item>
-                <Form.Item className="flex justify-center">
-                  <Button type="success" onClick={onCancel} className="mr-4">
-                    Cancel
-                  </Button>
-                  <Button type="success" htmlType="submit">
-                    Save
-                  </Button>
-                </Form.Item>
-              </Form>
-            </Card>
+        <Row gutter={[8, 8]} justify="center">
+          <Col span={24}>
+            {patientEMRData ? (
+              <div>
+                <p>
+                  <strong>Patient Name:</strong> {patientEMRData.patientName}
+                </p>
+                <p>
+                  <strong>Age:</strong> {patientEMRData.age}
+                </p>
+                <p>
+                  <strong>Contact Number:</strong> {patientEMRData.contactNo}
+                </p>
+                <p>
+                  <strong>Appointment Date:</strong>{" "}
+                  {formatDate(patientEMRData.appointmentDate)}
+                </p>
+                <p>
+                  <strong>Appointment Time:</strong>{" "}
+                  {patientEMRData.appointmentTime.replace(/"/g, "")}
+                </p>
+              </div>
+            ) : (
+              <p>No Data</p>
+            )}
+            <Form
+              name="medicalInformationForm"
+              onFinish={onFinish}
+              layout="vertical"
+            >
+              <Row>
+                <Col span={12}>
+                  <Row gutter={[8, 8]}>
+                    <Col span={24}>
+                      <Form.Item
+                        label="Allergies:"
+                        name="patientAllergies"
+                        style={{ marginBottom: 0 }}
+                        labelCol={{ span: 16 }}
+                        wrapperCol={{ span: 22 }}
+                      >
+                        <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
+                      </Form.Item>
+                    </Col>
+                    <Col span={24}>
+                      <Form.Item
+                        label="Family History:"
+                        name="patientFamilyHistory"
+                        style={{ marginBottom: 0 }}
+                        labelCol={{ span: 16 }}
+                        wrapperCol={{ span: 22 }}
+                      >
+                        <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
+                      </Form.Item>
+                    </Col>
+                    <Col span={24}>
+                      <Form.Item
+                        label="Diagnosis:"
+                        name="previousDiagnoses"
+                        style={{ marginBottom: 0 }}
+                        labelCol={{ span: 16 }}
+                        wrapperCol={{ span: 22 }}
+                      >
+                        <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
+                      </Form.Item>
+                    </Col>
+                    <Col span={24}>
+                      <Form.Item
+                        label="Treatment plan:"
+                        name="treatmentPlan"
+                        style={{ marginBottom: 0 }}
+                        labelCol={{ span: 16 }}
+                        wrapperCol={{ span: 22 }}
+                      >
+                        <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                </Col>
+                <Col span={12}>
+                  <Row gutter={[8, 8]}>
+                    <Col span={24}>
+                      <Form.Item
+                        label="Prescriptions:"
+                        name="medicationsPrescribed"
+                        style={{ marginBottom: 0 }}
+                        labelCol={{ span: 16 }}
+                        wrapperCol={{ span: 22 }}
+                      >
+                        <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
+                      </Form.Item>
+                    </Col>
+                    <Col span={24}>
+                      <Form.Item
+                        label="Investigations order (labs, imaging, etc.):"
+                        name="investigationsOrdered"
+                        style={{ marginBottom: 0 }}
+                        labelCol={{ span: 16 }}
+                        wrapperCol={{ span: 22 }}
+                      >
+                        <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
+                      </Form.Item>
+                    </Col>
+                    <Col span={24}>
+                      <Form.Item
+                        label="Referrals (if any):"
+                        name="referrals"
+                        style={{ marginBottom: 0 }}
+                        labelCol={{ span: 16 }}
+                        wrapperCol={{ span: 22 }}
+                      >
+                        <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
+                      </Form.Item>
+                    </Col>
+                    <Col span={24}>
+                      <Form.Item
+                        label="Lifestyle recommendations:"
+                        name="lifestyleRecommendations"
+                        style={{ marginBottom: 0 }}
+                        labelCol={{ span: 16 }}
+                        wrapperCol={{ span: 22 }}
+                      >
+                        <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
+                      </Form.Item>
+                    </Col>
+                    <Col span={24}>
+                      <Form.Item
+                        label="Follow-up plan:"
+                        name="followUpPlan"
+                        style={{ marginBottom: 0 }}
+                        labelCol={{ span: 16 }}
+                        wrapperCol={{ span: 22 }}
+                      >
+                        <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
+              <Row justify="center">
+                <Col>
+                  <br></br>
+                  <Form.Item>
+                    <Button
+                      type="primary"
+                      style={{
+                        backgroundColor: "green",
+                        borderColor: "green",
+                      }}
+                      htmlType="submit"
+                      className="mr-4"
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      type="primary"
+                      style={{ backgroundColor: "gray" }}
+                      onClick={onCancel}
+                      className="mr-4"
+                    >
+                      Cancel
+                    </Button>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Form>
           </Col>
         </Row>
       </div>

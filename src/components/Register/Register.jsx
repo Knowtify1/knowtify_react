@@ -5,7 +5,7 @@ import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
 } from "firebase/auth";
-import { Button, Form, Input, Card, Select, Spin, message } from "antd";
+import { Button, Form, Input, Card, Select, Space, message } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import {
   auth,
@@ -18,6 +18,7 @@ import {
   where,
   query,
 } from "../../config/firebase.jsx";
+import { HomeOutlined } from "@ant-design/icons";
 
 function Register() {
   const navigate = useNavigate();
@@ -121,7 +122,12 @@ function Register() {
   };
 
   const onFinish = async (values) => {
-    const { name, email, password, role, referenceId, phone } = values; // Destructure referenceId from values
+    const { name, email, password, confirmPassword, role, referenceId, phone } =
+      values; // Destructure referenceId from values
+    if (password !== confirmPassword) {
+      message.error("Passwords do not match");
+      return;
+    }
     try {
       setLoading(true);
 
@@ -177,6 +183,7 @@ function Register() {
         .catch((error) => {
           const errorCode = error.code;
           const errorMessage = error.message;
+          message.error(errorMessage);
         })
         .finally(() => {
           setLoading(false);
@@ -214,9 +221,16 @@ function Register() {
 
   return (
     <Card
-      title="Register"
+      title={
+        <div>
+          <Link to="/" className=" top-3 left-80">
+            <Button type="link" icon={<HomeOutlined />} />
+          </Link>
+          Register
+        </div>
+      }
       bordered={true}
-      style={{ width: 350 }}
+      style={{ width: 500 }}
       className="drop-shadow-md mt-20"
     >
       <div>
@@ -229,7 +243,7 @@ function Register() {
             span: 16,
           }}
           style={{
-            maxWidth: 300,
+            maxWidth: 450,
           }}
           initialValues={{
             remember: true,
@@ -275,6 +289,28 @@ function Register() {
           >
             <Input.Password />
           </Form.Item>
+          <Form.Item
+            label="Confirm Password"
+            name="confirmPassword"
+            rules={[
+              {
+                required: true,
+                message: "Please confirm your password!",
+              },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("password") === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(
+                    "The two passwords that you entered do not match!"
+                  );
+                },
+              }),
+            ]}
+          >
+            <Input.Password />
+          </Form.Item>
 
           <Form.Item
             label="Role"
@@ -288,7 +324,7 @@ function Register() {
           >
             <Select placeholder="Select a role" onChange={handleRoleChange}>
               <Select.Option value="doctor">Doctor</Select.Option>
-              <Select.Option value="admin">Secretary</Select.Option>
+              <Select.Option value="admin">Admin</Select.Option>
               {/* <Select.Option value="patient">Patient</Select.Option> */}
             </Select>
           </Form.Item>
@@ -327,6 +363,10 @@ function Register() {
             </Button>
           </Form.Item>
         </Form>
+        <h3 className="w-full text-center">
+          Already have an accout? <Space />
+          <Link to="/login">Login</Link>
+        </h3>
       </div>
     </Card>
   );

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Input, Button, Table, Space, Modal } from "antd";
+import { Input, Card, message } from "antd";
 import {
   auth,
   db,
@@ -26,6 +26,7 @@ function PatientRecords() {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editedPatient, setEditedPatient] = useState(null);
   const [showPatientInfo, setShowPatientInfo] = useState(false); // State for controlling the visibility of patient information
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -148,6 +149,9 @@ function PatientRecords() {
         setPatientHistory("");
         setPatientFamilyHistory("");
         setPatientAllergies("");
+
+        // Display success message
+        message.success("Patient data saved successfully!", 5);
       } catch (error) {
         console.error("Error updating documents: ", error);
       }
@@ -160,67 +164,80 @@ function PatientRecords() {
     setPatientAllergies(patient.patientAllergies);
   };
 
-  const columns = [
-    {
-      title: "Patient History",
-      dataIndex: "patientHistory",
-      key: "patientHistory",
-    },
-    {
-      title: "Patient Family History",
-      dataIndex: "patientFamilyHistory",
-      key: "patientFamilyHistory",
-    },
-    {
-      title: "Patient Allergies",
-      dataIndex: "patientAllergies",
-      key: "patientAllergies",
-    },
-    {
-      title: "Action",
-      key: "action",
-      render: (text, record) => (
-        <Space size="middle">
-          <Button onClick={() => handleEdit(record)}>Edit</Button>
-        </Space>
-      ),
-    },
-  ];
+  // const columns = [
+  //   {
+  //     title: "Patient History",
+  //     dataIndex: "patientHistory",
+  //     key: "patientHistory",
+  //   },
+  //   {
+  //     title: "Patient Family History",
+  //     dataIndex: "patientFamilyHistory",
+  //     key: "patientFamilyHistory",
+  //   },
+  //   {
+  //     title: "Patient Allergies",
+  //     dataIndex: "patientAllergies",
+  //     key: "patientAllergies",
+  //   },
+  //   {
+  //     title: "Action",
+  //     key: "action",
+  //     render: (text, record) => (
+  //       <Space size="middle">
+  //         <Button onClick={() => handleEdit(record)}>Edit</Button>
+  //       </Space>
+  //     ),
+  //   },
+  // ];
 
   return (
     <>
-      <div className="container mx-auto p-2">
+      <div className="container mx-auto p-0">
+        {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
         <div className="flex flex-col gap-0">
-          <div className="w-full text-center">
-            <h3
-              className="text-3xl font-semibold pt-5"
-              style={{ color: "#333" }}
-            >
-              Patient Records
-            </h3>{" "}
-          </div>
-          <br></br>
-          <div className="container mx-auto p-4">
-            {userDetails && (
-              <div>
-                <p>
-                  <strong>Patient Name:</strong> {userDetails.name}
-                </p>
-                <p>
-                  <strong>Age:</strong> {userDetails.age}
-                </p>
-                <p>
-                  <strong>Contact No.:</strong> {userDetails.phone}
-                </p>
-                <p>
-                  <strong>Address:</strong>{" "}
-                  {`${userDetails.patientAddress.street}, ${userDetails.patientAddress.barangay}, ${userDetails.patientAddress.city}, ${userDetails.patientAddress.province}`}
-                </p>
+          <Card
+            className="overflow-auto pl-0" // Set a maximum height and padding
+            style={{
+              idth: "100%",
+              height: "700px",
+              backgroundColor: "#fff",
+              boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            <div>
+              <div className="w-full text-center">
+                <h3
+                  className="text-3xl font-semibold pt-3"
+                  style={{ color: "#333" }}
+                >
+                  Patient Records
+                  <br></br>
+                  <br></br>
+                </h3>{" "}
               </div>
-            )}
-          </div>
+              {userDetails && (
+                <div className="pl-5">
+                  <p>
+                    <strong>Patient Name:</strong> {userDetails.name}
+                  </p>
+                  <p>
+                    <strong>Age:</strong> {userDetails.age}
+                  </p>
+                  <p>
+                    <strong>Contact No.:</strong> {userDetails.phone}
+                  </p>
+                  <p>
+                    <strong>Address:</strong>{" "}
+                    {`${userDetails.patientAddress.street}, ${userDetails.patientAddress.barangay}, ${userDetails.patientAddress.city}, ${userDetails.patientAddress.province}`}
+                  </p>
+                </div>
+              )}
+            </div>
+            <PatientsRecord />
+          </Card>
 
-          <div className="container mx-auto p-2">
+          {/* <div className="container mx-auto p-2">
             <h4>
               <Button
                 type="link"
@@ -248,11 +265,14 @@ function PatientRecords() {
                   value={patientAllergies}
                   onChange={handleAllergiesChange}
                 />
-                <div className="py-4">
-        <Button type="primary" onClick={onFinish} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-          Save
-        </Button>
-      </div>
+                <Button
+                  type="primary"
+                  className="bg-green-600 w-full"
+                  style={{ marginBottom: "10px" }}
+                  onClick={onFinish}
+                >
+                  Save
+                </Button>
                 <Table
                   dataSource={patients.slice(0, 1)}
                   columns={columns}
@@ -260,8 +280,8 @@ function PatientRecords() {
                 />
               </div>
             )}
-          </div>
-          <PatientsRecord patients={patients} handleEdit={handleEdit} />
+          </div> */}
+          {/* <PatientsRecord patients={patients} handleEdit={handleEdit} /> */}
         </div>
       </div>
     </>

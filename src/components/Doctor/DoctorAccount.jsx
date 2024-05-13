@@ -31,7 +31,12 @@ function DoctorAccount() {
             <DoctorAccountDetails />
           </div>
           <br></br>
-          <Button type="default" danger onClick={handleSignOut}>
+          <Button
+            type="primary"
+            style={{ backgroundColor: "red", borderColor: "red" }}
+            onClick={handleSignOut}
+            block
+          >
             Logout
           </Button>
         </Card>
