@@ -32,15 +32,15 @@ import { signOut as firebaseSignOut } from "firebase/auth";
 // };
 
 // //new database
-// const firebaseConfig = {
-//   apiKey: "AIzaSyDIEKWWYJxzcAS2hdW33M2nIQ5NXr3xz-Y",
-//   authDomain: "knowtifyreact-40261.firebaseapp.com",
-//   projectId: "knowtifyreact-40261",
-//   storageBucket: "knowtifyreact-40261.appspot.com",
-//   messagingSenderId: "321426561979",
-//   appId: "1:321426561979:web:b7cd69ddd4c3d2b85d429e",
-//   measurementId: "G-ML5FKN5143",
-// };
+const firebaseConfig = {
+  apiKey: "AIzaSyDIEKWWYJxzcAS2hdW33M2nIQ5NXr3xz-Y",
+  authDomain: "knowtifyreact-40261.firebaseapp.com",
+  projectId: "knowtifyreact-40261",
+  storageBucket: "knowtifyreact-40261.appspot.com",
+  messagingSenderId: "321426561979",
+  appId: "1:321426561979:web:b7cd69ddd4c3d2b85d429e",
+  measurementId: "G-ML5FKN5143",
+};
 
 //my database
 // const firebaseConfig = {
@@ -53,16 +53,16 @@ import { signOut as firebaseSignOut } from "firebase/auth";
 //   measurementId: "G-0Z0TV248GG",
 // };
 
-//jamie db
-const firebaseConfig = {
-  apiKey: "AIzaSyA6b71w-JOqN8wBH0irAfpQavyEziwDIr8",
-  authDomain: "knowtify-88f77.firebaseapp.com",
-  databaseURL: "https://knowtify-88f77-default-rtdb.firebaseio.com",
-  projectId: "knowtify-88f77",
-  storageBucket: "knowtify-88f77.appspot.com",
-  messagingSenderId: "940363058064",
-  appId: "1:940363058064:web:33c5bfeebf8b1f63980115",
-};
+// //jamie db
+// const firebaseConfig = {
+//   apiKey: "AIzaSyA6b71w-JOqN8wBH0irAfpQavyEziwDIr8",
+//   authDomain: "knowtify-88f77.firebaseapp.com",
+//   databaseURL: "https://knowtify-88f77-default-rtdb.firebaseio.com",
+//   projectId: "knowtify-88f77",
+//   storageBucket: "knowtify-88f77.appspot.com",
+//   messagingSenderId: "940363058064",
+//   appId: "1:940363058064:web:33c5bfeebf8b1f63980115",
+// };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
