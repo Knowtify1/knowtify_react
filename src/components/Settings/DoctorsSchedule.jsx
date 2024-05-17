@@ -62,11 +62,11 @@ const typesofDoc = [
     label: "Obstetrics and Gynecology",
   },
   {
-    value: "Physical",
+    value: "Pediatrics",
     label: "Pediatrics, Vaccines, and Immunizations",
   },
   {
-    value: "Pediatrics",
+    value: "Physical",
     label: "Physical Medicine and Rehabilitation",
   },
 ];

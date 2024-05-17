@@ -31,7 +31,7 @@ import { signOut as firebaseSignOut } from "firebase/auth";
 //   appId: "1:1081865848898:web:db17d9ef1a3ac18f3185db",
 // };
 
-// //new database
+//new database
 const firebaseConfig = {
   apiKey: "AIzaSyDIEKWWYJxzcAS2hdW33M2nIQ5NXr3xz-Y",
   authDomain: "knowtifyreact-40261.firebaseapp.com",
@@ -53,7 +53,7 @@ const firebaseConfig = {
 //   measurementId: "G-0Z0TV248GG",
 // };
 
-// //jamie db
+//jamie db
 // const firebaseConfig = {
 //   apiKey: "AIzaSyA6b71w-JOqN8wBH0irAfpQavyEziwDIr8",
 //   authDomain: "knowtify-88f77.firebaseapp.com",

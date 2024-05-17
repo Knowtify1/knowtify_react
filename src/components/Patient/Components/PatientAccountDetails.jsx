@@ -17,8 +17,7 @@ import {
   handleVerifyCode,
 } from "../../../config/signinphone.jsx";
 import { useNavigate } from "react-router-dom";
-import { getAuth, signInWithCredential } from "firebase/auth";
-import { PhoneAuthProvider } from "firebase/auth";
+import { getAuth, PhoneAuthProvider, updatePhoneNumber } from "firebase/auth";
 
 function PatientAccountDetails() {
   const [userDetails, setUserDetails] = useState(null);
@@ -75,36 +74,34 @@ function PatientAccountDetails() {
   const savePhoneNumberDetails = async () => {
     try {
       const userId = userDetails.uid; // Reusing the old phone number's UID
-      const userRef = doc(db, "users_accounts_records", userId);
+      const newPhoneNumber = `+63${phoneNumber}`;
 
       // Update user's phone number and name in user's account
-      await updateDoc(userRef, {
-        phone: `+63${phoneNumber}`,
+      await updateDoc(doc(db, "users_accounts_records", userId), {
+        phone: newPhoneNumber,
         name: updatedDetails.name, // Update name
-        // Update any other user details here as needed
       });
 
       // Update patient_accounts collection
-      const patientAccountRef = doc(db, "patient_accounts", userId);
-      await updateDoc(patientAccountRef, {
-        phone: `+63${phoneNumber}`,
+      await updateDoc(doc(db, "patient_accounts", userId), {
+        phone: newPhoneNumber,
         name: updatedDetails.name, // Update name
-        // Update any other user details here as needed
       });
 
       // Update patient's document in patients collection
       const patientQuerySnapshot = await getDocs(
-        query(collection(db, "patients"), where("userId", "==", userId))
+        query(
+          collection(db, "patients"),
+          where("patientName", "==", userDetails.name)
+        )
       );
 
-      patientQuerySnapshot.forEach(async (doc) => {
-        const patientRef = doc.ref;
-        await updateDoc(patientRef, {
-          contactNo: `+63${phoneNumber}`,
+      for (const doc of patientQuerySnapshot.docs) {
+        await updateDoc(doc.ref, {
+          contactNo: newPhoneNumber,
           patientName: updatedDetails.name, // Update patient name
-          // Update any other user details here as needed
         });
-      });
+      }
 
       // Update appointments collection
       const appointmentsQuerySnapshot = await getDocs(
@@ -114,27 +111,26 @@ function PatientAccountDetails() {
         )
       );
 
-      appointmentsQuerySnapshot.forEach(async (doc) => {
-        const appointmentRef = doc.ref;
-        await updateDoc(appointmentRef, {
-          contactNo: `+63${phoneNumber}`,
+      for (const doc of appointmentsQuerySnapshot.docs) {
+        await updateDoc(doc.ref, {
+          contactNo: newPhoneNumber,
           patientName: updatedDetails.name, // Update patient name
-          // Update any other user details here as needed
         });
-      });
+      }
 
       // Update patientRecords collection
       const patientRecordsQuerySnapshot = await getDocs(
-        query(collection(db, "patientRecords"), where("userId", "==", userId))
+        query(
+          collection(db, "patientRecords"),
+          where("patientName", "==", userDetails.name)
+        )
       );
 
-      patientRecordsQuerySnapshot.forEach(async (doc) => {
-        const patientRecordRef = doc.ref;
-        await updateDoc(patientRecordRef, {
-          contactNo: `+63${phoneNumber}`,
-          // Update any other user details here as needed
+      for (const doc of patientRecordsQuerySnapshot.docs) {
+        await updateDoc(doc.ref, {
+          contactNo: newPhoneNumber,
         });
-      });
+      }
 
       // Display success message
       message.success("Changes saved successfully.");
@@ -142,9 +138,8 @@ function PatientAccountDetails() {
       // Update local state
       setUserDetails({
         ...userDetails,
-        phone: `+63${phoneNumber}`,
+        phone: newPhoneNumber,
         name: updatedDetails.name, // Update name in local state
-        // Update any other user details in local state as needed
       });
       setEditing(false);
     } catch (error) {
@@ -158,41 +153,30 @@ function PatientAccountDetails() {
   };
 
   const onSendCode = () => {
-    // Add +63 prefix to the phone number
     const formattedPhoneNumber = "+63" + phoneNumber;
-    setButtonLoading(true); // Start loading
+    setButtonLoading(true);
     handleSendCode(
       formattedPhoneNumber,
       setConfirmationResult,
       setCodeSent
-    ).finally(() => setButtonLoading(false)); // Stop loading
+    ).finally(() => setButtonLoading(false));
   };
 
   const onVerifyCode = async () => {
-    handleVerifyCode(confirmationResult, verificationCode);
     if (confirmationResult) {
       try {
-        const userId = userDetails.uid; // Reusing the old phone number's UID
-        const userRef = doc(db, "users_accounts_records", userId);
-
-        // Update user's phone number in user's account
-        await updateDoc(userRef, { phone: `+63${phoneNumber}` }); // Prefix with "+63"
-
-        // Save the phone number details in other collections
-        savePhoneNumberDetails();
-
-        // Log out current user
         const auth = getAuth();
-        await auth.signOut();
-
-        // Log in with the new phone number
         const credential = PhoneAuthProvider.credential(
           confirmationResult.verificationId,
           verificationCode
         );
-        await signInWithCredential(auth, credential);
 
-        navigate("/patientdashboard", { replace: true });
+        // Update phone number without logging out
+        await updatePhoneNumber(auth.currentUser, credential);
+
+        // Save the phone number details in other collections
+        await savePhoneNumberDetails();
+
         console.log("Verify Success");
       } catch (error) {
         console.error("Error updating document:", error);
@@ -202,7 +186,6 @@ function PatientAccountDetails() {
     }
   };
 
-  // Function to format Firestore Timestamp to "Month Day, Year"
   const formatDate = (timestamp) => {
     const date = timestamp.toDate();
     return new Intl.DateTimeFormat("en-US", {
