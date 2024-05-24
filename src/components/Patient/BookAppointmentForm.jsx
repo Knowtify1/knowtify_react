@@ -501,14 +501,9 @@ const BookAppointmentForm = () => {
                   className="bg-green-600 w-2/4 "
                   htmlType="submit"
                   loading={buttonLoading} // Set loading state for the button
-                  disabled={
-                    doctorTimeOptions[form.getFieldValue("typedoctor")] &&
-                    doctorTimeOptions[form.getFieldValue("typedoctor")]
-                      .length === 0
-                  }
+                  disabled={buttonLoading} // Disable the button if loading
                 >
-                  {" "}
-                  Book Appointment
+                  Submit
                 </Button>
               </Form.Item>
             </Col>

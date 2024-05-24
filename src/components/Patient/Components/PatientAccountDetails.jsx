@@ -129,6 +129,7 @@ function PatientAccountDetails() {
       for (const doc of patientRecordsQuerySnapshot.docs) {
         await updateDoc(doc.ref, {
           contactNo: newPhoneNumber,
+          patientName: updatedDetails.name, // Update patient name
         });
       }
 

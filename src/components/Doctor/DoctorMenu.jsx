@@ -71,7 +71,7 @@ function DoctorMenu() {
     top: 80, // Adjust as needed
     left: 0, // Adjust as needed
     bottom: 0, // Adjust as needed
-    width: 255,
+    width: 220,
     backgroundColor: darkTheme ? "#001529" : "#fff", // Adjust background color
     overflowY: "auto", // Enable scrolling if necessary
   };

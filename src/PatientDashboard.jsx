@@ -43,7 +43,7 @@ export function PatientDashboard() {
         <Sider
           theme={darkTheme ? "dark" : "light"}
           collapsed={collapsed}
-          width={200}
+          width={220}
         >
           <div style={logo}>
             <div style={logoIconStyle}>

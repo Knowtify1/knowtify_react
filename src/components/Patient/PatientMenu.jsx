@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, signOut } from "../../config/firebase";
@@ -12,7 +11,6 @@ import {
 } from "@ant-design/icons";
 import { Menu, Space } from "antd";
 import { useTheme } from "../../ThemeContext";
-
 
 const items = [
   {
@@ -83,7 +81,7 @@ function PatientMenu() {
     top: 80, // Adjust as needed
     left: 0, // Adjust as needed
     bottom: 0, // Adjust as needed
-    width: 200,
+    width: 220,
     backgroundColor: darkTheme ? "#001529" : "#fff", // Adjust background color
     overflowY: "auto", // Enable scrolling if necessary
   };

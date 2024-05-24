@@ -111,6 +111,7 @@ const AdminFullCalendar = () => {
                   <span
                     className="clickable-badge"
                     onClick={() => handleDateSelect(current, appointment)}
+                    style={{ fontSize: "12px", color: "green" }}
                   >
                     {(() => {
                       const appointmentTime = moment(

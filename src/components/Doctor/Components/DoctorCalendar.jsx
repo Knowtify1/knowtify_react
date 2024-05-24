@@ -92,16 +92,22 @@ function DoctorCalendar() {
         formattedDate
     );
 
+    // Adjust cell size based on the number of appointments
+    const cellStyle = {
+      height: `${filteredAppointments.length * 10}px`, // Adjust the height as needed
+    };
+
     return (
-      <ul className="events">
+      <div className="calendar-cell" style={cellStyle}>
         {filteredAppointments.map((appointment) => (
-          <li key={appointment.id}>
+          <div key={appointment.id} className="appointment-item">
             <Badge
               status="success"
               text={
                 <span
                   className="clickable-badge"
                   onClick={() => handleDateSelect(current, appointment)}
+                  style={{ fontSize: "12px" }} // Increase badge font size
                 >
                   {(() => {
                     const appointmentTime = moment(
@@ -112,17 +118,25 @@ function DoctorCalendar() {
                     const formattedTime = appointmentTime.format("hh:mm");
 
                     if (hour >= 7 && hour < 12) {
-                      return `${formattedTime} am - ${appointment.patientName}`;
+                      return (
+                        <span style={{ color: "green" }}>
+                          {formattedTime} am - {appointment.patientName}
+                        </span>
+                      );
                     } else {
-                      return `${formattedTime} pm - ${appointment.patientName}`;
+                      return (
+                        <span style={{ color: "green" }}>
+                          {formattedTime} pm - {appointment.patientName}
+                        </span>
+                      );
                     }
                   })()}
                 </span>
               }
             />
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     );
   };
 
@@ -166,7 +180,9 @@ function DoctorCalendar() {
           >
             {selectedPatient && (
               <Space direction="vertical" size={10}>
-                <p>Patient Name: {selectedPatient.patientName}</p>
+                <p style={{ color: "green" }}>
+                  Patient Name: {selectedPatient.patientName}
+                </p>
                 <p>
                   Appointment Date:{" "}
                   {moment(selectedPatient.appointmentDate.toDate()).format(

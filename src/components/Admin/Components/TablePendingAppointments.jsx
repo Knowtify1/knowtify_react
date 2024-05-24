@@ -315,10 +315,15 @@ function TablePendingAppointments() {
         }
       });
 
-      const uniqueAppointmentsData = Object.values(uniqueAppointments);
+      // Sort appointments based on their createdDate in descending order
+      const sortedAppointments = Object.values(uniqueAppointments).sort(
+        (a, b) => {
+          return b.createdDate - a.createdDate;
+        }
+      );
 
       if (typeof setData === "function") {
-        setData(uniqueAppointmentsData);
+        setData(sortedAppointments);
         setLoading(false);
       }
     } catch (error) {

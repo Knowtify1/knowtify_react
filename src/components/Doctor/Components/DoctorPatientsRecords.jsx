@@ -115,7 +115,8 @@ function DoctorPatientsRecords() {
       render: (text, record) => {
         const editable = isEditing(record.id);
         return editable ? (
-          <Input
+          <Input.TextArea
+            autoSize={{ minRows: 3, maxRows: 8 }}
             value={text}
             onChange={(e) =>
               handleInputChange(e, record.id, "patientAllergies")
@@ -133,7 +134,8 @@ function DoctorPatientsRecords() {
       render: (text, record) => {
         const editable = isEditing(record.id);
         return editable ? (
-          <Input
+          <Input.TextArea
+            autoSize={{ minRows: 3, maxRows: 8 }}
             value={text}
             onChange={(e) =>
               handleInputChange(e, record.id, "patientFamilyHistory")
@@ -151,7 +153,8 @@ function DoctorPatientsRecords() {
       render: (text, record) => {
         const editable = isEditing(record.id);
         return editable ? (
-          <Input
+          <Input.TextArea
+            autoSize={{ minRows: 3, maxRows: 8 }}
             value={text}
             onChange={(e) =>
               handleInputChange(e, record.id, "previousDiagnoses")
@@ -169,7 +172,8 @@ function DoctorPatientsRecords() {
       render: (text, record) => {
         const editable = isEditing(record.id);
         return editable ? (
-          <Input
+          <Input.TextArea
+            autoSize={{ minRows: 3, maxRows: 8 }}
             value={text}
             onChange={(e) =>
               handleInputChange(e, record.id, "investigationsOrdered")
@@ -187,7 +191,8 @@ function DoctorPatientsRecords() {
       render: (text, record) => {
         const editable = isEditing(record.id);
         return editable ? (
-          <Input
+          <Input.TextArea
+            autoSize={{ minRows: 3, maxRows: 8 }}
             value={text}
             onChange={(e) => handleInputChange(e, record.id, "treatmentPlan")}
           />
@@ -203,7 +208,8 @@ function DoctorPatientsRecords() {
       render: (text, record) => {
         const editable = isEditing(record.id);
         return editable ? (
-          <Input
+          <Input.TextArea
+            autoSize={{ minRows: 3, maxRows: 8 }}
             value={text}
             onChange={(e) =>
               handleInputChange(e, record.id, "medicationsPrescribed")
@@ -221,7 +227,8 @@ function DoctorPatientsRecords() {
       render: (text, record) => {
         const editable = isEditing(record.id);
         return editable ? (
-          <Input
+          <Input.TextArea
+            autoSize={{ minRows: 3, maxRows: 8 }}
             value={text}
             onChange={(e) => handleInputChange(e, record.id, "referrals")}
           />
@@ -237,7 +244,8 @@ function DoctorPatientsRecords() {
       render: (text, record) => {
         const editable = isEditing(record.id);
         return editable ? (
-          <Input
+          <Input.TextArea
+            autoSize={{ minRows: 3, maxRows: 8 }}
             value={text}
             onChange={(e) =>
               handleInputChange(e, record.id, "lifestyleRecommendations")
@@ -255,7 +263,8 @@ function DoctorPatientsRecords() {
       render: (text, record) => {
         const editable = isEditing(record.id);
         return editable ? (
-          <Input
+          <Input.TextArea
+            autoSize={{ minRows: 3, maxRows: 8 }}
             value={text}
             onChange={(e) => handleInputChange(e, record.id, "followUpPlan")}
           />

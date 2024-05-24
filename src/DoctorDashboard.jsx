@@ -76,7 +76,7 @@ function DoctorDashboard() {
           style={{ ...siderStyle, width: collapsed ? 250 : 500 }}
           theme={darkTheme ? "dark" : "light"}
           collapsed={collapsed}
-          width={255}
+          width={220}
         >
           <div style={logo}>
             <div style={logoIconStyle}>

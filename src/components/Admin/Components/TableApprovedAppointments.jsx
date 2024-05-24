@@ -99,24 +99,17 @@ const TableApprovedAppointments = () => {
       }
 
       const appointmentsSnapshot = await getDocs(appointmentsQuery);
-      const appointmentsData = {};
-      appointmentsSnapshot.docs.forEach((doc) => {
-        const appointment = doc.data();
-        const key = appointment.reference; // Assuming reference is the field name for reference ID
-        if (!appointmentsData[key]) {
-          appointmentsData[key] = [];
-        }
-        appointmentsData[key].push({
-          key: doc.id,
-          ...appointment,
-        });
+      const appointmentsData = appointmentsSnapshot.docs.map((doc) => ({
+        key: doc.id,
+        ...doc.data(),
+      }));
+
+      // Sort appointments based on their createdDate in descending order
+      const sortedAppointments = appointmentsData.sort((a, b) => {
+        return b.createdDate - a.createdDate;
       });
 
-      const flattenedData = Object.values(appointmentsData).flatMap(
-        (appointments) => appointments
-      );
-
-      setData(flattenedData);
+      setData(sortedAppointments);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching appointments:", error);

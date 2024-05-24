@@ -20,7 +20,7 @@ export const handleSendCode = async (
     message.success("Verification code sent successfully!");
   } catch (error) {
     console.error(error);
-    message.error("Failed to send verification code");
+    // message.error("Failed to send verification code");
   }
 };
 

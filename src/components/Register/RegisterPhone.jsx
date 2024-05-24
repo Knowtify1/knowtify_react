@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Form, Input, Card } from "antd";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { handleSendCode, handleVerifyCode } from "../../config/signinphone.jsx";
+import { HomeOutlined } from "@ant-design/icons";
 
 function RegisterPhone() {
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -11,30 +12,40 @@ function RegisterPhone() {
   const navigate = useNavigate();
   const [buttonLoading, setButtonLoading] = useState(false); // State to manage button loading state
 
-  const onSendCode = () => {
-    // Add +63 prefix to the phone number
-    const formattedPhoneNumber = "+63" + phoneNumber;
-    setButtonLoading(true); // Start loading
-    handleSendCode(
-      formattedPhoneNumber,
-      setConfirmationResult,
-      setCodeSent
-    ).finally(() => setButtonLoading(false)); // Stop loading
-  };
+  useEffect(() => {
+    if (phoneNumber.length === 10 && !codeSent) {
+      // Send verification code when phone number is 10 digits and code is not sent
+      const formattedPhoneNumber = "+63" + phoneNumber;
+      setButtonLoading(true); // Start loading
+      handleSendCode(
+        formattedPhoneNumber,
+        setConfirmationResult,
+        setCodeSent
+      ).finally(() => setButtonLoading(false)); // Stop loading
+    }
+  }, [phoneNumber, codeSent]); // Trigger effect when phoneNumber or codeSent changes
 
   const onVerifyCode = () => {
-    handleVerifyCode(confirmationResult, verificationCode);
-    if (confirmationResult) {
-      navigate("/patientdashboard", { replace: true });
-      console.log("Verify Success");
-    } else {
-      console.log("Failed");
-    }
+    handleVerifyCode(confirmationResult, verificationCode).then(() => {
+      if (confirmationResult) {
+        navigate("/patientdashboard", { replace: true });
+        console.log("Verify Success");
+      } else {
+        console.log("Failed");
+      }
+    });
   };
 
   return (
     <Card
-      title="Sign In Phone"
+      title={
+        <div>
+          <Link to="/" className="top-3 left-80">
+            <Button type="link" icon={<HomeOutlined />} />
+          </Link>
+          Sign In Phone
+        </div>
+      }
       bordered={true}
       style={{ width: 350 }}
       className="drop-shadow-md mt-20"
@@ -58,7 +69,7 @@ function RegisterPhone() {
               />
             </Form.Item>
             {!codeSent && (
-              <div id="recaptcha-container">
+              <div id="recaptcha-container" style={{ display: "none" }}>
                 {/* Your reCAPTCHA component */}
               </div>
             )}
@@ -83,21 +94,6 @@ function RegisterPhone() {
                 type="primary"
                 className="bg-green-600 w-full"
                 style={{ marginBottom: "10px" }}
-                onClick={onSendCode}
-                disabled={!phoneNumber || codeSent}
-              >
-                Send Code
-              </Button>
-              {!codeSent && (
-                <div id="recaptcha-container">
-                  {/* Your reCAPTCHA component */}
-                </div>
-              )}
-
-              <Button
-                type="primary"
-                className="bg-green-600 w-full"
-                style={{ marginBottom: "10px" }}
                 onClick={onVerifyCode}
                 disabled={!verificationCode}
               >
@@ -106,7 +102,7 @@ function RegisterPhone() {
             </Form.Item>
           </Form>
         </div>
-        <div id="recaptcha-container"></div>
+        <div id="recaptcha-container" style={{ display: "none" }}></div>
       </div>
     </Card>
   );

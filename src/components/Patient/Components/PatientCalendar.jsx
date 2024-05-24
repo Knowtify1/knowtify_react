@@ -43,7 +43,7 @@ function PatientCalendar() {
 
     return () => unsubscribe();
   }, []);
-  ////cell
+
   const cellRender = (current) => {
     const formattedDate = current.format("YYYY-MM-DD");
     const filteredAppointments = patientsData.filter(
@@ -62,6 +62,7 @@ function PatientCalendar() {
                 <span
                   className="clickable-badge"
                   onClick={() => handleDateSelect(current, appointment)}
+                  style={{ fontSize: "12px", color: "green" }}
                 >
                   {(() => {
                     const appointmentTime = moment(
@@ -110,7 +111,7 @@ function PatientCalendar() {
         </div>
       ) : (
         <>
-          <Calendar cellRender={cellRender} />
+          <Calendar cellRender={cellRender} style={{ width: "100%" }} />
 
           <AntModal
             title={`Appointments on ${selectedPatient?.appointmentDate

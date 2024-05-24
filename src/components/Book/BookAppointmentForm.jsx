@@ -154,9 +154,6 @@ function BookAppointmentForm() {
       timepicker,
     } = values;
 
-    // Disable the submit button to prevent multiple submissions
-    setButtonLoading(true);
-
     // Calculate age from birthdate
     const birthDate = dayjs(birthdate);
     const age = dayjs().diff(birthDate, "year");
@@ -199,7 +196,7 @@ function BookAppointmentForm() {
 
     const numExistingAppointments = existingAppointmentsQuerySnapshot.size;
 
-    if (numExistingAppointments >= 3 - 1) {
+    if (numExistingAppointments >= 2) {
       const message =
         "There are already 2 appointments booked for the selected date and time. Please choose a different Time.";
       setModalClosable(false);
@@ -207,6 +204,9 @@ function BookAppointmentForm() {
       setModalMessage(message);
       showModal();
     } else {
+      // Disable the submit button to prevent multiple submissions
+      setButtonLoading(true);
+
       const userData = {
         createdDate: Timestamp.now(),
         patientName: patientname,
@@ -223,7 +223,6 @@ function BookAppointmentForm() {
         status: "pending",
         reference: uniqueReference,
       };
-
       navigate("/appointmentsuccess", {
         state: { appointmentData: userData, phone: prefixedContactNo },
       });
@@ -253,6 +252,7 @@ function BookAppointmentForm() {
     if (modalCondition === "exists") {
       navigate("/login");
     } else if (modalCondition === "schedexists") {
+      setButtonLoading(false); // Enable the submit button again
       setModalVisible(false);
     } else {
       setModalVisible(false);
@@ -369,7 +369,6 @@ function BookAppointmentForm() {
                 </Input.Group>
               </Form.Item>
             </Col>
-
             <Col span={12}>
               <Form.Item
                 label="Gender"
@@ -548,6 +547,7 @@ function BookAppointmentForm() {
                     className="bg-green-600 w-2/4 "
                     htmlType="submit"
                     loading={buttonLoading} // Set loading state for the button
+                    disabled={buttonLoading} // Disable the button if loading
                   >
                     Submit
                   </Button>

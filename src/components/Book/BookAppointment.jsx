@@ -25,14 +25,17 @@ function BookAppointment() {
   const [showCaptcha, setShowCaptcha] = useState(false);
   const [captchaValue, setCaptchaValue] = useState(null);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
   const showModal = () => {
     setShowCaptcha(true);
+    setIsButtonDisabled(true);
   };
 
   const handleCancel = () => {
     setShowCaptcha(false);
     setIsModalVisible(false);
+    setIsButtonDisabled(false);
   };
 
   const openNotification = () => {
@@ -44,8 +47,7 @@ function BookAppointment() {
 
   const handleCaptchaChange = (value) => {
     setCaptchaValue(value);
-    // Show the booking form once captcha is verified
-    if (value && !isModalVisible) {
+    if (value) {
       setIsModalVisible(true);
     }
   };
@@ -161,7 +163,7 @@ function BookAppointment() {
                     key={index}
                     className={`transition-transform duration-300 transform ${
                       index === currentSlide
-                        ? "scale-110" // Increase scale for the current slide
+                        ? "scale-110"
                         : index === currentSlide - 1 ||
                           index === currentSlide + 1
                         ? "scale-90"
@@ -176,7 +178,7 @@ function BookAppointment() {
                     <Card
                       hoverable
                       className={`bg-green-700 text-white p-0 ${
-                        index === currentSlide ? "h-full" : "h-96" // Adjust height for the current slide
+                        index === currentSlide ? "h-full" : "h-96"
                       }`}
                       style={{ width: "100%", height: "100%" }}
                       cover={
@@ -202,21 +204,24 @@ function BookAppointment() {
                 Elevate Your Health Journey: <br /> Seamless Booking,
                 Exceptional Care at Mountain Top Specialty Clinic.
               </h1>
-              <div className="lg:w-1/2 flex justify-left">
+              <div className="lg:w-1/4 flex flex-col items-left">
+                <Button
+                  className={`bg-green-600 rounded mt-3 ${
+                    isButtonDisabled ? "bg-gray-400" : ""
+                  }`}
+                  onClick={showModal}
+                  type="primary"
+                  disabled={isButtonDisabled}
+                >
+                  Book Appointment
+                </Button>
                 {showCaptcha && (
-                  <ReCAPTCHA
-                    sitekey="6LdxRU8pAAAAAPtTPMi4pwlsanI-7R96R7SvkP8k"
-                    onChange={handleCaptchaChange}
-                  />
-                )}
-                {!showCaptcha && (
-                  <Button
-                    className="bg-green-600 rounded mt-3 ml-3"
-                    onClick={showModal}
-                    type="primary"
-                  >
-                    Book Appointment
-                  </Button>
+                  <div className="mt-4">
+                    <ReCAPTCHA
+                      sitekey="6LdxRU8pAAAAAPtTPMi4pwlsanI-7R96R7SvkP8k"
+                      onChange={handleCaptchaChange}
+                    />
+                  </div>
                 )}
               </div>
             </div>

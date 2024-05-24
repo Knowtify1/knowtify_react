@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
-import { Card, Spin, Button, Form, Input, Select } from "antd";
+import { Card, Button, Form, Input, Spin } from "antd";
 import {
   setDoc,
   doc,
@@ -11,38 +11,38 @@ import {
 } from "../../config/firebase.jsx";
 import { handleSendCode, handleVerifyCode } from "../../config/signinphone.jsx";
 import { HomeOutlined } from "@ant-design/icons";
-
-const { Option } = Select;
+import moment from "moment";
 
 function AppointmentSuccess() {
   const location = useLocation();
   const { appointmentData } = location.state;
   const { phone } = location.state;
-  const [phoneNumber, setPhoneNumber] = useState(phone);
   const [verificationCode, setVerificationCode] = useState("");
   const [confirmationResult, setConfirmationResult] = useState(null);
   const [PatientAuthID, setPatientAuthID] = useState("");
   const [codeSent, setCodeSent] = useState(false);
   const [verifying, setVerifying] = useState(false);
-  const [register, setRegister] = useState(false);
   const [verificationInitiated, setVerificationInitiated] = useState(false);
   const [creatingAppointment, setCreatingAppointment] = useState(false);
   const [showAppointmentDetails, setShowAppointmentDetails] = useState(false);
-  const [assignedDoctor, setAssignedDoctor] = useState("");
 
-  const onSendCode = () => {
-    handleSendCode(phoneNumber, setConfirmationResult, setCodeSent);
-  };
-
-  const onVerifyCode = async () => {
-    setVerifying(true);
-    handleVerifyCode(confirmationResult, verificationCode, setPatientAuthID);
-    if (confirmationResult) {
-      saveAppointment();
+  useEffect(() => {
+    if (phone && !codeSent) {
+      handleSendCode(phone, setConfirmationResult, setCodeSent);
     }
-    setVerificationInitiated(true);
-    setVerifying(false);
-  };
+  }, [phone, codeSent]);
+
+  useEffect(() => {
+    if (verificationCode.length === 6 && !verificationInitiated) {
+      setVerifying(true);
+      handleVerifyCode(confirmationResult, verificationCode, setPatientAuthID)
+        .then(() => {
+          saveAppointment();
+          setVerificationInitiated(true);
+        })
+        .finally(() => setVerifying(false));
+    }
+  }, [verificationCode, verificationInitiated]);
 
   const saveAppointment = async () => {
     if (!creatingAppointment) {
@@ -58,6 +58,7 @@ function AppointmentSuccess() {
       }
     }
   };
+
   const createPatientCollection = async () => {
     console.log("ID: " + PatientAuthID);
     const dateofregistration = fsTimeStamp.now();
@@ -89,6 +90,26 @@ function AppointmentSuccess() {
       console.error("Error creating user accounts record:", error);
     }
     setShowAppointmentDetails(true);
+  };
+  const addAmOrPmLabel = (time) => {
+    const appointmentTime = moment(time, "h:mm A");
+    if (
+      appointmentTime.isBetween(
+        moment("7:00 AM", "h:mm A"),
+        moment("11:59 AM", "h:mm A")
+      )
+    ) {
+      return "AM";
+    } else if (
+      appointmentTime.isBetween(
+        moment("12:00 PM", "h:mm A"),
+        moment("6:00 PM", "h:mm A")
+      )
+    ) {
+      return "PM";
+    } else {
+      return ""; // Default case, no label
+    }
   };
 
   return (
@@ -126,8 +147,20 @@ function AppointmentSuccess() {
                 <div className="rounded-md bg-dark-gray p-2 mt-1">
                   <p className="text-lg">
                     <strong>Appointment Time:</strong>{" "}
-                    {appointmentData.appointmentTime.replace(/"/g, "")}{" "}
-                    {/* Display the appointment time with label */}
+                    {moment(
+                      appointmentData.appointmentTime.replace(/"/g, ""),
+                      "h:mm A"
+                    ).format("h:mm")}{" "}
+                    {moment(
+                      appointmentData.appointmentTime.replace(/"/g, ""),
+                      "h:mm A"
+                    ).format("HH:mm") >= "07:00" &&
+                    moment(
+                      appointmentData.appointmentTime.replace(/"/g, ""),
+                      "h:mm A"
+                    ).format("HH:mm") < "12:00"
+                      ? "AM"
+                      : "PM"}
                   </p>
                 </div>
               </div>
@@ -157,23 +190,6 @@ function AppointmentSuccess() {
                   </Button>
                 </Link>
               </div>
-              {/* <div className="mt-6">
-            <p className="text-lg mb-2">
-              Upon a successful appointment, you will receive a confirmation
-              receipt. Please present this receipt when you visit the
-              clinic.
-            </p>
-            <Button
-              type="primary"
-              className="bg-blue-500 hover:bg-blue-700"
-              disabled
-            >
-              View Receipt
-            </Button>
-            <p className="text-base mb-2 text-rose-600">
-              Wait for approval and you will receive your receipt
-            </p>
-          </div> */}
             </Card>
           </div>
         </div>
@@ -215,44 +231,25 @@ function AppointmentSuccess() {
                   onChange={(e) => setVerificationCode(e.target.value)}
                 />
                 <div style={{ color: "red", marginTop: "5px" }}>
-                  Please click "Send Code" to send verification code.
+                  {codeSent
+                    ? "Verification code sent."
+                    : "Wait for the verification code to be sent."}
                 </div>
               </Form.Item>
-              <Form.Item>
-                <Button
-                  type="primary"
-                  className="bg-green-600 w-full"
-                  style={{ marginBottom: "10px" }}
-                  onClick={onSendCode}
-                  disabled={!phoneNumber || codeSent}
-                >
-                  Send Code
-                </Button>
-                {!codeSent && (
-                  <div id="recaptcha-container">
-                    {/* Your reCAPTCHA component */}
-                  </div>
-                )}
-                <Spin spinning={verifying}>
-                  <Button
-                    type="primary"
-                    className="bg-green-600 w-full"
-                    style={{ marginBottom: "10px" }}
-                    onClick={onVerifyCode}
-                    disabled={!verificationCode || verificationInitiated}
-                  >
-                    Verify Code
-                  </Button>
-                </Spin>
-                <Button
-                  type="primary"
-                  className="bg-green-600 w-full"
-                  onClick={createPatientCollection}
-                >
-                  Register
-                </Button>
-              </Form.Item>
             </Form>
+
+            <div id="recaptcha-container" style={{ display: "none" }}>
+              {/* Your reCAPTCHA component */}
+            </div>
+            <Button
+              type="primary"
+              className="bg-green-600 w-full"
+              onClick={createPatientCollection}
+              disabled={!codeSent || !verificationCode}
+            >
+              Register
+            </Button>
+            {verifying && <Spin />}
           </div>
         </Card>
       )}

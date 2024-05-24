@@ -23,6 +23,8 @@ function PatientAppointment() {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [consultationCount, setConsultationCount] = useState(0);
   const [followUpCount, setFollowUpCount] = useState(0);
+  const [reminderSet, setReminderSet] = useState({});
+  const [reminderButtonClicked, setReminderButtonClicked] = useState({});
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -53,6 +55,13 @@ function PatientAppointment() {
     });
 
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const storedReminders =
+      JSON.parse(localStorage.getItem("reminderSet")) || {};
+    setReminderSet(storedReminders);
+    setReminderButtonClicked(storedReminders);
   }, []);
 
   // Modify the fetchPatientDetails function to sort and merge appointments
@@ -173,13 +182,33 @@ function PatientAppointment() {
     patientName,
     appointmentDate,
     appointmentTime,
-    assignedDoctor
+    assignedDoctor,
+    referenceId
   ) => {
     try {
-      // Format appointment date
-      const formattedAppointmentDate = moment(appointmentDate.toDate()).format(
-        "MMMM D, YYYY"
+      // Update reminderSet state to mark the reminder as set
+      setReminderSet((prevState) => ({
+        ...prevState,
+        [referenceId]: true,
+      }));
+
+      // Store the updated reminderSet in local storage
+      localStorage.setItem(
+        "reminderSet",
+        JSON.stringify({
+          ...reminderSet,
+          [referenceId]: true,
+        })
       );
+
+      // Get the current date
+      const currentDate = moment();
+
+      // Calculate the reminder date, one day before the appointment
+      const reminderDate = moment(appointmentDate.toDate()).subtract(1, "day");
+
+      // Format reminder date
+      const formattedReminderDate = reminderDate.format("MMMM D, YYYY");
 
       // Format appointment time if available
       let formattedAppointmentTime = "";
@@ -197,7 +226,7 @@ function PatientAppointment() {
       }
 
       // Construct SMS message
-      let message = `Hello ${patientName}, this is to remind you of your upcoming appointment with Mountain Top Specialty Clinic on ${formattedAppointmentDate}`;
+      let message = `Hello ${patientName}, this is to remind you of your upcoming appointment with Mountain Top Specialty Clinic on ${formattedReminderDate}`;
 
       // Append appointment time if available
       if (formattedAppointmentTime) {
@@ -212,10 +241,17 @@ function PatientAppointment() {
       // Add additional message content
       message += `. Please be at the clinic 5 minutes before your appointment schedule. Thank you!`;
 
-      // Sending SMS to the patient
-      sendSMS(contactNo, message); // Send SMS
-      console.log("SMS reminder sent successfully.");
+      // Check if the current date is the same as the reminder date
+      if (currentDate.isSame(reminderDate, "day")) {
+        // Sending SMS to the patient
+        sendSMS(contactNo, message); // Send SMS
+        console.log("SMS reminder sent successfully.");
+      } else {
+        // If the current date is not the reminder date, do nothing
+        console.log("Reminder not due yet.");
+      }
 
+      // Show success notification only if the reminder is explicitly set
       notification.success({
         message: "Reminder Set",
         description: "A reminder has been set for this appointment.",
@@ -308,20 +344,40 @@ function PatientAppointment() {
       render: (text, record) => (
         <span>
           <Button
-            onClick={() =>
-              sendReminderSMS(
-                record.contactNo,
-                record.patientName,
-                record.appointmentDate,
-                record.appointmentTime,
-                record.assignedDoctor
-              )
-            }
+            onClick={() => {
+              const updatedClickedState = { ...reminderButtonClicked };
+              updatedClickedState[record.reference] = true;
+              setReminderButtonClicked(updatedClickedState);
+
+              !reminderSet[record.reference] && // Check if reminder is not already set
+                sendReminderSMS(
+                  record.contactNo,
+                  record.patientName,
+                  record.appointmentDate,
+                  record.appointmentTime,
+                  record.assignedDoctor,
+                  record.reference
+                );
+
+              // Update local storage to maintain button disabled state
+              localStorage.setItem(
+                "reminderSet",
+                JSON.stringify({
+                  ...reminderSet,
+                  [record.reference]: true,
+                })
+              );
+            }}
             type="primary"
             className="bg-yellow-400 rounded mt-3 ml-3"
+            disabled={
+              reminderButtonClicked[record.reference] ||
+              reminderSet[record.reference]
+            } // Disable button if it has been clicked or reminder is already set
           >
             Set Reminder
           </Button>
+
           <Button
             onClick={() => handleFollowUp(record)}
             type="primary"
@@ -336,7 +392,7 @@ function PatientAppointment() {
 
   const rowClassName = (record) => {
     if (appointments.length === 0) {
-      return ""; // Return empty string if asppointments array is empty
+      return ""; // Return empty string if appointments array is empty
     }
 
     // Find the appointment with the least remaining days
@@ -350,12 +406,13 @@ function PatientAppointment() {
     }
     return "";
   };
+
   return (
     <div className="w-full px-0 sm:px-0 md:px-4 lg:px-16 xl:px-0">
       <Card
         className="overflow-auto pl-0" // Set a maximum height and padding
         style={{
-          idth: "100%",
+          width: "100%",
           height: "auto",
           backgroundColor: "#fff",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
@@ -364,7 +421,7 @@ function PatientAppointment() {
         <div className="w-full text-center">
           <h3 className="text-3xl font-semibold pt-0" style={{ color: "#333" }}>
             Patient Appointment Details
-          </h3>{" "}
+          </h3>
         </div>
         <div className="overflow-auto max-h-screen p-4">
           <div className="w-full text-center">
@@ -438,30 +495,20 @@ function PatientAppointment() {
                 </div>
               </Card>
             </Modal>
-          </div>
 
-          <Modal
-            title="Follow-Up Check-Up"
-            visible={followUpModalVisible}
-            onCancel={() => setFollowUpModalVisible(false)}
-            width={700}
-            footer={null}
-          >
-            <Card>
-              <p>
-                Ready to prioritize your health? Schedule an appointment with
-                our experienced healthcare professionals.
-              </p>
-              <div className="mt-12 grow">
-                <div>
-                  <FollowUpForm
-                    appointment={selectedAppointment}
-                    handleFollowUp={() => handleFollowUp(selectedAppointment)}
-                  />
-                </div>
-              </div>
-            </Card>
-          </Modal>
+            <Modal
+              title="Follow-Up Form"
+              visible={followUpModalVisible}
+              width={700}
+              footer={null} // Remove OK and Cancel buttons
+              onCancel={() => setFollowUpModalVisible(false)} // Handle modal close
+            >
+              <FollowUpForm
+                appointment={selectedAppointment}
+                closeModal={() => setFollowUpModalVisible(false)}
+              />
+            </Modal>
+          </div>
         </div>
       </Card>
     </div>
